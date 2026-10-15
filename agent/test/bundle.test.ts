@@ -55,3 +55,25 @@ it("rotates tried coverage units before retrying helpers and keeps PR selection 
     ).map((f) => f.path),
   ).toEqual(["frontend/src/factory.ts"]);
 });
+
+it("includes literal dynamic imports used by existing design-system mocks without evaluating imports", () => {
+  const paths = [
+    "frontend/src/features/todos/TodosPage.test.tsx",
+    "frontend/src/design-system/mocks.tsx",
+    "frontend/src/design-system/private.tsx",
+  ];
+  const files = [
+    {
+      path: paths[0]!,
+      content:
+        "vi.mock('../../design-system', () => import('../../design-system/mocks')); const name='../../design-system/private'; import(name);",
+    },
+    { path: paths[1]!, content: "export const Button=()=>null;" },
+    { path: paths[2]!, content: "export const neverRequested=true;" },
+  ];
+  expect(
+    selectContextFiles(files, [paths[0]!], [], "pr-change").map(
+      (file) => file.path,
+    ),
+  ).toEqual([paths[0], paths[1]]);
+});
