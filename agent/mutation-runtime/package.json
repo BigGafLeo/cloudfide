@@ -1,0 +1,12 @@
+{
+  "name": "cloudfide-mutation-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/vitest-runner": "10.0.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "node": "24.13.1",
+  "codex": {
+    "package": "@openai/codex",
+    "version": "0.162.1"
+  },
+  "claude": {
+    "package": "@anthropic-ai/claude-code",
+    "version": "2.1.299"
+  },
+  "productionPlatform": "linux",
+  "conformanceRequired": true
+}

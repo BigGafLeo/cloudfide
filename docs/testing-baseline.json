@@ -1,0 +1,1017 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-13T12:22:31.606Z",
+  "sourceCommit": "22be6e3bcf54fd012104fe233ef6652dd01941ff",
+  "environment": {
+    "platform": "win32",
+    "node": "24.13.1",
+    "npm": "11.8.0",
+    "vitest": "4.1.11"
+  },
+  "components": {
+    "backend": {
+      "testCommand": "npm run test:coverage",
+      "testFiles": 4,
+      "tests": 48,
+      "failed": 0,
+      "testExitCode": 0,
+      "typecheckCommand": "npm run typecheck",
+      "typecheckExitCode": 0,
+      "coverage": {
+        "lines": {
+          "total": 109,
+          "covered": 36,
+          "skipped": 0,
+          "pct": 33.02
+        },
+        "statements": {
+          "total": 129,
+          "covered": 39,
+          "skipped": 0,
+          "pct": 30.23
+        },
+        "functions": {
+          "total": 32,
+          "covered": 13,
+          "skipped": 0,
+          "pct": 40.62
+        },
+        "branches": {
+          "total": 48,
+          "covered": 16,
+          "skipped": 0,
+          "pct": 33.33
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      },
+      "files": [
+        {
+          "path": "backend/src/factory.ts",
+          "lines": {
+            "total": 17,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 4,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 22,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 14,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "backend/src/main.ts",
+          "lines": {
+            "total": 3,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 3,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "backend/src/api/health.ts",
+          "lines": {
+            "total": 5,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 5,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "backend/src/core/config.ts",
+          "lines": {
+            "total": 13,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 15,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 6,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "backend/src/core/database.ts",
+          "lines": {
+            "total": 3,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 66.66
+          },
+          "functions": {
+            "total": 2,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 50
+          },
+          "statements": {
+            "total": 3,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 66.66
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "backend/src/core/lifespan.ts",
+          "lines": {
+            "total": 20,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 6,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 25,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "backend/src/features/todos/mappers.ts",
+          "lines": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 2,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "backend/src/features/todos/repository.ts",
+          "lines": {
+            "total": 16,
+            "covered": 16,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 7,
+            "covered": 7,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 17,
+            "covered": 17,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 12,
+            "covered": 12,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "backend/src/features/todos/router.ts",
+          "lines": {
+            "total": 25,
+            "covered": 11,
+            "skipped": 0,
+            "pct": 44
+          },
+          "functions": {
+            "total": 7,
+            "covered": 3,
+            "skipped": 0,
+            "pct": 42.85
+          },
+          "statements": {
+            "total": 32,
+            "covered": 13,
+            "skipped": 0,
+            "pct": 40.62
+          },
+          "branches": {
+            "total": 12,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 16.66
+          }
+        },
+        {
+          "path": "backend/src/features/todos/validators.ts",
+          "lines": {
+            "total": 6,
+            "covered": 6,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 6,
+            "covered": 6,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        }
+      ],
+      "configuration": {
+        "path": "backend/vitest.config.ts",
+        "sha256": "726ded24ef8ad15028caa7b2588b8b90ad76756cc9e6b7bd57bf3e38a46c85f6",
+        "excluded": [
+          "src/**/types.ts",
+          "src/generated/**"
+        ]
+      },
+      "lockfileSha256": "2084e69199d08cba441c0a54f94332eee871530492e20d08ab8ac4ac6243b08e"
+    },
+    "frontend": {
+      "testCommand": "npm run test:coverage",
+      "testFiles": 14,
+      "tests": 18,
+      "failed": 0,
+      "testExitCode": 0,
+      "typecheckCommand": "npm run typecheck",
+      "typecheckExitCode": 0,
+      "coverage": {
+        "lines": {
+          "total": 151,
+          "covered": 72,
+          "skipped": 0,
+          "pct": 47.68
+        },
+        "statements": {
+          "total": 168,
+          "covered": 78,
+          "skipped": 0,
+          "pct": 46.42
+        },
+        "functions": {
+          "total": 77,
+          "covered": 31,
+          "skipped": 0,
+          "pct": 40.25
+        },
+        "branches": {
+          "total": 137,
+          "covered": 60,
+          "skipped": 0,
+          "pct": 43.79
+        },
+        "branchesTrue": {
+          "total": 0,
+          "covered": 0,
+          "skipped": 0,
+          "pct": 100
+        }
+      },
+      "files": [
+        {
+          "path": "frontend/src/App.tsx",
+          "lines": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/app/AppProviders.tsx",
+          "lines": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "frontend/src/components/ApplicationHeader.tsx",
+          "lines": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/components/SuccessNotice.tsx",
+          "lines": {
+            "total": 2,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 3,
+            "covered": 3,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 2,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/TodosPage.tsx",
+          "lines": {
+            "total": 26,
+            "covered": 13,
+            "skipped": 0,
+            "pct": 50
+          },
+          "functions": {
+            "total": 11,
+            "covered": 3,
+            "skipped": 0,
+            "pct": 27.27
+          },
+          "statements": {
+            "total": 27,
+            "covered": 13,
+            "skipped": 0,
+            "pct": 48.14
+          },
+          "branches": {
+            "total": 18,
+            "covered": 11,
+            "skipped": 0,
+            "pct": 61.11
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/api/todos.ts",
+          "lines": {
+            "total": 7,
+            "covered": 4,
+            "skipped": 0,
+            "pct": 57.14
+          },
+          "functions": {
+            "total": 4,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 50
+          },
+          "statements": {
+            "total": 7,
+            "covered": 4,
+            "skipped": 0,
+            "pct": 57.14
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/DeleteTodoDialog.tsx",
+          "lines": {
+            "total": 8,
+            "covered": 3,
+            "skipped": 0,
+            "pct": 37.5
+          },
+          "functions": {
+            "total": 3,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 33.33
+          },
+          "statements": {
+            "total": 9,
+            "covered": 3,
+            "skipped": 0,
+            "pct": 33.33
+          },
+          "branches": {
+            "total": 8,
+            "covered": 5,
+            "skipped": 0,
+            "pct": 62.5
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodoEditor.tsx",
+          "lines": {
+            "total": 10,
+            "covered": 9,
+            "skipped": 0,
+            "pct": 90
+          },
+          "functions": {
+            "total": 2,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 12,
+            "covered": 10,
+            "skipped": 0,
+            "pct": 83.33
+          },
+          "branches": {
+            "total": 16,
+            "covered": 10,
+            "skipped": 0,
+            "pct": 62.5
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodoEmptyState.tsx",
+          "lines": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 6,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodoFilters.tsx",
+          "lines": {
+            "total": 4,
+            "covered": 4,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 4,
+            "covered": 4,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 4,
+            "covered": 4,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodoForm.tsx",
+          "lines": {
+            "total": 16,
+            "covered": 14,
+            "skipped": 0,
+            "pct": 87.5
+          },
+          "functions": {
+            "total": 9,
+            "covered": 7,
+            "skipped": 0,
+            "pct": 77.77
+          },
+          "statements": {
+            "total": 17,
+            "covered": 15,
+            "skipped": 0,
+            "pct": 88.23
+          },
+          "branches": {
+            "total": 11,
+            "covered": 7,
+            "skipped": 0,
+            "pct": 63.63
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodoItem.tsx",
+          "lines": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 14,
+            "covered": 5,
+            "skipped": 0,
+            "pct": 35.71
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodoList.tsx",
+          "lines": {
+            "total": 5,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 20
+          },
+          "functions": {
+            "total": 5,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 20
+          },
+          "statements": {
+            "total": 5,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 20
+          },
+          "branches": {
+            "total": 8,
+            "covered": 5,
+            "skipped": 0,
+            "pct": 62.5
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/components/TodosHeader.tsx",
+          "lines": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "functions": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "statements": {
+            "total": 1,
+            "covered": 1,
+            "skipped": 0,
+            "pct": 100
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/hooks/useCreateTodoMutation.ts",
+          "lines": {
+            "total": 6,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 5,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 7,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts",
+          "lines": {
+            "total": 6,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 5,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 7,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/hooks/useTodoFilters.ts",
+          "lines": {
+            "total": 4,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 4,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/hooks/useTodosBusy.ts",
+          "lines": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 1,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/hooks/useTodosQuery.ts",
+          "lines": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 0,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 100
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts",
+          "lines": {
+            "total": 6,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 5,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 7,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        },
+        {
+          "path": "frontend/src/features/todos/utils/todos.ts",
+          "lines": {
+            "total": 25,
+            "covered": 13,
+            "skipped": 0,
+            "pct": 52
+          },
+          "functions": {
+            "total": 6,
+            "covered": 4,
+            "skipped": 0,
+            "pct": 66.66
+          },
+          "statements": {
+            "total": 27,
+            "covered": 15,
+            "skipped": 0,
+            "pct": 55.55
+          },
+          "branches": {
+            "total": 36,
+            "covered": 12,
+            "skipped": 0,
+            "pct": 33.33
+          }
+        },
+        {
+          "path": "frontend/src/hooks/useNotice.ts",
+          "lines": {
+            "total": 7,
+            "covered": 5,
+            "skipped": 0,
+            "pct": 71.42
+          },
+          "functions": {
+            "total": 5,
+            "covered": 2,
+            "skipped": 0,
+            "pct": 40
+          },
+          "statements": {
+            "total": 11,
+            "covered": 6,
+            "skipped": 0,
+            "pct": 54.54
+          },
+          "branches": {
+            "total": 4,
+            "covered": 3,
+            "skipped": 0,
+            "pct": 75
+          }
+        },
+        {
+          "path": "frontend/src/lib/http.ts",
+          "lines": {
+            "total": 10,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "functions": {
+            "total": 2,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "statements": {
+            "total": 12,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          },
+          "branches": {
+            "total": 10,
+            "covered": 0,
+            "skipped": 0,
+            "pct": 0
+          }
+        }
+      ],
+      "configuration": {
+        "path": "frontend/vite.config.ts",
+        "sha256": "f05d64a8791d6adb5b2376a83b9de4b08aae4007e1b3c9005f9905a383bfd2cd",
+        "excluded": [
+          "src/main.tsx",
+          "src/test/**",
+          "src/**/*.test.{ts,tsx}",
+          "src/design-system/**",
+          "src/**/types.ts",
+          "src/**/*.types.ts",
+          "src/**/index.ts",
+          "src/**/constants.{ts,tsx}",
+          "src/**/*.constants.ts",
+          "src/features/todos/api/queryKeys.ts",
+          "src/lib/queryClient.ts"
+        ]
+      },
+      "lockfileSha256": "98d68957f4b5209012c3e08679aaffa95b4531120d1f10770d4f220876573564"
+    }
+  }
+}
