@@ -21,3 +21,25 @@ coverage/
 
 # macOS
 .DS_Store
+
+# Local recruitment assignment instructions
+/assignment 4.md
+
+# Agent development scratch
+/.worktrees/
+/.superpowers/
+
+/agent/output/
+**/.agent-evidence/
+**/.agent-tests.json
+**/.agent-coverage-tests.json
+**/.stryker-tmp/
+**/.cloudfide-stryker.json
+**/reports/mutation/
+**/auth.json
+**/.cloudfide-stryker-*.json
+
+# Private implementation notes; public docs live directly under docs/.
+/docs/agent-requirements.md
+/docs/reviews/
+/docs/superpowers/

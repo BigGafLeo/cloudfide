@@ -1,0 +1,16 @@
+{
+  "claude": {
+    "version": "2.1.299",
+    "verified": true,
+    "profileHash": "c55a7bec8fa0ae1d66d940fb23875a3bb264f55f2c1b1b4e01d606a7f82e184b",
+    "platform": "linux",
+    "checks": ["structured", "no-tools", "no-discovery", "cleanup"]
+  },
+  "codex": {
+    "version": "0.162.1",
+    "verified": true,
+    "profileHash": "531e3d7c99245afc5afcbb6e87ee1460fb762ac001fe292ffe8aa1867059a096",
+    "platform": "linux",
+    "checks": ["structured", "no-tools", "no-discovery", "cleanup"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "node": "24.13.1",
+  "image": "node:24.13.1@sha256:00e9195ebd49985a6da8921f419978d85dfe354589755192dc090425ce4da2f7",
+  "stryker": "10.0.0",
+  "vitest": "4.1.11",
+  "backend": true,
+  "frontendTsx": true,
+  "scope": "mappers.ts and SuccessNotice.tsx",
+  "baselineEvidence": "output/precollection-probe.json: all9 isolated checks passed on unchanged app source before this focused mutation trial",
+  "result": {
+    "id": "mutation",
+    "gate": "advisory",
+    "status": "passed",
+    "reason": "backend/src/features/todos/mappers.ts: {\"Killed\":5}; frontend/src/components/SuccessNotice.tsx: {\"Killed\":4}; survivors are evidence, not confirmed production defects",
+    "command": "pinned Stryker 10.0.0 / Vitest 4.1.11; scoped TS/TSX",
+    "exitCode": 0,
+    "logPath": ".agent-evidence/mutation.log"
+  }
+}

@@ -1,0 +1,281 @@
+name: Unit-test agent
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Open same-repository PR number for coverage-gap analysis
+        required: true
+        type: string
+permissions: {}
+defaults:
+  run:
+    working-directory: agent
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      context: ${{ steps.resolve.outputs.context }}
+      pr: ${{ steps.resolve.outputs.pr }}
+      eligible: ${{ steps.resolve.outputs.eligible }}
+      model-runner: ${{ steps.resolve.outputs.model-runner }}
+      review-runner: ${{ steps.resolve.outputs.review-runner }}
+      review-enabled: ${{ steps.resolve.outputs.review-enabled }}
+      mutation-enabled: ${{ steps.resolve.outputs.mutation-enabled }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.13.1"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - run: npm start -- resolve
+        id: resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+  precollect:
+    needs: [resolve]
+    if: needs.resolve.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+      logs-artifact-id: ${{ steps.logs.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.13.1"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - name: Prepare pinned isolated test runtime
+        run: docker pull node:24.13.1@sha256:00e9195ebd49985a6da8921f419978d85dfe354589755192dc090425ce4da2f7
+      - run: npm start -- precollect
+        env:
+          CONTEXT_JSON: ${{ needs.resolve.outputs.context }}
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: artifact
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-precollect
+          path: agent/output/payload.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: logs
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-precollect-logs
+          path: |
+            agent/output/base-evidence/
+            agent/output/head-evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  agent:
+    needs: [resolve, precollect]
+    if: needs.resolve.outputs.eligible == 'true'
+    runs-on: ${{ fromJSON(needs.resolve.outputs.model-runner) }}
+    timeout-minutes: 90
+    concurrency:
+      group: unit-agent-model-${{ github.repository_id }}-${{ needs.resolve.outputs.pr }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+      logs-artifact-id: ${{ steps.logs.outputs.artifact-id }}
+      candidate: ${{ steps.agent.outputs.candidate }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.13.1"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - run: npm ci --prefix native --ignore-scripts --no-audit --no-fund
+      - run: node native/node_modules/@anthropic-ai/claude-code/install.cjs
+      - name: Add pinned native CLIs
+        run: echo "$PWD/native/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: npm start -- agent
+        id: agent
+        env:
+          CONTEXT_JSON: ${{ needs.resolve.outputs.context }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ARTIFACT_PRECOLLECT: ${{ needs.precollect.outputs.artifact-id }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CODEX_SUBSCRIPTION_HOME: ${{ vars.CODEX_SUBSCRIPTION_HOME }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CODEX_API_KEY: ${{ secrets.CODEX_API_KEY }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: artifact
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-agent
+          path: agent/output/payload.json
+          if-no-files-found: error
+          retention-days: 7
+
+  verifier:
+    needs: [resolve, agent]
+    if: needs.agent.outputs.candidate == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+      logs-artifact-id: ${{ steps.logs.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.13.1"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - run: npm ci --prefix mutation-runtime --ignore-scripts --no-audit --no-fund
+        if: needs.resolve.outputs.mutation-enabled == 'true'
+      - name: Prepare pinned isolated test runtime
+        run: docker pull node:24.13.1@sha256:00e9195ebd49985a6da8921f419978d85dfe354589755192dc090425ce4da2f7
+      - run: npm start -- verify
+        env:
+          CONTEXT_JSON: ${{ needs.resolve.outputs.context }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ARTIFACT_AGENT: ${{ needs.agent.outputs.artifact-id }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: artifact
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-verifier
+          path: agent/output/payload.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: logs
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-verifier-logs
+          path: |
+            agent/output/.agent-evidence/
+            agent/output/original-evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  reviewer:
+    needs: [resolve, agent, verifier]
+    if: needs.resolve.outputs.review-enabled == 'true' && needs.agent.outputs.candidate == 'true'
+    runs-on: ${{ fromJSON(needs.resolve.outputs.review-runner) }}
+    timeout-minutes: 60
+    concurrency:
+      group: unit-agent-review-${{ github.repository_id }}-${{ needs.resolve.outputs.pr }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+      logs-artifact-id: ${{ steps.logs.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.13.1"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - run: npm ci --prefix native --ignore-scripts --no-audit --no-fund
+      - run: node native/node_modules/@anthropic-ai/claude-code/install.cjs
+      - name: Add pinned native CLIs
+        run: echo "$PWD/native/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: npm start -- review
+        env:
+          CONTEXT_JSON: ${{ needs.resolve.outputs.context }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ARTIFACT_AGENT: ${{ needs.agent.outputs.artifact-id }}
+          ARTIFACT_VERIFIER: ${{ needs.verifier.outputs.artifact-id }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CODEX_SUBSCRIPTION_HOME: ${{ vars.CODEX_SUBSCRIPTION_HOME }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CODEX_API_KEY: ${{ secrets.CODEX_API_KEY }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: artifact
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-reviewer
+          path: agent/output/payload.json
+          if-no-files-found: error
+          retention-days: 7
+
+  publisher:
+    needs: [resolve, precollect, agent, verifier, reviewer]
+    if: always() && needs.resolve.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: unit-agent-publish-${{ github.repository_id }}-${{ needs.resolve.outputs.pr }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.13.1"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - run: npm start -- publish
+        env:
+          CONTEXT_JSON: ${{ needs.resolve.outputs.context }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ARTIFACT_AGENT: ${{ needs.agent.outputs.artifact-id }}
+          ARTIFACT_VERIFIER: ${{ needs.verifier.outputs.artifact-id }}
+          ARTIFACT_REVIEWER: ${{ needs.reviewer.outputs.artifact-id }}
+          ARTIFACT_VERIFIER_LOGS: ${{ needs.verifier.outputs.logs-artifact-id }}
+          ARTIFACT_PRECOLLECT_LOGS: ${{ needs.precollect.outputs.logs-artifact-id }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: unit-agent-${{ github.run_id }}-${{ github.run_attempt }}-report
+          path: agent/output/report.md
+          if-no-files-found: warn
+          retention-days: 7

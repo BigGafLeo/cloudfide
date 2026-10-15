@@ -1,0 +1,32 @@
+{
+  "trustedAuthors": ["YOUR_GITHUB_LOGIN"],
+  "roles": {
+    "analyst": {
+      "provider": "claude",
+      "auth": "subscription",
+      "model": "claude-sonnet-5-5",
+      "allocationUsd": 1,
+      "pricingSource": "virtual subscription admission reservation; not a tariff, invoice cap or quota meter",
+      "pricingDate": "2026-10-15"
+    },
+    "writer": {
+      "provider": "claude",
+      "auth": "subscription",
+      "model": "claude-sonnet-5-5",
+      "allocationUsd": 1,
+      "pricingSource": "virtual subscription admission reservation; not a tariff, invoice cap or quota meter",
+      "pricingDate": "2026-10-15"
+    },
+    "reviewer": {
+      "provider": "claude",
+      "auth": "subscription",
+      "model": "claude-opus-5-5",
+      "allocationUsd": 1,
+      "pricingSource": "virtual subscription admission reservation; not a tariff, invoice cap or quota meter",
+      "pricingDate": "2026-10-15"
+    }
+  },
+  "maxEstimatedUsd": 3,
+  "review": { "enabled": false, "gate": "advisory" },
+  "mutation": { "enabled": false, "gate": "advisory" }
+}
