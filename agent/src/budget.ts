@@ -1,3 +1,4 @@
+import { HostStopError } from "./termination.js";
 import {
   callSchema,
   usageSchema,
@@ -14,6 +15,7 @@ export class Budget {
     private readonly policy: Policy,
     private readonly deadlineMs: number,
     prior: CallRecord[] = [],
+    private readonly maxCalls: number = limits.calls,
   ) {
     for (const row of prior) {
       const record = callSchema.parse(row);
@@ -23,9 +25,11 @@ export class Budget {
     }
   }
   reserve(callId: string, role: Role, now: number): CallRecord {
-    if (now >= this.deadlineMs) throw new Error("run deadline exceeded");
-    if (this.entries.has(callId) || this.entries.size >= limits.calls)
-      throw new Error("call limit or duplicate");
+    if (now >= this.deadlineMs)
+      throw new HostStopError("deadline", "run deadline exceeded");
+    if (this.entries.has(callId)) throw new Error("duplicate call");
+    if (this.entries.size >= this.maxCalls)
+      throw new HostStopError("budget-exhausted", "call limit reached");
     const selected = this.policy.roles[role];
     if (!selected) throw new Error("role not configured");
     const spent = [...this.entries.values()].reduce(
@@ -36,7 +40,7 @@ export class Budget {
       spent + selected.allocationUsd >
       this.policy.maxEstimatedUsd + Number.EPSILON
     )
-      throw new Error("budget exhausted");
+      throw new HostStopError("budget-exhausted", "budget exhausted");
     const row: CallRecord = {
       callId,
       role,

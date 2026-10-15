@@ -137,7 +137,7 @@ npm run test:coverage
 
 ## Unit-test agent
 
-The project contains three model-assisted roles: an analyst finds missing unit-test cases, a writer proposes test files, and an optional fresh reviewer assesses those tests. Each role loads its own skills. The controller schedules their separate CLI calls, validates structured output and restricts proposals to test files. Standard mode uses at most two model calls; enabling the reviewer adds a third. Stryker is an optional mechanical check.
+The project contains three model-assisted roles: an analyst finds missing unit-test cases, a writer proposes test files, and an optional fresh reviewer assesses those tests. Each role loads its own skills. The controller schedules their separate CLI calls, validates structured output and restricts proposals to test files. For scoped pr-change work, standard mode uses at most two model calls; enabling the reviewer adds a third. Manual coverage-gap work uses bounded measurement rounds: analyst, writer, isolated verification, then refreshed gaps until both applications reach the configured target or a limit stops the run. Stryker is an optional mechanical check.
 
 ### Where a normal PR runs
 
@@ -153,7 +153,7 @@ After deployment to the default branch, an opened or updated PR runs the ordinar
 
 The controller and official CLI run on the selected runner; model inference runs on Anthropic's or OpenAI's servers. Choosing a subscription changes authentication and usage accounting, not the model's execution location. In the recommended Claude subscription configuration, the developer's computer does not need to be on after pushing the PR.
 
-Only explicitly allowlisted authors of same-repository PRs can trigger model calls. Fork PRs and authors outside that list skip those calls; Dependabot is additionally rejected. Configure the list with approved human operators. Model jobs receive bounded source data and do not execute PR application code. Application checks have separate containers without model credentials. The result is a PR comment and a patch artifact to review and apply; the workflow does not automatically commit or push generated tests.
+Only explicitly allowlisted authors of same-repository PRs can trigger model calls. Fork PRs and authors outside that list skip those calls; Dependabot is additionally rejected. Configure the list with approved human operators. Models receive bounded source data and have no repository execution tools. The coverage-gap agent job invokes the existing isolated Docker verifier between batches; application code runs only inside the unprivileged app-only containers. Application checks have separate containers without model credentials. The result is a PR comment and a patch artifact to review and apply; the workflow does not automatically commit or push generated tests.
 
 ### GitHub-hosted, self-hosted and local execution
 
@@ -197,23 +197,25 @@ Subscription authentication is not a blanket guarantee of zero additional accoun
 
 ### Configuration and current status
 
-The local agent/config.json is prepared for the owner's demonstration: trustedAuthors is limited to BigGafLeo (confirmed through GitHub), with Claude subscription roles as above. This file contains no credentials. The profile has not been published or activated on GitHub; no live model-assisted run or public PR demonstration has been completed. The Claude native capability probe has passed; its credential remains private to the operator's terminal. On 2026-10-15 the separate local Codex 0.162.1 subscription probe requesting gpt-6.1-sol also passed after correcting the isolation profile and final-response handling. Both validated non-secret records are saved in agent/provider-conformance.json. Codex authentication stays in a private Docker volume; no API key was supplied. Local verification results and limits are recorded in [docs/validation.md](docs/validation.md). Actions authentication and a complete model-assisted PR run remain pending.
+The local agent/config.json is active for the owner's demonstration: trustedAuthors is limited to BigGafLeo, and credentials are supplied through a repository-scoped Actions secret. The [first real Claude subscription PR run](https://github.com/BigGafLeo/cloudfide/actions/runs/38758028657) completed with an accepted proposal: 34 additional passing unit tests across five frontend/backend test files. Both applications' typechecks and coverage checks passed. See [the run summary](docs/first-coverage-run.md) and [retained evidence](docs/agent-run-2026-10-15.json) for exact revisions, decisions, skills, usage and remaining gaps. Account allowances and extra-usage settings still apply.
+
+The local native probes also passed for Claude Code 2.1.299 requesting claude-sonnet-5-5 and Codex 0.162.1 requesting gpt-6.1-sol. Their reviewed non-secret records are in agent/provider-conformance.json; local Codex authentication remains in the dedicated private Docker volume. No model API key was supplied. [docs/validation.md](docs/validation.md) records verified scope and limits. The optional workflow reviewer/mutations and a feature-change model demonstration remain untested in this run.
 
 The public-workflow example uses provider claude and auth subscription. Replace YOUR_GITHUB_LOGIN with approved authors in your own repository. Configure your own repository-scoped OAuth secret and complete the native probes before activation. API mode requires explicit auth api and the corresponding key; there is no automatic fallback.
 
-| Limit                              | Selected value                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------------ |
-| Model calls                        | At most 2 in standard mode; 3 with the reviewer enabled                        |
-| Model call deadline                | At most 30 minutes per role, within the shared run deadline                    |
-| Run deadline                       | 4 hours from the GitHub execution run start                                    |
-| Subscription admission reservation | 1 virtual USD per role; 3 virtual USD per run, including the optional reviewer |
-| Model context / native output      | 200 KiB bundle / 256 KiB output                                                |
-| Test proposal                      | At most 20 files/cases and a 1 MiB patch                                       |
-| Extra checks                       | Reviewer off; mutation off; no automatic repair/retry loop                     |
+| Limit                              | Selected value                                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Model calls                        | pr-change: at most 2 + optional reviewer; coverage-gap: at most 8 analyst/writer rounds, 17 calls including review |
+| Model call deadline                | At most 30 minutes per role, within the shared run deadline                                                        |
+| Run deadline                       | 4 hours from the GitHub execution run start                                                                        |
+| Subscription admission reservation | 1 virtual admission unit per role; 17 units per coverage run, including optional review                            |
+| Model context / native output      | 200 KiB bundle / 256 KiB output                                                                                    |
+| Test proposal                      | 20 files/cases per role response; cumulative coverage proposal: 160 files/cases; patch <=1 MiB, payload <=4 MiB    |
+| Extra checks                       | Reviewer off; mutation off; no automatic repair/retry loop                                                         |
 
-During initial trials, Actions job timeouts allow 90 minutes for CI, precollection, analyst/writer and verification, 60 minutes for the optional reviewer, and 10 minutes for resolve/publication. These include setup and evidence upload. The shared four-hour deadline also includes time between jobs; this is generous trial configuration and should be revisited after actual run measurements. Native compatibility probes use the same 30-minute role timeout.
+During initial trials, Actions job timeouts allow 180 minutes for the coverage-round agent job and 90 minutes for CI, precollection and final verification, 60 minutes for the optional reviewer, and 10 minutes for resolve/publication. These include setup and evidence upload. The shared four-hour deadline also includes time between jobs; this is generous trial configuration and should be revisited after actual run measurements. Native compatibility probes use the same 30-minute role timeout.
 
-The 3-USD reservation leaves room for one optional review; a standard run admits at most the two 1-USD role reservations. These numbers are controller accounting units for subscription mode, not real subscription prices, a token quota or a provider billing limit. Calls and deadlines are bounded per run, not across all PRs or reruns.
+The 17-unit reservation leaves room for eight analyst/writer batches and one optional review. The legacy configuration fields maxEstimatedUsd/allocationUsd contain virtual admission units for this subscription profile; they are not real subscription prices, a token quota or a provider billing limit. Calls and deadlines are bounded per run, not across all PRs or reruns.
 
 The controller enforces the Codex subscription CI restriction before choosing model runners and again at the agent/reviewer entry points. Any active Codex subscription role requires repository metadata fetched from GitHub to confirm the exact repository ID and private=true. Public, unknown or mismatched metadata rejects that configuration before model calls; choosing a self-hosted runner cannot bypass the check. A disabled reviewer does not activate its provider. Local manual compatibility probes remain separate from the GitHub entry points.
 

@@ -99,3 +99,55 @@ export function emptyCoverage(): CoverageReport {
     gaps: [],
   };
 }
+
+export function coverageGoalMet(
+  coverage: CoverageReport,
+  target: { lines: number; branches: number },
+): boolean {
+  return apps.every((app) =>
+    (["lines", "branches"] as const).every((name) => {
+      const metric = coverage[app][name];
+      return (
+        metric.total > 0 &&
+        metric.pct >= target[name] &&
+        (100 * metric.covered) / metric.total >= target[name]
+      );
+    }),
+  );
+}
+/** Test-only changes must preserve denominators and every measured metric. */
+export function coverageDoesNotRegress(
+  before: CoverageReport,
+  after: CoverageReport,
+): boolean {
+  return apps.every((app) =>
+    names.every((name) => {
+      const a = before[app][name],
+        b = after[app][name];
+      return (
+        a.total > 0 &&
+        a.total === b.total &&
+        b.covered >= a.covered &&
+        b.pct >= a.pct
+      );
+    }),
+  );
+}
+export function sameCoverageMeasurement(
+  a: CoverageReport,
+  b: CoverageReport,
+): boolean {
+  return apps.every((app) =>
+    names.every(
+      (name) => JSON.stringify(a[app][name]) === JSON.stringify(b[app][name]),
+    ),
+  );
+}
+export function coverageIncreased(
+  before: CoverageReport,
+  after: CoverageReport,
+): boolean {
+  return apps.some((app) =>
+    names.some((name) => after[app][name].covered > before[app][name].covered),
+  );
+}

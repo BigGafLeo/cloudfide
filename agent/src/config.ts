@@ -21,7 +21,21 @@ const check = z
     gate: z.enum(["required", "advisory"]),
   })
   .refine((c) => c.enabled || c.gate === "advisory", "disabled required check");
+export const defaultCoveragePolicy = {
+  target: { lines: 80, branches: 80 },
+  maxRounds: limits.rounds,
+  noProgressRounds: 2,
+};
+const coveragePolicySchema = z.strictObject({
+  target: z.strictObject({
+    lines: z.number().min(80).max(100),
+    branches: z.number().min(80).max(100),
+  }),
+  maxRounds: z.number().int().min(1).max(limits.rounds),
+  noProgressRounds: z.number().int().min(2).max(limits.rounds),
+});
 const policySchema = z.strictObject({
+  coverage: coveragePolicySchema.optional(),
   trustedAuthors: z.array(z.string().min(1)).max(100),
   roles: z.strictObject({
     analyst: roleConfig.optional(),
@@ -33,6 +47,9 @@ const policySchema = z.strictObject({
   mutation: check.default({ enabled: false, gate: "advisory" }),
 });
 export type Policy = z.infer<typeof policySchema>;
+export function coveragePolicy(policy: Policy) {
+  return policy.coverage ?? defaultCoveragePolicy;
+}
 export function parsePolicy(
   input: unknown,
   providerIds: readonly string[],

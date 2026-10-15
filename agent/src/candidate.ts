@@ -25,12 +25,13 @@ export async function validateCandidatePatch(
   patchText: string,
   files: string[],
   headRoot: string,
+  maxFiles: number = limits.aggregateFiles,
 ): Promise<void> {
   if (
     Buffer.byteLength(patchText) > limits.patch ||
     patchText.includes("\0") ||
     !files.length ||
-    files.length > 20 ||
+    files.length > maxFiles ||
     new Set(files).size !== files.length
   )
     throw new Error("patch bounds");
@@ -107,6 +108,7 @@ export async function freezeCandidate(
   skillsUsed: string[],
   headRoot: string,
   outputRoot: string,
+  options: { aggregate?: boolean } = {},
 ): Promise<CandidateManifest> {
   if (writer === null) {
     if (plan.decision === "write") throw new Error("writer missing");
@@ -124,7 +126,8 @@ export async function freezeCandidate(
   if (
     writer.status !== "written" ||
     plan.decision !== "write" ||
-    writer.files.length > limits.files
+    writer.files.length >
+      (options.aggregate ? limits.aggregateFiles : limits.files)
   )
     throw new Error("invalid candidate phase");
   if (
@@ -154,7 +157,12 @@ export async function freezeCandidate(
       "--dst-prefix=b/",
     ]);
     const files = writer.files.map((f) => f.path);
-    await validateCandidatePatch(patch, files, headRoot);
+    await validateCandidatePatch(
+      patch,
+      files,
+      headRoot,
+      options.aggregate ? limits.aggregateFiles : limits.files,
+    );
     await mkdir(outputRoot, { recursive: true });
     await writeFile(join(outputRoot, "candidate.patch"), patch);
     return candidateSchema.parse({

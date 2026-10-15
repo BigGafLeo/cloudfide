@@ -91,3 +91,52 @@ it("supports no-change without a synthetic writer or patch", async () => {
   expect(c.patch).toBeNull();
   expect(c.files).toEqual([]);
 });
+
+it("freezes a cumulative twenty-one-file proposal only through the explicit aggregate path", async () => {
+  const root = await mkdtemp(join(tmpdir(), "cloudfide-test-"));
+  await writeFile(join(root, "README.md"), "baseline");
+  const plan = makePlan();
+  plan.paths = Array.from(
+    { length: 21 },
+    (_, i) => "frontend/src/batch" + i + ".test.ts",
+  );
+  plan.cases = plan.paths.map((path, i) => ({
+    ...plan.cases[0]!,
+    id: "round-" + i + ":case-1",
+    sourceLocation: "frontend/src/a.ts:1",
+  }));
+  const writer = {
+    status: "written" as const,
+    reason: "batches",
+    files: plan.paths.map((path) => ({ path, content: "// assertion\n" })),
+    caseIds: plan.cases.map((c) => c.id),
+  };
+  await expect(
+    freezeCandidate(
+      makeContext(),
+      plan,
+      writer,
+      [],
+      [],
+      root,
+      join(root, "out"),
+    ),
+  ).rejects.toThrow(/phase/);
+  const context = { ...makeContext(), task: "coverage-gap" as const };
+  const frozen = await freezeCandidate(
+    context,
+    plan,
+    writer,
+    [],
+    [],
+    root,
+    join(root, "out"),
+    { aggregate: true },
+  );
+  expect(frozen.files).toHaveLength(21);
+  await validateCandidatePatch(
+    await readFile(join(root, "out/candidate.patch"), "utf8"),
+    frozen.files,
+    root,
+  );
+});

@@ -21,3 +21,19 @@ export function terminationScope(
     },
   };
 }
+
+export type HostStopCode =
+  | "budget-exhausted"
+  | "deadline"
+  | "stale"
+  | "cancelled"
+  | "recheck-failed"
+  | "payload-limit";
+/** A trusted controller condition, kept separate from model-written rationale. */
+export class HostStopError extends Error {
+  readonly code: HostStopCode;
+  constructor(code: HostStopCode, message: string) {
+    super(message);
+    this.code = code;
+  }
+}
