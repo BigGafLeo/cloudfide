@@ -1,10 +1,10 @@
-# Verified scope and first GitHub run
+# Verified scope and GitHub runs
 
 Status: 2026-10-15. Local compatibility checks and the first model-assisted GitHub PR run are verified below. The demonstration remains bounded and does not establish complete coverage.
 
 ## Controller and execution boundary
 
-The controller suite has 84 cases in 27 files. Windows passed 82 with two platform-specific skips; Linux passed 83 with one Docker-host-specific skip. Typecheck, build and formatting passed. Windows exercised the real Docker execution boundary and timeout cleanup; Linux exercised symlink and signal/credential-lease cleanup. These complementary runs do not claim that the Docker-host case ran inside the Linux test container.
+The current controller suite has 118 cases in 28 files. Windows passed 116 with two environment-specific skips; the separate real Docker probe passed all three checks. [Linux CI](https://github.com/BigGafLeo/cloudfide/actions/runs/38807861235) passed all 118, including Docker boundary and signal/credential-lease cleanup. Typecheck and build passed. The initial Linux CI attempt exposed unsupported TypeScript parameter-property syntax in the direct Node signal fixture; an explicit class field/assignment fixed it, and the full Linux suite then passed.
 
 The pinned Linux collector previously passed all nine application checks. At bootstrap, application suites contained 48 backend tests and 18 frontend tests. No application source, existing tests or coverage exclusions were changed for the bootstrap.
 
@@ -41,6 +41,10 @@ The isolated Stryker 10.0.0 / Vitest 4.1.11 pilot killed five mapper mutants and
 Five selected manual semantic regressions failed the intended assertions. Every focused command passed before mutation and after byte-identical restoration. These checks do not constitute a whole-project mutation score. Independent review/simplify found no material issue; security diff review covered all five generated test files with no findings. A minor assertion for forwarding the identical AbortSignal remains deferred.
 
 See [the full summary](first-coverage-run.md) and [retained evidence](agent-run-2026-10-15.json) for the captured SHA, patch digest, actual analyst plan, loaded skills, native usage, checks, remaining gaps and sensitivity results.
+
+## Verified bounded-rounds rerun
+
+[Run 38808142174](https://github.com/BigGafLeo/cloudfide/actions/runs/38808142174) reached at least 80% lines and branches in both applications. The independent final verifier passed all nine checks and measured 87 backend tests (109/109 lines, 47/48 branches) and 68 frontend tests (142/151 lines, 111/137 branches). Three rounds used five native Claude subscription calls; round 2 withheld writing on an unconfirmed contract, while the controller retained accepted tests and continued. The exact eleven-file proposal adds 55 passing cases with unchanged coverage denominators and no application/configuration changes. Independent static simplification/test-quality review found no material issue. See [the summary](coverage-rounds-run-2026-10-15.md) and [retained evidence](coverage-rounds-run-2026-10-15.json). Optional workflow review and mutation remained disabled; full 100% coverage is still unmet.
 
 ## Reproduction and pending evidence
 

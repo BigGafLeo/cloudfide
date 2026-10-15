@@ -1,0 +1,2202 @@
+{
+  "recordedAt": "2026-10-15",
+  "runUrl": "https://github.com/BigGafLeo/cloudfide/actions/runs/38808142174",
+  "prUrl": "https://github.com/BigGafLeo/cloudfide/pull/2",
+  "controllerPrUrl": "https://github.com/BigGafLeo/cloudfide/pull/3",
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 2,
+    "executionRunId": "38808142174",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "dispatch"
+    },
+    "baseSha": "ab2fdbb050a711f5dfe34b9f41a2ff3f298d0d1f",
+    "headSha": "7eedbcc6587c9a44abb4c54d7c223d736c40c5ee",
+    "controlSha": "a92d9fd2823b51994f317707d871b26a517b662d",
+    "task": "coverage-gap",
+    "deadline": "2026-10-16T01:12:58.000Z"
+  },
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "3ccd4bc9483234697ac180dbc4bf46d127e5c141b074b30b9dbfaf5967b772cf",
+    "bytes": 37068
+  },
+  "files": [
+    "backend/tests/router.test.ts",
+    "backend/tests/factory.test.ts",
+    "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+    "frontend/src/features/todos/hooks/useUpdateDeleteTodoMutation.test.tsx",
+    "frontend/src/features/todos/hooks/useTodosHooks.test.tsx",
+    "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+    "frontend/src/features/todos/components/TodoEditor.test.tsx",
+    "frontend/src/features/todos/TodosPage.test.tsx",
+    "backend/tests/lifespan.test.ts",
+    "backend/tests/main.test.ts",
+    "backend/tests/database.test.ts"
+  ],
+  "decision": "accepted",
+  "coverageGoal": {
+    "lines": 80,
+    "branches": 80,
+    "perApplication": true,
+    "result": "reached"
+  },
+  "initialTests": {
+    "backend": {
+      "total": 56,
+      "failed": 0,
+      "failures": []
+    },
+    "frontend": {
+      "total": 44,
+      "failed": 0,
+      "failures": []
+    }
+  },
+  "plan": {
+    "decision": "write",
+    "reason": "Verified cumulative coverage batches",
+    "cases": [
+      {
+        "id": "round-1:be-router-id-param",
+        "sourceLocation": "backend/src/features/todos/router.ts:8-11",
+        "behavior": "A non-positive, non-integer or non-numeric :id gets 422 with zod issues, and the repository is not called.",
+        "requirementSource": "idSchema in validators.ts (int, positive, max safe integer); router returns 422 for invalid input like the create route.",
+        "inputs": "GET /api/todos/abc, /0, /-1, /1.5; DELETE /api/todos/abc",
+        "expected": "422, body.detail is a non-empty array; repository.get and repository.delete not called",
+        "assertion": "status and detail array shape, plus not.toHaveBeenCalled on get/delete",
+        "mockBoundary": "Repository (TodoStore) vi.fn mocks only; real express router and supertest",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:be-router-get",
+        "sourceLocation": "backend/src/features/todos/router.ts:19-23",
+        "behavior": "GET /:id returns the todo, or 404 'Task not found.' when the repository returns null.",
+        "requirementSource": "TodoStore.get returns Todo|null; router contract returns 404 with detail 'Task not found.'",
+        "inputs": "GET /api/todos/1 with get resolving todo, then resolving null",
+        "expected": "200 with todo, with get called with numeric 1; then 404 with {detail:'Task not found.'}",
+        "assertion": "status, body, toHaveBeenCalledWith(1)",
+        "mockBoundary": "Repository mocks",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:be-router-patch",
+        "sourceLocation": "backend/src/features/todos/router.ts:24-31",
+        "behavior": "PATCH validates the body (empty or unknown field gives 422), passes trimmed fields to update, and gives 404 for a missing task.",
+        "requirementSource": "updateSchema (strict, partial, at least one field); TodoStore.update returns Todo|null",
+        "inputs": "PATCH /api/todos/1 with {}, {foo:1}, {title:'  New '}; update resolving todo then null",
+        "expected": "422 and update not called for {} and {foo:1}; 200 with update called with (1,{title:'New'}); 404 when null",
+        "assertion": "status codes, body.detail, and update call args",
+        "mockBoundary": "Repository mocks",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:be-router-delete",
+        "sourceLocation": "backend/src/features/todos/router.ts:32-35",
+        "behavior": "DELETE returns 204 with an empty body when deleted, and 404 when nothing was deleted.",
+        "requirementSource": "TodoStore.delete returns boolean; router contract is 204/404 'Task not found.'",
+        "inputs": "DELETE /api/todos/3 with delete resolving true, then false",
+        "expected": "204 with empty text; then 404 with {detail:'Task not found.'}; delete called with 3",
+        "assertion": "status, response.text, body.detail, call arg",
+        "mockBoundary": "Repository mocks",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:be-factory-errors",
+        "sourceLocation": "backend/src/factory.ts:10-27",
+        "behavior": "createApp returns JSON 404 for unknown routes, 422 for malformed JSON, 413 for an oversized body and a generic 500 for unexpected errors. It also disables x-powered-by and serves openapi.json.",
+        "requirementSource": "Error handler branches in factory.ts, which return fixed detail strings (characterization of the documented JSON error shapes).",
+        "inputs": "fake database {todo:{findFirst: rejects Error('boom'), findMany: resolves []}}; GET /nope; POST /api/todos with raw invalid JSON and content-type json; POST a body over 100kb; GET /api/health; GET /openapi.json",
+        "expected": "404 {detail:'Not Found'}; 422 {detail:'Invalid JSON.'}; 413 {detail:'Request body too large.'}; 500 {detail:'Internal Server Error'} (console.error spied and silenced); x-powered-by header absent; openapi.json returns 200 with an object",
+        "assertion": "status and body per request, header undefined",
+        "mockBoundary": "Prisma Database object faked; express and supertest real",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-1:be-health-ok",
+        "sourceLocation": "backend/src/api/health.ts:5-10",
+        "behavior": "GET /api/health queries the database and returns {status:'ok'}.",
+        "requirementSource": "createHealthRouter probes database.todo.findFirst and responds with status ok.",
+        "inputs": "createApp with fake database whose findFirst resolves null",
+        "expected": "200 {status:'ok'}; findFirst called with {select:{id:true}}",
+        "assertion": "status, body, call args",
+        "mockBoundary": "Database fake",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-1:fe-create-mutation-cache",
+        "sourceLocation": "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:7-16",
+        "behavior": "After a successful create, the saved todo is prepended to the cached list and any existing entry with the same id is removed. An empty cache works too.",
+        "requirementSource": "onSuccess setQueryData logic and the comment about confirmed server responses",
+        "inputs": "QueryClient seeded with [other, staleSameId]; todosApi.create mocked to resolve saved; run mutateAsync via renderHook with the QueryClientProvider wrapper; repeat with an unseeded cache",
+        "expected": "cache equals [saved, other]; an unseeded cache gives [saved]",
+        "assertion": "queryClient.getQueryData(todoKeys.list) toEqual",
+        "mockBoundary": "todosApi module mocked; real QueryClient",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:fe-update-delete-mutation-cache",
+        "sourceLocation": "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:7-15; useDeleteTodoMutation.ts:7-14",
+        "behavior": "Update replaces the matching todo in the cached list. Delete removes it. Both leave an unseeded cache undefined and call the API with the right arguments.",
+        "requirementSource": "onSuccess cache updaters",
+        "inputs": "Cache [a(id1), b(id2)]; update {id:2,input:{completed:true}} resolving saved2; delete id 1; the same mutations with no cache",
+        "expected": "update gives [a, saved2] and api.update called with (2,{completed:true}); delete gives [b]; no cache stays undefined",
+        "assertion": "getQueryData toEqual/toBeUndefined and API mock call args",
+        "mockBoundary": "todosApi mocked; real QueryClient",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:fe-query-busy-hooks",
+        "sourceLocation": "frontend/src/features/todos/hooks/useTodosQuery.ts:6-8; useTodosBusy.ts:5; useTodoFilters.ts:6-9",
+        "behavior": "useTodosQuery passes the abort signal to todosApi.list. useTodosBusy is true only while a todo mutation is pending. useTodoFilters defaults to all/''/newest and updates the visible list on setFilter.",
+        "requirementSource": "hook source contracts and the Filter/Sort types",
+        "inputs": "Wrapper with QueryClient; list mocked to resolve [todoFixture]; a pending create mutation; renderHook(useTodoFilters(todos)), then act(setFilter('completed'))",
+        "expected": "list called with an AbortSignal and data equal to [todoFixture]; busy false then true during a pending mutation; the filter default and the filtered visible list update",
+        "assertion": "expect.any(AbortSignal), busy boolean, visible toEqual",
+        "mockBoundary": "todosApi mocked; real react-query",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:fe-delete-dialog-success-and-pending",
+        "sourceLocation": "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19-22,40-42",
+        "behavior": "Confirming delete calls mutateAsync with the todo id, then onDeleted. A failed delete keeps the dialog open without calling onDeleted. While pending or busy, actions are disabled and the label reads 'Deleting…'.",
+        "requirementSource": "component source behaviour and its comments about retry",
+        "inputs": "mutateAsync resolves; click 'Delete task'; mutateAsync rejects; isPending true",
+        "expected": "mutateAsync(7) then onDeleted once; a rejection does not call onDeleted; with isPending the 'Deleting…' button is disabled and Cancel is disabled",
+        "assertion": "call checks, toBeDisabled, getByRole name",
+        "mockBoundary": "useDeleteTodoMutation and design-system mocks",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:fe-todo-editor-update-error",
+        "sourceLocation": "frontend/src/features/todos/components/TodoEditor.tsx:20-42",
+        "behavior": "With an existing todo, the editor uses the update mutation and reports 'Changes saved.'. A rejected save does not call onSaved. It uses the title 'Edit task' and ignores submits while pending.",
+        "requirementSource": "TodoEditor source: title, message and pending guard",
+        "inputs": "todo=todoFixture; update.mutateAsync resolves, then rejects; busy=true",
+        "expected": "update called with {id:7,input:todoFixture}; onSaved('Changes saved.'); no create call; no onSaved on rejection; no mutation call when busy",
+        "assertion": "dialog name 'Edit task', call args and counts",
+        "mockBoundary": "Create/update mutation hooks, TodoForm and design-system mocked",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:fe-todospage-toggle",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:28-35,53",
+        "behavior": "Toggling a todo calls the update mutation with the inverted completed flag, and notifies 'Another task complete. Well done!' or 'Task marked as active.'. A rejection is swallowed with no notice, and a busy page does not toggle.",
+        "requirementSource": "toggle() source branches",
+        "inputs": "TodoList mock exposing a toggle button wired to onToggle; saved.completed true, then false; mutateAsync rejecting; busy=true",
+        "expected": "mutateAsync({id,input:{completed:!todo.completed}}); the notify message per case; notify not called on rejection or when busy",
+        "assertion": "mutateAsync and notify call checks",
+        "mockBoundary": "Hook modules and child components mocked, as in the existing TodosPage test",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-1:fe-todospage-editor-delete-flows",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:81-106",
+        "behavior": "onCreate opens the new-task editor and onSaved closes it and notifies. onDelete opens the delete dialog and onDeleted closes it and notifies 'Task deleted.'. onClose closes either without notifying.",
+        "requirementSource": "TodosPage state and callback wiring",
+        "inputs": "TodoList and TodosHeader mocks exposing the callbacks; TodoEditor and DeleteTodoDialog mocks exposing onSaved/onClose/onDeleted buttons",
+        "expected": "editor rendered with todo 'new' after create; after onSaved it is gone and notify called with the message; the delete dialog receives the todo and after onDeleted is gone with notify('Task deleted.')",
+        "assertion": "queryByTestId presence/absence and notify args",
+        "mockBoundary": "Child components and hooks mocked",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "round-3:lifespan-start-success",
+        "sourceLocation": "backend/src/core/lifespan.ts:7-24",
+        "behavior": "start() resolves the database URL, connects, initializes the schema, builds the app, listens on API_PORT (default 8000) on 0.0.0.0, logs the port and returns { server, database }.",
+        "requirementSource": "Characterization of the exported start() lifecycle. Order and arguments are taken from the source. The port default of 8000 matches the vite proxy target in frontend/vite.config.ts.",
+        "inputs": "API_PORT unset, with createDatabase, initialize, resolveDatabaseUrl and createApp mocked. Fake app.listen(port, host, cb) invokes cb and returns an emitter with address() => { port: 8000 }. console.log is spied.",
+        "expected": "Resolves to { server, database }. $connect is called before initialize(database). listen is called with (8000, '0.0.0.0', fn). createApp receives the database. console.log mentions port 8000.",
+        "assertion": "toHaveBeenCalledWith on listen, createApp and initialize. invocationCallOrder check for $connect before initialize. Result equals the fake server and database. The shutdown handlers are SIGTERM and SIGINT listeners on process.once, which is spied and mocked so none are left registered.",
+        "mockBoundary": "vi.mock of ../src/core/database.ts, ../src/core/config.ts and ../src/factory.ts. Fake listener. process.once spy. console.log spy.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:lifespan-api-port-env",
+        "sourceLocation": "backend/src/core/lifespan.ts:12",
+        "behavior": "API_PORT from the environment overrides the default listen port, converted to a number.",
+        "requirementSource": "Characterization: Number(process.env.API_PORT || 8000).",
+        "inputs": "vi.stubEnv('API_PORT','9123') with the same mocks as the success case.",
+        "expected": "listen is called with 9123 (number) and '0.0.0.0'.",
+        "assertion": "expect(listen).toHaveBeenCalledWith(9123, '0.0.0.0', expect.any(Function))",
+        "mockBoundary": "Same module mocks and fake listener. Env stubbed via vi.stubEnv and unstubbed in afterEach.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:lifespan-connect-failure",
+        "sourceLocation": "backend/src/core/lifespan.ts:25-28",
+        "behavior": "If $connect or initialize rejects, start() disconnects the database and rethrows the original error without creating the app.",
+        "requirementSource": "Characterization of the error path: catch block calls $disconnect and rethrows. This is a resource-cleanup guarantee.",
+        "inputs": "database.$connect rejects with Error('connect failed').",
+        "expected": "start() rejects with 'connect failed'. $disconnect is called once. createApp is not called.",
+        "assertion": "await expect(start()).rejects.toThrow('connect failed'). Check $disconnect call count and createApp not called. Run a second variant where initialize rejects.",
+        "mockBoundary": "Mocked createDatabase returning { $connect: vi.fn().mockRejectedValue(...), $disconnect: vi.fn() }.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:lifespan-listen-error",
+        "sourceLocation": "backend/src/core/lifespan.ts:12-14, 25-28",
+        "behavior": "A listener 'error' event such as EADDRINUSE rejects start(), triggers $disconnect and propagates the error.",
+        "requirementSource": "Characterization: listener.once('error', reject) inside the Promise, followed by the catch cleanup.",
+        "inputs": "Fake app.listen returns an EventEmitter that never calls the callback. The test emits 'error' with Error('EADDRINUSE') after start() is invoked.",
+        "expected": "start() rejects with 'EADDRINUSE'. $disconnect is called once.",
+        "assertion": "rejects.toThrow('EADDRINUSE'), and $disconnect toHaveBeenCalledTimes(1)",
+        "mockBoundary": "Fake listener EventEmitter. Mocked database and app modules.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:lifespan-shutdown-success",
+        "sourceLocation": "backend/src/core/lifespan.ts:16-22",
+        "behavior": "The SIGTERM/SIGINT shutdown handler closes the server, then disconnects the database and clears the force-exit timer, without exiting the process on a clean shutdown.",
+        "requirementSource": "Characterization of the graceful shutdown handler. Handlers are registered via process.once for SIGTERM and SIGINT.",
+        "inputs": "Capture the handlers from the process.once spy. Fake server.close(cb) invokes cb. Fake timers. process.exit is mocked.",
+        "expected": "After invoking the SIGTERM handler: server.close is called, $disconnect is called once, process.exitCode is not set to 1, and process.exit is not called. Advancing 10000 ms afterwards does not call process.exit because the timer was cleared.",
+        "assertion": "Calls on close and $disconnect. process.exit not called after vi.advanceTimersByTime(10000). The handler registered for SIGINT is the same function.",
+        "mockBoundary": "process.once and process.exit spies. vi.useFakeTimers. Fake server and database.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:lifespan-shutdown-disconnect-error",
+        "sourceLocation": "backend/src/core/lifespan.ts:19-21",
+        "behavior": "If $disconnect fails during shutdown, the error is logged and process.exitCode becomes 1 without throwing.",
+        "requirementSource": "Characterization: catch logs via console.error and sets process.exitCode = 1.",
+        "inputs": "$disconnect rejects with Error('disconnect failed'). The shutdown handler is invoked. console.error is spied. The previous exitCode is restored in afterEach.",
+        "expected": "console.error is called with the error and process.exitCode === 1. The handler does not produce an unhandled rejection.",
+        "assertion": "Await a microtask flush. expect(console.error).toHaveBeenCalledWith(error). expect(process.exitCode).toBe(1).",
+        "mockBoundary": "Mocked database. console.error spy. process.exitCode saved and restored.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:lifespan-shutdown-timeout",
+        "sourceLocation": "backend/src/core/lifespan.ts:17-18",
+        "behavior": "If server.close never completes, the force-exit timer calls process.exit(1) after 10000 ms.",
+        "requirementSource": "Characterization of the shutdown watchdog: setTimeout(() => process.exit(1), 10000).",
+        "inputs": "Fake server.close never invokes its callback. Fake timers. process.exit is mocked.",
+        "expected": "process.exit is not called at 9999 ms and is called with 1 at 10000 ms.",
+        "assertion": "vi.advanceTimersByTime(9999), then expect(exit).not.toHaveBeenCalled(). Advance 1 more ms, then expect(exit).toHaveBeenCalledWith(1).",
+        "mockBoundary": "Fake timers, process.exit spy, fake server.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:main-start-failure",
+        "sourceLocation": "backend/src/main.ts:3-6",
+        "behavior": "When start() rejects, main logs 'Cannot start Taskly App Node API:' with the error and sets process.exitCode = 1.",
+        "requirementSource": "Characterization of the entrypoint failure handler. The exit code is the only way the process signals failure.",
+        "inputs": "vi.mock('../src/core/lifespan.ts') with start rejecting Error('boom'). Dynamically import ../src/main.ts after vi.resetModules. console.error is spied. The previous exitCode is saved and restored.",
+        "expected": "console.error is called with ('Cannot start Taskly App Node API:', error) and process.exitCode === 1.",
+        "assertion": "await import, flush microtasks, then assert the console.error args and the exit code. Also assert start toHaveBeenCalledOnce in the success variant, where exitCode stays unchanged.",
+        "mockBoundary": "Mocked lifespan module. console.error spy. process.exitCode restored in afterEach.",
+        "confidence": "characterization"
+      },
+      {
+        "id": "round-3:database-initialize-ddl",
+        "sourceLocation": "backend/src/core/database.ts:11-23",
+        "behavior": "initialize() issues a single idempotent CREATE TABLE IF NOT EXISTS todos statement with the title, description, priority, due_date, completed, created_at and updated_at columns and constraints, and propagates database errors.",
+        "requirementSource": "Characterization. The source comment says the DDL is compatible with the existing SQLAlchemy table and sequence. The columns match the Prisma TodoRecord fields and the validator limits of 120 and 2000 characters.",
+        "inputs": "Fake database { $executeRaw: vi.fn().mockResolvedValue(0) }. A second variant makes $executeRaw reject with Error('db down').",
+        "expected": "$executeRaw is called once. The joined template strings contain 'CREATE TABLE IF NOT EXISTS todos', 'VARCHAR(120)', 'VARCHAR(2000)' and \"priority IN ('low', 'medium', 'high')\". In the failure variant initialize rejects with 'db down'.",
+        "assertion": "const strings = $executeRaw.mock.calls[0][0].join(''). Run toContain checks. Use rejects.toThrow for the error path.",
+        "mockBoundary": "Plain fake of the Prisma $executeRaw tag. No real PostgreSQL.",
+        "confidence": "characterization"
+      }
+    ],
+    "paths": [
+      "backend/tests/router.test.ts",
+      "backend/tests/factory.test.ts",
+      "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+      "frontend/src/features/todos/hooks/useUpdateDeleteTodoMutation.test.tsx",
+      "frontend/src/features/todos/hooks/useTodosHooks.test.tsx",
+      "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+      "frontend/src/features/todos/components/TodoEditor.test.tsx",
+      "frontend/src/features/todos/TodosPage.test.tsx",
+      "backend/tests/lifespan.test.ts",
+      "backend/tests/main.test.ts",
+      "backend/tests/database.test.ts"
+    ],
+    "remainingGaps": [
+      "backend/src/factory.ts:20 (res.headersSent -> next(error)) is hard to reach through createApp without injecting a route. It is left for a later batch.",
+      "The backend createDatabase PrismaPg adapter configuration (connectionTimeoutMillis 10000) is only indirectly covered by repository tests.",
+      "frontend/src/app/AppProviders.tsx lines 9 and 14 are uncovered. The frontend target is already met, so they are lower priority.",
+      "TodoForm.tsx lines 67, 91, 97 and 108 and the TodoEmptyState, TodoItem and TodoList conditional branches (failed list state, overdue badge, hasTodos empty state) still lack tests.",
+      "TodosPage.tsx lines 18 and 81 are uncovered.",
+      "Global 100% coverage is not claimed, and the other applications' targets are not asserted by this batch."
+    ]
+  },
+  "skillsUsed": [
+    "analyze-unit-gaps",
+    "analyze-unit-gaps/references/backend.md",
+    "analyze-unit-gaps/references/frontend.md",
+    "write-unit-tests",
+    "write-unit-tests/references/backend.md",
+    "write-unit-tests/references/frontend.md"
+  ],
+  "calls": [
+    {
+      "callId": "fcb55d9f-99c9-4489-b060-f899fcd055fe",
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "reservedEstimateUsd": 1,
+      "usage": {
+        "inputTokens": 37880,
+        "cachedInputTokens": 0,
+        "outputTokens": 5049,
+        "estimatedUsd": null,
+        "raw": {
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 37878,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 5049,
+            "output_tokens_details": {
+              "thinking_tokens": 405
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 37878,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 5049,
+                "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 37878,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 37878
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "totalCostUsd": 0.202006,
+          "modelUsage": {
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 5049,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 37878,
+              "webSearchRequests": 0,
+              "costUSD": 0.202006,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 405,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          }
+        }
+      },
+      "elapsedMs": 34110,
+      "status": "completed"
+    },
+    {
+      "callId": "1a453e52-7fb9-4382-a077-e71d3a84c507",
+      "role": "writer",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "reservedEstimateUsd": 1,
+      "usage": {
+        "inputTokens": 41908,
+        "cachedInputTokens": 0,
+        "outputTokens": 17380,
+        "estimatedUsd": null,
+        "raw": {
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 41906,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 17380,
+            "output_tokens_details": {
+              "thinking_tokens": 2291
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 41906,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 17380,
+                "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 41906,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 41906
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "totalCostUsd": 0.341428,
+          "modelUsage": {
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 17380,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 41906,
+              "webSearchRequests": 0,
+              "costUSD": 0.341428,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 2291,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          }
+        }
+      },
+      "elapsedMs": 85489,
+      "status": "completed"
+    },
+    {
+      "callId": "ea8b2869-d2c6-4a00-b26e-0672e2aa744e",
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "reservedEstimateUsd": 1,
+      "usage": {
+        "inputTokens": 53554,
+        "cachedInputTokens": 2405,
+        "outputTokens": 5633,
+        "estimatedUsd": null,
+        "raw": {
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 51147,
+            "cache_read_input_tokens": 2405,
+            "output_tokens": 5633,
+            "output_tokens_details": {
+              "thinking_tokens": 672
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 51147,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 5633,
+                "cache_read_input_tokens": 2405,
+                "cache_creation_input_tokens": 51147,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 51147
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "totalCostUsd": 0.26116249999999996,
+          "modelUsage": {
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 5633,
+              "cacheReadInputTokens": 2405,
+              "cacheCreationInputTokens": 51147,
+              "webSearchRequests": 0,
+              "costUSD": 0.26116249999999996,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 672,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          }
+        }
+      },
+      "elapsedMs": 38777,
+      "status": "completed"
+    },
+    {
+      "callId": "3cf4b6d4-ea11-40d9-8726-4651f06d1441",
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "reservedEstimateUsd": 1,
+      "usage": {
+        "inputTokens": 59807,
+        "cachedInputTokens": 2405,
+        "outputTokens": 4700,
+        "estimatedUsd": null,
+        "raw": {
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 57400,
+            "cache_read_input_tokens": 2405,
+            "output_tokens": 4700,
+            "output_tokens_details": {
+              "thinking_tokens": 787
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 57400,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 4700,
+                "cache_read_input_tokens": 2405,
+                "cache_creation_input_tokens": 57400,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 57400
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "totalCostUsd": 0.2768445,
+          "modelUsage": {
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 4700,
+              "cacheReadInputTokens": 2405,
+              "cacheCreationInputTokens": 57400,
+              "webSearchRequests": 0,
+              "costUSD": 0.2768445,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 787,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          }
+        }
+      },
+      "elapsedMs": 32245,
+      "status": "completed"
+    },
+    {
+      "callId": "7d31ff4a-dcc7-4997-aab1-ead72dbfeece",
+      "role": "writer",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "reservedEstimateUsd": 1,
+      "usage": {
+        "inputTokens": 63101,
+        "cachedInputTokens": 2039,
+        "outputTokens": 5709,
+        "estimatedUsd": null,
+        "raw": {
+          "usage": {
+            "input_tokens": 2,
+            "cache_creation_input_tokens": 61060,
+            "cache_read_input_tokens": 2039,
+            "output_tokens": 5709,
+            "output_tokens_details": {
+              "thinking_tokens": 1500
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 61060,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "global",
+            "iterations": [
+              {
+                "input_tokens": 2,
+                "output_tokens": 5709,
+                "cache_read_input_tokens": 2039,
+                "cache_creation_input_tokens": 61060,
+                "cache_creation": {
+                  "ephemeral_5m_input_tokens": 0,
+                  "ephemeral_1h_input_tokens": 61060
+                },
+                "type": "message"
+              }
+            ],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "totalCostUsd": 0.3015379,
+          "modelUsage": {
+            "claude-sonnet-5-5": {
+              "inputTokens": 2,
+              "outputTokens": 5709,
+              "cacheReadInputTokens": 2039,
+              "cacheCreationInputTokens": 61060,
+              "webSearchRequests": 0,
+              "costUSD": 0.3015379,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 128000,
+              "thinkingTokens": 1500,
+              "canonicalModel": "claude-sonnet-5-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          }
+        }
+      },
+      "elapsedMs": 32747,
+      "status": "completed"
+    }
+  ],
+  "coverageRun": {
+    "initialCoverage": {
+      "frontend": {
+        "lines": {
+          "covered": 99,
+          "total": 151,
+          "pct": 65.56
+        },
+        "branches": {
+          "covered": 94,
+          "total": 137,
+          "pct": 68.61
+        },
+        "statements": {
+          "covered": 110,
+          "total": 168,
+          "pct": 65.47
+        },
+        "functions": {
+          "covered": 40,
+          "total": 77,
+          "pct": 51.94
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 49,
+          "total": 109,
+          "pct": 44.95
+        },
+        "branches": {
+          "covered": 22,
+          "total": 48,
+          "pct": 45.83
+        },
+        "statements": {
+          "covered": 54,
+          "total": 129,
+          "pct": 41.86
+        },
+        "functions": {
+          "covered": 14,
+          "total": 32,
+          "pct": 43.75
+        }
+      },
+      "gaps": [
+        "frontend/src/app/AppProviders.tsx:14",
+        "frontend/src/app/AppProviders.tsx:9",
+        "frontend/src/features/todos/TodosPage.tsx:28",
+        "frontend/src/features/todos/TodosPage.tsx:29",
+        "frontend/src/features/todos/TodosPage.tsx:30",
+        "frontend/src/features/todos/TodosPage.tsx:34",
+        "frontend/src/features/todos/TodosPage.tsx:53",
+        "frontend/src/features/todos/TodosPage.tsx:81",
+        "frontend/src/features/todos/TodosPage.tsx:82",
+        "frontend/src/features/todos/TodosPage.tsx:92",
+        "frontend/src/features/todos/TodosPage.tsx:94",
+        "frontend/src/features/todos/TodosPage.tsx:95",
+        "frontend/src/features/todos/TodosPage.tsx:103",
+        "frontend/src/features/todos/TodosPage.tsx:105",
+        "frontend/src/features/todos/TodosPage.tsx:106",
+        "frontend/src/features/todos/TodosPage.tsx:18",
+        "frontend/src/features/todos/TodosPage.tsx:35",
+        "frontend/src/features/todos/TodosPage.tsx:88",
+        "frontend/src/features/todos/TodosPage.tsx:99",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:20",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:21",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:22",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:40",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:42",
+        "frontend/src/features/todos/components/TodoEditor.tsx:24",
+        "frontend/src/features/todos/components/TodoEditor.tsx:27",
+        "frontend/src/features/todos/components/TodoEditor.tsx:20",
+        "frontend/src/features/todos/components/TodoEditor.tsx:26",
+        "frontend/src/features/todos/components/TodoEditor.tsx:28",
+        "frontend/src/features/todos/components/TodoEditor.tsx:37",
+        "frontend/src/features/todos/components/TodoEditor.tsx:42",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:16",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:19",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:23",
+        "frontend/src/features/todos/components/TodoForm.tsx:67",
+        "frontend/src/features/todos/components/TodoForm.tsx:91",
+        "frontend/src/features/todos/components/TodoForm.tsx:97",
+        "frontend/src/features/todos/components/TodoForm.tsx:108",
+        "frontend/src/features/todos/components/TodoItem.tsx:32",
+        "frontend/src/features/todos/components/TodoItem.tsx:41",
+        "frontend/src/features/todos/components/TodoItem.tsx:42",
+        "frontend/src/features/todos/components/TodoItem.tsx:47",
+        "frontend/src/features/todos/components/TodoItem.tsx:48",
+        "frontend/src/features/todos/components/TodoItem.tsx:51",
+        "frontend/src/features/todos/components/TodoItem.tsx:64",
+        "frontend/src/features/todos/components/TodoList.tsx:43",
+        "frontend/src/features/todos/components/TodoList.tsx:47",
+        "frontend/src/features/todos/components/TodoList.tsx:48",
+        "frontend/src/features/todos/components/TodoList.tsx:49",
+        "frontend/src/features/todos/components/TodoList.tsx:35",
+        "frontend/src/features/todos/components/TodoList.tsx:40",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:7",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:8",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:10",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:13",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:14",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:16",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:7",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:8",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:10",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:12",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:13",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:14",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:6",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:7",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:8",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:9",
+        "frontend/src/features/todos/hooks/useTodosBusy.ts:5",
+        "frontend/src/features/todos/hooks/useTodosQuery.ts:6",
+        "frontend/src/features/todos/hooks/useTodosQuery.ts:8",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:7",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:8",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:11",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:13",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:14",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:15",
+        "frontend/src/features/todos/utils/todos.ts:48",
+        "backend/src/factory.ts:10",
+        "backend/src/factory.ts:11",
+        "backend/src/factory.ts:12",
+        "backend/src/factory.ts:13",
+        "backend/src/factory.ts:14",
+        "backend/src/factory.ts:15",
+        "backend/src/factory.ts:16",
+        "backend/src/factory.ts:17",
+        "backend/src/factory.ts:18",
+        "backend/src/factory.ts:19",
+        "backend/src/factory.ts:20",
+        "backend/src/factory.ts:21",
+        "backend/src/factory.ts:22",
+        "backend/src/factory.ts:23",
+        "backend/src/factory.ts:24",
+        "backend/src/factory.ts:26",
+        "backend/src/factory.ts:27",
+        "backend/src/main.ts:3",
+        "backend/src/main.ts:4",
+        "backend/src/main.ts:5",
+        "backend/src/api/health.ts:5",
+        "backend/src/api/health.ts:6",
+        "backend/src/api/health.ts:7",
+        "backend/src/api/health.ts:8",
+        "backend/src/api/health.ts:10",
+        "backend/src/core/database.ts:12",
+        "backend/src/core/lifespan.ts:8",
+        "backend/src/core/lifespan.ts:9",
+        "backend/src/core/lifespan.ts:10",
+        "backend/src/core/lifespan.ts:11",
+        "backend/src/core/lifespan.ts:12",
+        "backend/src/core/lifespan.ts:13",
+        "backend/src/core/lifespan.ts:14",
+        "backend/src/core/lifespan.ts:15",
+        "backend/src/core/lifespan.ts:17",
+        "backend/src/core/lifespan.ts:18",
+        "backend/src/core/lifespan.ts:19",
+        "backend/src/core/lifespan.ts:20",
+        "backend/src/core/lifespan.ts:21",
+        "backend/src/core/lifespan.ts:22",
+        "backend/src/core/lifespan.ts:23",
+        "backend/src/core/lifespan.ts:26",
+        "backend/src/core/lifespan.ts:27",
+        "backend/src/core/lifespan.ts:28",
+        "backend/src/core/lifespan.ts:30",
+        "backend/src/core/lifespan.ts:31",
+        "backend/src/features/todos/router.ts:8",
+        "backend/src/features/todos/router.ts:9",
+        "backend/src/features/todos/router.ts:10",
+        "backend/src/features/todos/router.ts:11",
+        "backend/src/features/todos/router.ts:20",
+        "backend/src/features/todos/router.ts:21",
+        "backend/src/features/todos/router.ts:22",
+        "backend/src/features/todos/router.ts:25",
+        "backend/src/features/todos/router.ts:26",
+        "backend/src/features/todos/router.ts:27",
+        "backend/src/features/todos/router.ts:28",
+        "backend/src/features/todos/router.ts:29",
+        "backend/src/features/todos/router.ts:32",
+        "backend/src/features/todos/router.ts:33"
+      ]
+    },
+    "stopReason": "target-reached",
+    "rounds": [
+      {
+        "round": 1,
+        "units": [
+          "backend/src/features/todos/router.ts",
+          "backend/src/core/lifespan.ts",
+          "backend/src/main.ts",
+          "backend/src/factory.ts",
+          "frontend/src/features/todos/hooks/useCreateTodoMutation.ts",
+          "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts",
+          "frontend/src/features/todos/hooks/useTodoFilters.ts",
+          "frontend/src/features/todos/hooks/useTodosBusy.ts"
+        ],
+        "status": "accepted",
+        "reason": "verified coverage increased",
+        "plan": {
+          "decision": "write",
+          "reason": "All checks pass, but coverage is below the 80% line/branch target (frontend 65.6/68.6, backend 45.0/45.8). The largest uncovered behaviours are the todo router's id/get/patch/delete routes, the app factory's 404 and error handling, the health route, the create/update/delete mutation hooks, and the TodosPage toggle and editor/delete flows. The cases below target these, with routing contracts, mutation cache and save/delete/toggle errors first.",
+          "cases": [
+            {
+              "id": "be-router-id-param",
+              "sourceLocation": "backend/src/features/todos/router.ts:8-11",
+              "behavior": "A non-positive, non-integer or non-numeric :id gets 422 with zod issues, and the repository is not called.",
+              "requirementSource": "idSchema in validators.ts (int, positive, max safe integer); router returns 422 for invalid input like the create route.",
+              "inputs": "GET /api/todos/abc, /0, /-1, /1.5; DELETE /api/todos/abc",
+              "expected": "422, body.detail is a non-empty array; repository.get and repository.delete not called",
+              "assertion": "status and detail array shape, plus not.toHaveBeenCalled on get/delete",
+              "mockBoundary": "Repository (TodoStore) vi.fn mocks only; real express router and supertest",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "be-router-get",
+              "sourceLocation": "backend/src/features/todos/router.ts:19-23",
+              "behavior": "GET /:id returns the todo, or 404 'Task not found.' when the repository returns null.",
+              "requirementSource": "TodoStore.get returns Todo|null; router contract returns 404 with detail 'Task not found.'",
+              "inputs": "GET /api/todos/1 with get resolving todo, then resolving null",
+              "expected": "200 with todo, with get called with numeric 1; then 404 with {detail:'Task not found.'}",
+              "assertion": "status, body, toHaveBeenCalledWith(1)",
+              "mockBoundary": "Repository mocks",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "be-router-patch",
+              "sourceLocation": "backend/src/features/todos/router.ts:24-31",
+              "behavior": "PATCH validates the body (empty or unknown field gives 422), passes trimmed fields to update, and gives 404 for a missing task.",
+              "requirementSource": "updateSchema (strict, partial, at least one field); TodoStore.update returns Todo|null",
+              "inputs": "PATCH /api/todos/1 with {}, {foo:1}, {title:'  New '}; update resolving todo then null",
+              "expected": "422 and update not called for {} and {foo:1}; 200 with update called with (1,{title:'New'}); 404 when null",
+              "assertion": "status codes, body.detail, and update call args",
+              "mockBoundary": "Repository mocks",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "be-router-delete",
+              "sourceLocation": "backend/src/features/todos/router.ts:32-35",
+              "behavior": "DELETE returns 204 with an empty body when deleted, and 404 when nothing was deleted.",
+              "requirementSource": "TodoStore.delete returns boolean; router contract is 204/404 'Task not found.'",
+              "inputs": "DELETE /api/todos/3 with delete resolving true, then false",
+              "expected": "204 with empty text; then 404 with {detail:'Task not found.'}; delete called with 3",
+              "assertion": "status, response.text, body.detail, call arg",
+              "mockBoundary": "Repository mocks",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "be-factory-errors",
+              "sourceLocation": "backend/src/factory.ts:10-27",
+              "behavior": "createApp returns JSON 404 for unknown routes, 422 for malformed JSON, 413 for an oversized body and a generic 500 for unexpected errors. It also disables x-powered-by and serves openapi.json.",
+              "requirementSource": "Error handler branches in factory.ts, which return fixed detail strings (characterization of the documented JSON error shapes).",
+              "inputs": "fake database {todo:{findFirst: rejects Error('boom'), findMany: resolves []}}; GET /nope; POST /api/todos with raw invalid JSON and content-type json; POST a body over 100kb; GET /api/health; GET /openapi.json",
+              "expected": "404 {detail:'Not Found'}; 422 {detail:'Invalid JSON.'}; 413 {detail:'Request body too large.'}; 500 {detail:'Internal Server Error'} (console.error spied and silenced); x-powered-by header absent; openapi.json returns 200 with an object",
+              "assertion": "status and body per request, header undefined",
+              "mockBoundary": "Prisma Database object faked; express and supertest real",
+              "confidence": "characterization"
+            },
+            {
+              "id": "be-health-ok",
+              "sourceLocation": "backend/src/api/health.ts:5-10",
+              "behavior": "GET /api/health queries the database and returns {status:'ok'}.",
+              "requirementSource": "createHealthRouter probes database.todo.findFirst and responds with status ok.",
+              "inputs": "createApp with fake database whose findFirst resolves null",
+              "expected": "200 {status:'ok'}; findFirst called with {select:{id:true}}",
+              "assertion": "status, body, call args",
+              "mockBoundary": "Database fake",
+              "confidence": "characterization"
+            },
+            {
+              "id": "fe-create-mutation-cache",
+              "sourceLocation": "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:7-16",
+              "behavior": "After a successful create, the saved todo is prepended to the cached list and any existing entry with the same id is removed. An empty cache works too.",
+              "requirementSource": "onSuccess setQueryData logic and the comment about confirmed server responses",
+              "inputs": "QueryClient seeded with [other, staleSameId]; todosApi.create mocked to resolve saved; run mutateAsync via renderHook with the QueryClientProvider wrapper; repeat with an unseeded cache",
+              "expected": "cache equals [saved, other]; an unseeded cache gives [saved]",
+              "assertion": "queryClient.getQueryData(todoKeys.list) toEqual",
+              "mockBoundary": "todosApi module mocked; real QueryClient",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "fe-update-delete-mutation-cache",
+              "sourceLocation": "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:7-15; useDeleteTodoMutation.ts:7-14",
+              "behavior": "Update replaces the matching todo in the cached list. Delete removes it. Both leave an unseeded cache undefined and call the API with the right arguments.",
+              "requirementSource": "onSuccess cache updaters",
+              "inputs": "Cache [a(id1), b(id2)]; update {id:2,input:{completed:true}} resolving saved2; delete id 1; the same mutations with no cache",
+              "expected": "update gives [a, saved2] and api.update called with (2,{completed:true}); delete gives [b]; no cache stays undefined",
+              "assertion": "getQueryData toEqual/toBeUndefined and API mock call args",
+              "mockBoundary": "todosApi mocked; real QueryClient",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "fe-query-busy-hooks",
+              "sourceLocation": "frontend/src/features/todos/hooks/useTodosQuery.ts:6-8; useTodosBusy.ts:5; useTodoFilters.ts:6-9",
+              "behavior": "useTodosQuery passes the abort signal to todosApi.list. useTodosBusy is true only while a todo mutation is pending. useTodoFilters defaults to all/''/newest and updates the visible list on setFilter.",
+              "requirementSource": "hook source contracts and the Filter/Sort types",
+              "inputs": "Wrapper with QueryClient; list mocked to resolve [todoFixture]; a pending create mutation; renderHook(useTodoFilters(todos)), then act(setFilter('completed'))",
+              "expected": "list called with an AbortSignal and data equal to [todoFixture]; busy false then true during a pending mutation; the filter default and the filtered visible list update",
+              "assertion": "expect.any(AbortSignal), busy boolean, visible toEqual",
+              "mockBoundary": "todosApi mocked; real react-query",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "fe-delete-dialog-success-and-pending",
+              "sourceLocation": "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19-22,40-42",
+              "behavior": "Confirming delete calls mutateAsync with the todo id, then onDeleted. A failed delete keeps the dialog open without calling onDeleted. While pending or busy, actions are disabled and the label reads 'Deleting…'.",
+              "requirementSource": "component source behaviour and its comments about retry",
+              "inputs": "mutateAsync resolves; click 'Delete task'; mutateAsync rejects; isPending true",
+              "expected": "mutateAsync(7) then onDeleted once; a rejection does not call onDeleted; with isPending the 'Deleting…' button is disabled and Cancel is disabled",
+              "assertion": "call checks, toBeDisabled, getByRole name",
+              "mockBoundary": "useDeleteTodoMutation and design-system mocks",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "fe-todo-editor-update-error",
+              "sourceLocation": "frontend/src/features/todos/components/TodoEditor.tsx:20-42",
+              "behavior": "With an existing todo, the editor uses the update mutation and reports 'Changes saved.'. A rejected save does not call onSaved. It uses the title 'Edit task' and ignores submits while pending.",
+              "requirementSource": "TodoEditor source: title, message and pending guard",
+              "inputs": "todo=todoFixture; update.mutateAsync resolves, then rejects; busy=true",
+              "expected": "update called with {id:7,input:todoFixture}; onSaved('Changes saved.'); no create call; no onSaved on rejection; no mutation call when busy",
+              "assertion": "dialog name 'Edit task', call args and counts",
+              "mockBoundary": "Create/update mutation hooks, TodoForm and design-system mocked",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "fe-todospage-toggle",
+              "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:28-35,53",
+              "behavior": "Toggling a todo calls the update mutation with the inverted completed flag, and notifies 'Another task complete. Well done!' or 'Task marked as active.'. A rejection is swallowed with no notice, and a busy page does not toggle.",
+              "requirementSource": "toggle() source branches",
+              "inputs": "TodoList mock exposing a toggle button wired to onToggle; saved.completed true, then false; mutateAsync rejecting; busy=true",
+              "expected": "mutateAsync({id,input:{completed:!todo.completed}}); the notify message per case; notify not called on rejection or when busy",
+              "assertion": "mutateAsync and notify call checks",
+              "mockBoundary": "Hook modules and child components mocked, as in the existing TodosPage test",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "fe-todospage-editor-delete-flows",
+              "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:81-106",
+              "behavior": "onCreate opens the new-task editor and onSaved closes it and notifies. onDelete opens the delete dialog and onDeleted closes it and notifies 'Task deleted.'. onClose closes either without notifying.",
+              "requirementSource": "TodosPage state and callback wiring",
+              "inputs": "TodoList and TodosHeader mocks exposing the callbacks; TodoEditor and DeleteTodoDialog mocks exposing onSaved/onClose/onDeleted buttons",
+              "expected": "editor rendered with todo 'new' after create; after onSaved it is gone and notify called with the message; the delete dialog receives the todo and after onDeleted is gone with notify('Task deleted.')",
+              "assertion": "queryByTestId presence/absence and notify args",
+              "mockBoundary": "Child components and hooks mocked",
+              "confidence": "contract-backed"
+            }
+          ],
+          "paths": [
+            "backend/tests/router.test.ts",
+            "backend/tests/factory.test.ts",
+            "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+            "frontend/src/features/todos/hooks/useUpdateDeleteTodoMutation.test.tsx",
+            "frontend/src/features/todos/hooks/useTodosHooks.test.tsx",
+            "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+            "frontend/src/features/todos/components/TodoEditor.test.tsx",
+            "frontend/src/features/todos/TodosPage.test.tsx"
+          ],
+          "remainingGaps": [
+            "backend/src/core/lifespan.ts and main.ts startup, shutdown and failure paths are not covered; they need process and listener isolation.",
+            "frontend/src/app/AppProviders.tsx lines 9 and 14 are uncovered.",
+            "TodoForm, TodoItem, TodoList and TodoEmptyState conditional UI branches are uncovered and belong in a later batch.",
+            "backend/src/core/database.ts line 12 (the createDatabase factory) is uncovered.",
+            "backend/src/features/todos/repository.ts and mappers coverage was not listed as a gap, so it was not re-verified.",
+            "frontend/src/features/todos/utils/todos.ts line 48 is still uncovered."
+          ]
+        },
+        "checks": [
+          {
+            "id": "backend:install",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm ci --ignore-scripts --no-audit --no-fund",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/install.log"
+          },
+          {
+            "id": "backend:generate",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run db:generate",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/generate.log"
+          },
+          {
+            "id": "backend:typecheck",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run typecheck",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/typecheck.log"
+          },
+          {
+            "id": "backend:unit",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/unit.log"
+          },
+          {
+            "id": "backend:coverage",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/coverage.log"
+          },
+          {
+            "id": "frontend:install",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm ci --ignore-scripts --no-audit --no-fund",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/install.log"
+          },
+          {
+            "id": "frontend:typecheck",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run typecheck",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/typecheck.log"
+          },
+          {
+            "id": "frontend:unit",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/unit.log"
+          },
+          {
+            "id": "frontend:coverage",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/coverage.log"
+          }
+        ],
+        "tests": {
+          "backend": {
+            "total": 75,
+            "failed": 0,
+            "failures": []
+          },
+          "frontend": {
+            "total": 68,
+            "failed": 0,
+            "failures": []
+          }
+        },
+        "coverage": {
+          "frontend": {
+            "lines": {
+              "covered": 142,
+              "total": 151,
+              "pct": 94.03
+            },
+            "branches": {
+              "covered": 111,
+              "total": 137,
+              "pct": 81.02
+            },
+            "statements": {
+              "covered": 158,
+              "total": 168,
+              "pct": 94.04
+            },
+            "functions": {
+              "covered": 68,
+              "total": 77,
+              "pct": 88.31
+            }
+          },
+          "backend": {
+            "lines": {
+              "covered": 85,
+              "total": 109,
+              "pct": 77.98
+            },
+            "branches": {
+              "covered": 45,
+              "total": 48,
+              "pct": 93.75
+            },
+            "statements": {
+              "covered": 99,
+              "total": 129,
+              "pct": 76.74
+            },
+            "functions": {
+              "covered": 24,
+              "total": 32,
+              "pct": 75
+            }
+          },
+          "gaps": [
+            "frontend/src/app/AppProviders.tsx:14",
+            "frontend/src/app/AppProviders.tsx:9",
+            "frontend/src/features/todos/TodosPage.tsx:81",
+            "frontend/src/features/todos/TodosPage.tsx:18",
+            "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:16",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:19",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:23",
+            "frontend/src/features/todos/components/TodoForm.tsx:67",
+            "frontend/src/features/todos/components/TodoForm.tsx:91",
+            "frontend/src/features/todos/components/TodoForm.tsx:97",
+            "frontend/src/features/todos/components/TodoForm.tsx:108",
+            "frontend/src/features/todos/components/TodoItem.tsx:32",
+            "frontend/src/features/todos/components/TodoItem.tsx:41",
+            "frontend/src/features/todos/components/TodoItem.tsx:42",
+            "frontend/src/features/todos/components/TodoItem.tsx:47",
+            "frontend/src/features/todos/components/TodoItem.tsx:48",
+            "frontend/src/features/todos/components/TodoItem.tsx:51",
+            "frontend/src/features/todos/components/TodoItem.tsx:64",
+            "frontend/src/features/todos/components/TodoList.tsx:43",
+            "frontend/src/features/todos/components/TodoList.tsx:47",
+            "frontend/src/features/todos/components/TodoList.tsx:48",
+            "frontend/src/features/todos/components/TodoList.tsx:49",
+            "frontend/src/features/todos/components/TodoList.tsx:35",
+            "frontend/src/features/todos/components/TodoList.tsx:40",
+            "frontend/src/features/todos/utils/todos.ts:48",
+            "backend/src/factory.ts:20",
+            "backend/src/main.ts:3",
+            "backend/src/main.ts:4",
+            "backend/src/main.ts:5",
+            "backend/src/core/database.ts:12",
+            "backend/src/core/lifespan.ts:8",
+            "backend/src/core/lifespan.ts:9",
+            "backend/src/core/lifespan.ts:10",
+            "backend/src/core/lifespan.ts:11",
+            "backend/src/core/lifespan.ts:12",
+            "backend/src/core/lifespan.ts:13",
+            "backend/src/core/lifespan.ts:14",
+            "backend/src/core/lifespan.ts:15",
+            "backend/src/core/lifespan.ts:17",
+            "backend/src/core/lifespan.ts:18",
+            "backend/src/core/lifespan.ts:19",
+            "backend/src/core/lifespan.ts:20",
+            "backend/src/core/lifespan.ts:21",
+            "backend/src/core/lifespan.ts:22",
+            "backend/src/core/lifespan.ts:23",
+            "backend/src/core/lifespan.ts:26",
+            "backend/src/core/lifespan.ts:27",
+            "backend/src/core/lifespan.ts:28",
+            "backend/src/core/lifespan.ts:30",
+            "backend/src/core/lifespan.ts:31"
+          ]
+        },
+        "callIds": [
+          "fcb55d9f-99c9-4489-b060-f899fcd055fe",
+          "1a453e52-7fb9-4382-a077-e71d3a84c507"
+        ]
+      },
+      {
+        "round": 2,
+        "units": [
+          "backend/src/core/database.ts",
+          "backend/src/core/lifespan.ts",
+          "backend/src/main.ts",
+          "backend/src/factory.ts",
+          "frontend/src/features/todos/components/DeleteTodoDialog.tsx",
+          "frontend/src/features/todos/components/TodoForm.tsx",
+          "frontend/src/app/AppProviders.tsx",
+          "frontend/src/features/todos/components/TodoEmptyState.tsx"
+        ],
+        "status": "inconclusive",
+        "reason": "unconfirmed contract: writer not dispatched",
+        "plan": {
+          "decision": "write",
+          "reason": "All checks pass and frontend meets the 80/80 target, but backend lines (77.98%), statements (76.74%) and functions (75%) are below target. The backend gaps are in the lifecycle code that has no tests: core/lifespan.ts (start, shutdown, error cleanup), main.ts (startup failure handling), database.ts initialize, and the factory.ts:20 headers-sent branch. Frontend branch gaps remain in TodoEmptyState, the TodoList failed state and AppProviders, so this batch covers those too.",
+          "cases": [
+            {
+              "id": "B1",
+              "sourceLocation": "backend/src/core/lifespan.ts:8-23",
+              "behavior": "start() connects, initializes the schema, builds the app and listens on API_PORT (default 8000) on 0.0.0.0, returning server and database",
+              "requirementSource": "Exported start() contract in lifespan.ts; the port default is stated in the code (API_PORT || 8000)",
+              "inputs": "vi.mock config, database and factory modules. createDatabase returns a fake with $connect, $disconnect and $executeRaw. createApp returns a fake whose listen(port, host, cb) invokes cb and returns a fake server with once() and address() returning {port}. Run once with API_PORT unset and once with API_PORT='9100'. Spy on console.log.",
+              "expected": "$connect and initialize are called in order. listen is called with 8000, then with 9100, and always with '0.0.0.0'. The resolved value is {server, database}. The log line contains the port.",
+              "assertion": "toHaveBeenCalledWith on listen; invocationCallOrder for connect before the initialize $executeRaw; the log message contains the port.",
+              "mockBoundary": "Mock the config, database and factory modules and the Prisma client. Keep lifespan.ts real.",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "B2",
+              "sourceLocation": "backend/src/core/lifespan.ts:17,29-32",
+              "behavior": "start() disconnects the database and rethrows when connect fails, and when listen emits an error",
+              "requirementSource": "Explicit try/catch cleanup in the code: await database.$disconnect(); throw error",
+              "inputs": "Case 1: $connect rejects with Error('down'). Case 2: the fake listener emits 'error' (the once('error') handler is invoked with Error('EADDRINUSE')) instead of calling the listen callback.",
+              "expected": "start() rejects with the same error and $disconnect is called once. createApp is not called in case 1.",
+              "assertion": "rejects.toThrow; expect($disconnect).toHaveBeenCalledTimes(1)",
+              "mockBoundary": "Fake database and fake app/listener",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "B3",
+              "sourceLocation": "backend/src/core/lifespan.ts:19-27",
+              "behavior": "The SIGTERM and SIGINT handlers close the server and then disconnect the database",
+              "requirementSource": "Graceful-shutdown behavior in the code: process.once registrations, server.close, $disconnect",
+              "inputs": "Spy on process.once to capture the handlers. Call start(). The fake server.close(cb) invokes cb. Invoke the captured SIGTERM handler. Use vi.spyOn(process,'exit').mockImplementation to guard against the 10 s timer.",
+              "expected": "Handlers are registered for both SIGTERM and SIGINT. After the handler runs, server.close is called and $disconnect is called once. process.exit is not called.",
+              "assertion": "Assert on the process.once call args, close and $disconnect call counts, and exit not called. Restore process.once and process.exit afterwards.",
+              "mockBoundary": "Fake server and database; spy on process.once and process.exit",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "B4",
+              "sourceLocation": "backend/src/core/lifespan.ts:24",
+              "behavior": "A failing $disconnect during shutdown is logged and sets process.exitCode to 1",
+              "requirementSource": "Explicit catch in the code: console.error(error); process.exitCode = 1",
+              "inputs": "Same setup as B3, but the shutdown $disconnect rejects with Error('x'). Spy on console.error. Save the original process.exitCode and restore it afterwards. Flush microtasks.",
+              "expected": "console.error is called with the error and process.exitCode equals 1.",
+              "assertion": "expect(console.error).toHaveBeenCalledWith(err); expect(process.exitCode).toBe(1)",
+              "mockBoundary": "Fake database; spy on console.error",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "B5",
+              "sourceLocation": "backend/src/core/database.ts:11-24",
+              "behavior": "initialize() runs the idempotent CREATE TABLE IF NOT EXISTS DDL compatible with the existing todos table",
+              "requirementSource": "Code comment: compatible with the existing SQLAlchemy table and sequence. Schema constraints are listed in the DDL.",
+              "inputs": "Fake database whose $executeRaw is a vi.fn tagged-template mock. Call initialize(fake).",
+              "expected": "$executeRaw is called once. The joined template strings contain 'CREATE TABLE IF NOT EXISTS todos', the VARCHAR(120) title column, the priority CHECK IN ('low','medium','high') and the due_date DATE column. The call resolves undefined.",
+              "assertion": "expect(strings.join('')).toContain(...) for each fragment; resolves.toBeUndefined()",
+              "mockBoundary": "Fake $executeRaw (no PostgreSQL)",
+              "confidence": "characterization"
+            },
+            {
+              "id": "B6",
+              "sourceLocation": "backend/src/main.ts:3-6",
+              "behavior": "main logs and sets exitCode 1 when start() rejects, instead of crashing with an unhandled rejection",
+              "requirementSource": "Explicit catch in main.ts: console.error('Cannot start Taskly App Node API:', error); process.exitCode = 1",
+              "inputs": "vi.mock('../src/core/lifespan.js') so start rejects with Error('boom'). Spy on console.error. vi.resetModules, then dynamically import ../src/main.ts and await a tick. Restore process.exitCode.",
+              "expected": "console.error is called with 'Cannot start Taskly App Node API:' and the error. process.exitCode is 1. A second case where start resolves leaves console.error uncalled.",
+              "assertion": "toHaveBeenCalledWith; process.exitCode === 1",
+              "mockBoundary": "Mock the lifespan module",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "B7",
+              "sourceLocation": "backend/src/factory.ts:20",
+              "behavior": "The error handler delegates to the default Express handler when headers were already sent, and does not write a second JSON response",
+              "requirementSource": "Explicit branch: if (res.headersSent) return next(error). This is also the Express error-handling contract.",
+              "inputs": "createApp with a fake database whose findFirst rejects after the response has started. Do this through a route fake, or by sending a response where res.write has already happened. The simplest approach is to extract handleError through a supertest request to /api/health with findFirst throwing after patching express.response.headersSent to true via Object.defineProperty on the response.",
+              "expected": "The body is not the JSON 'Internal Server Error' payload. console.error is not called by this handler.",
+              "assertion": "Assert the response body is not {detail:'Internal Server Error'} and console.error was not called. If headersSent cannot be simulated reliably, mark this case as skipped.",
+              "mockBoundary": "Fake database",
+              "confidence": "characterization"
+            },
+            {
+              "id": "F1",
+              "sourceLocation": "frontend/src/features/todos/components/TodoEmptyState.tsx:13-23",
+              "behavior": "The empty state shows 'Add your first task' with a working create button when the user has no tasks, and a filter hint with no create button when tasks exist but none match",
+              "requirementSource": "Rendered copy and conditional UI in the component",
+              "inputs": "Render with hasTodos=false, disabled=false and an onCreate spy. Click the button. Rerender with hasTodos=true. Render with hasTodos=false, disabled=true.",
+              "expected": "hasTodos=false: heading 'Add your first task' and the text 'Write down what you need to do and get started.'. Clicking the button calls onCreate once. hasTodos=true: heading 'No matching tasks', the filter hint, and no button. disabled=true: the button is disabled.",
+              "assertion": "RTL getByRole('heading'), queryByRole('button'), toBeDisabled, onCreate call count",
+              "mockBoundary": "Design system mocks, as in the existing tests",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "F2",
+              "sourceLocation": "frontend/src/features/todos/components/TodoList.tsx:35-49",
+              "behavior": "TodoList shows the unavailable state when loading failed and no tasks are cached, and renders items with wired callbacks otherwise",
+              "requirementSource": "Conditional rendering order in TodoList (loading, failed and empty, list, empty state)",
+              "inputs": "Case A: loading=false, failed=true, hasTodos=false. Case B: failed=true, hasTodos=true, todos=[todoFixture]. Case C: todos=[todoFixture] with a TodoItem mock that exposes buttons calling onToggle, onEdit and onDelete.",
+              "expected": "A: 'The task list is temporarily unavailable' and 'Try again to load your tasks.' are shown, with no empty state. B: the list is shown and there is no unavailable heading. C: each callback is called once with todoFixture.",
+              "assertion": "getByText / queryByText; toHaveBeenCalledWith(todoFixture)",
+              "mockBoundary": "Mock the design system, TodoItem and TodoEmptyState. Extend TodoList.test.tsx.",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "F3",
+              "sourceLocation": "frontend/src/app/AppProviders.tsx:9-14",
+              "behavior": "AppProviders supplies the QueryClient (an injected client overrides the default) and the theme to its children",
+              "requirementSource": "Exported component API: optional client prop defaulting to the shared queryClient",
+              "inputs": "Render a child that calls useQueryClient() and writes the result to a variable, once with client={custom} and once without. Mock '../design-system' so GlobalStyles renders null and theme is {}.",
+              "expected": "With the prop, the child receives the custom client (toBe). Without it, the child receives the queryClient exported from lib/queryClient. The children are rendered.",
+              "assertion": "expect(received).toBe(custom) and toBe(queryClient)",
+              "mockBoundary": "Mock the design system only; keep react-query real",
+              "confidence": "contract-backed"
+            },
+            {
+              "id": "F4",
+              "sourceLocation": "frontend/src/features/todos/components/TodoItem.tsx:32-64",
+              "behavior": "TodoItem shows the completed, overdue and due-date states and its action buttons call the right callbacks, which are disabled while busy",
+              "requirementSource": "Conditional UI in TodoItem, together with the isOverdue and formatDate contracts already tested in utils",
+              "inputs": "Read TodoItem.tsx first. Render todoFixture variants: completed=true; due_date in the past with completed=false; due_date null; busy=true. Click toggle, edit and delete.",
+              "expected": "The overdue indicator appears only for an incomplete task with a past due date. A formatted due date appears when due_date is set. Callbacks are called once each. Controls are disabled when busy.",
+              "assertion": "RTL role/name queries, toBeDisabled and callback counts. Fake the system time with vi.setSystemTime for determinism.",
+              "mockBoundary": "Design system mocks; the date is faked",
+              "confidence": "unconfirmed"
+            },
+            {
+              "id": "F5",
+              "sourceLocation": "frontend/src/features/todos/components/TodoForm.tsx:67,91,97,108",
+              "behavior": "TodoForm shows the server error, the busy state, the due-date validation message and Cancel",
+              "requirementSource": "Props contract (error, busy, onCancel) and validateTodo messages",
+              "inputs": "Render with error='Server said no' and busy=true. Click Cancel. Separately, set the due date input to '2026-02-30' and submit. Fire the change through fireEvent.change.",
+              "expected": "The alert shows 'Server said no'. The submit button reads 'Saving…' and is disabled, as are the inputs. When not busy, Cancel calls onCancel once. An invalid date shows 'Enter a valid date.' and onSubmit is not called. Clearing the date and submitting gives due_date null.",
+              "assertion": "getByTestId('alert') text, toBeDisabled, onSubmit not called, onCancel count",
+              "mockBoundary": "Design system mocks",
+              "confidence": "contract-backed"
+            }
+          ],
+          "paths": [
+            "backend/tests/lifespan.test.ts",
+            "backend/tests/database.test.ts",
+            "backend/tests/main.test.ts",
+            "backend/tests/factory.test.ts",
+            "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+            "frontend/src/features/todos/components/TodoList.test.tsx",
+            "frontend/src/app/AppProviders.test.tsx",
+            "frontend/src/features/todos/components/TodoItem.test.tsx",
+            "frontend/src/features/todos/components/TodoForm.test.tsx"
+          ],
+          "remainingGaps": [
+            "Backend lines are 77.98% against a target of 80, so this batch must mainly cover lifespan.ts, main.ts and database.ts initialize. Re-measure afterwards.",
+            "B7 (the factory.ts headers-sent branch) is hard to reach. Skip it if headersSent cannot be simulated cleanly.",
+            "F4 depends on TodoItem.tsx and any existing TodoItem tests. Neither was supplied, so the expected UI strings are unconfirmed.",
+            "Frontend now meets the 80% target for lines and branches (94.03% lines, 81.02% branches). The remaining uncovered frontend lines are TodosPage.tsx:18 and :81, which a later batch could cover.",
+            "The process.once SIGTERM/SIGINT handlers and the 10 s forced-exit timer in lifespan.ts are only partly testable. The timeout-to-exit(1) path is not planned.",
+            "backend/src/generated is excluded from coverage; the Prisma adapter wiring in createDatabase is covered only indirectly.",
+            "The global target is not claimed as reached. Further batches may be needed after re-measuring."
+          ]
+        },
+        "checks": [],
+        "coverage": null,
+        "callIds": ["ea8b2869-d2c6-4a00-b26e-0672e2aa744e"]
+      },
+      {
+        "round": 3,
+        "units": [
+          "backend/src/core/database.ts",
+          "backend/src/core/lifespan.ts",
+          "backend/src/main.ts",
+          "backend/src/factory.ts",
+          "frontend/src/features/todos/components/TodoItem.tsx",
+          "frontend/src/features/todos/components/TodoList.tsx",
+          "frontend/src/features/todos/TodosPage.tsx",
+          "frontend/src/features/todos/utils/todos.ts"
+        ],
+        "status": "accepted",
+        "reason": "verified coverage increased",
+        "plan": {
+          "decision": "write",
+          "reason": "Frontend already meets the 80/80 lines and branches target, but backend lines (77.98%), statements (76.74%) and functions (75%) are below it. The uncovered backend code is lifespan.ts (startup, rollback on failure, shutdown), main.ts (startup failure handling) and database.initialize. Round 2 was inconclusive for these, so they are addressed here with explicit characterization cases. The mock boundary is the Prisma client, the config and factory modules, and the HTTP listener. No real database or network is used.",
+          "cases": [
+            {
+              "id": "lifespan-start-success",
+              "sourceLocation": "backend/src/core/lifespan.ts:7-24",
+              "behavior": "start() resolves the database URL, connects, initializes the schema, builds the app, listens on API_PORT (default 8000) on 0.0.0.0, logs the port and returns { server, database }.",
+              "requirementSource": "Characterization of the exported start() lifecycle. Order and arguments are taken from the source. The port default of 8000 matches the vite proxy target in frontend/vite.config.ts.",
+              "inputs": "API_PORT unset, with createDatabase, initialize, resolveDatabaseUrl and createApp mocked. Fake app.listen(port, host, cb) invokes cb and returns an emitter with address() => { port: 8000 }. console.log is spied.",
+              "expected": "Resolves to { server, database }. $connect is called before initialize(database). listen is called with (8000, '0.0.0.0', fn). createApp receives the database. console.log mentions port 8000.",
+              "assertion": "toHaveBeenCalledWith on listen, createApp and initialize. invocationCallOrder check for $connect before initialize. Result equals the fake server and database. The shutdown handlers are SIGTERM and SIGINT listeners on process.once, which is spied and mocked so none are left registered.",
+              "mockBoundary": "vi.mock of ../src/core/database.ts, ../src/core/config.ts and ../src/factory.ts. Fake listener. process.once spy. console.log spy.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "lifespan-api-port-env",
+              "sourceLocation": "backend/src/core/lifespan.ts:12",
+              "behavior": "API_PORT from the environment overrides the default listen port, converted to a number.",
+              "requirementSource": "Characterization: Number(process.env.API_PORT || 8000).",
+              "inputs": "vi.stubEnv('API_PORT','9123') with the same mocks as the success case.",
+              "expected": "listen is called with 9123 (number) and '0.0.0.0'.",
+              "assertion": "expect(listen).toHaveBeenCalledWith(9123, '0.0.0.0', expect.any(Function))",
+              "mockBoundary": "Same module mocks and fake listener. Env stubbed via vi.stubEnv and unstubbed in afterEach.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "lifespan-connect-failure",
+              "sourceLocation": "backend/src/core/lifespan.ts:25-28",
+              "behavior": "If $connect or initialize rejects, start() disconnects the database and rethrows the original error without creating the app.",
+              "requirementSource": "Characterization of the error path: catch block calls $disconnect and rethrows. This is a resource-cleanup guarantee.",
+              "inputs": "database.$connect rejects with Error('connect failed').",
+              "expected": "start() rejects with 'connect failed'. $disconnect is called once. createApp is not called.",
+              "assertion": "await expect(start()).rejects.toThrow('connect failed'). Check $disconnect call count and createApp not called. Run a second variant where initialize rejects.",
+              "mockBoundary": "Mocked createDatabase returning { $connect: vi.fn().mockRejectedValue(...), $disconnect: vi.fn() }.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "lifespan-listen-error",
+              "sourceLocation": "backend/src/core/lifespan.ts:12-14, 25-28",
+              "behavior": "A listener 'error' event such as EADDRINUSE rejects start(), triggers $disconnect and propagates the error.",
+              "requirementSource": "Characterization: listener.once('error', reject) inside the Promise, followed by the catch cleanup.",
+              "inputs": "Fake app.listen returns an EventEmitter that never calls the callback. The test emits 'error' with Error('EADDRINUSE') after start() is invoked.",
+              "expected": "start() rejects with 'EADDRINUSE'. $disconnect is called once.",
+              "assertion": "rejects.toThrow('EADDRINUSE'), and $disconnect toHaveBeenCalledTimes(1)",
+              "mockBoundary": "Fake listener EventEmitter. Mocked database and app modules.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "lifespan-shutdown-success",
+              "sourceLocation": "backend/src/core/lifespan.ts:16-22",
+              "behavior": "The SIGTERM/SIGINT shutdown handler closes the server, then disconnects the database and clears the force-exit timer, without exiting the process on a clean shutdown.",
+              "requirementSource": "Characterization of the graceful shutdown handler. Handlers are registered via process.once for SIGTERM and SIGINT.",
+              "inputs": "Capture the handlers from the process.once spy. Fake server.close(cb) invokes cb. Fake timers. process.exit is mocked.",
+              "expected": "After invoking the SIGTERM handler: server.close is called, $disconnect is called once, process.exitCode is not set to 1, and process.exit is not called. Advancing 10000 ms afterwards does not call process.exit because the timer was cleared.",
+              "assertion": "Calls on close and $disconnect. process.exit not called after vi.advanceTimersByTime(10000). The handler registered for SIGINT is the same function.",
+              "mockBoundary": "process.once and process.exit spies. vi.useFakeTimers. Fake server and database.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "lifespan-shutdown-disconnect-error",
+              "sourceLocation": "backend/src/core/lifespan.ts:19-21",
+              "behavior": "If $disconnect fails during shutdown, the error is logged and process.exitCode becomes 1 without throwing.",
+              "requirementSource": "Characterization: catch logs via console.error and sets process.exitCode = 1.",
+              "inputs": "$disconnect rejects with Error('disconnect failed'). The shutdown handler is invoked. console.error is spied. The previous exitCode is restored in afterEach.",
+              "expected": "console.error is called with the error and process.exitCode === 1. The handler does not produce an unhandled rejection.",
+              "assertion": "Await a microtask flush. expect(console.error).toHaveBeenCalledWith(error). expect(process.exitCode).toBe(1).",
+              "mockBoundary": "Mocked database. console.error spy. process.exitCode saved and restored.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "lifespan-shutdown-timeout",
+              "sourceLocation": "backend/src/core/lifespan.ts:17-18",
+              "behavior": "If server.close never completes, the force-exit timer calls process.exit(1) after 10000 ms.",
+              "requirementSource": "Characterization of the shutdown watchdog: setTimeout(() => process.exit(1), 10000).",
+              "inputs": "Fake server.close never invokes its callback. Fake timers. process.exit is mocked.",
+              "expected": "process.exit is not called at 9999 ms and is called with 1 at 10000 ms.",
+              "assertion": "vi.advanceTimersByTime(9999), then expect(exit).not.toHaveBeenCalled(). Advance 1 more ms, then expect(exit).toHaveBeenCalledWith(1).",
+              "mockBoundary": "Fake timers, process.exit spy, fake server.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "main-start-failure",
+              "sourceLocation": "backend/src/main.ts:3-6",
+              "behavior": "When start() rejects, main logs 'Cannot start Taskly App Node API:' with the error and sets process.exitCode = 1.",
+              "requirementSource": "Characterization of the entrypoint failure handler. The exit code is the only way the process signals failure.",
+              "inputs": "vi.mock('../src/core/lifespan.ts') with start rejecting Error('boom'). Dynamically import ../src/main.ts after vi.resetModules. console.error is spied. The previous exitCode is saved and restored.",
+              "expected": "console.error is called with ('Cannot start Taskly App Node API:', error) and process.exitCode === 1.",
+              "assertion": "await import, flush microtasks, then assert the console.error args and the exit code. Also assert start toHaveBeenCalledOnce in the success variant, where exitCode stays unchanged.",
+              "mockBoundary": "Mocked lifespan module. console.error spy. process.exitCode restored in afterEach.",
+              "confidence": "characterization"
+            },
+            {
+              "id": "database-initialize-ddl",
+              "sourceLocation": "backend/src/core/database.ts:11-23",
+              "behavior": "initialize() issues a single idempotent CREATE TABLE IF NOT EXISTS todos statement with the title, description, priority, due_date, completed, created_at and updated_at columns and constraints, and propagates database errors.",
+              "requirementSource": "Characterization. The source comment says the DDL is compatible with the existing SQLAlchemy table and sequence. The columns match the Prisma TodoRecord fields and the validator limits of 120 and 2000 characters.",
+              "inputs": "Fake database { $executeRaw: vi.fn().mockResolvedValue(0) }. A second variant makes $executeRaw reject with Error('db down').",
+              "expected": "$executeRaw is called once. The joined template strings contain 'CREATE TABLE IF NOT EXISTS todos', 'VARCHAR(120)', 'VARCHAR(2000)' and \"priority IN ('low', 'medium', 'high')\". In the failure variant initialize rejects with 'db down'.",
+              "assertion": "const strings = $executeRaw.mock.calls[0][0].join(''). Run toContain checks. Use rejects.toThrow for the error path.",
+              "mockBoundary": "Plain fake of the Prisma $executeRaw tag. No real PostgreSQL.",
+              "confidence": "characterization"
+            }
+          ],
+          "paths": [
+            "backend/tests/lifespan.test.ts",
+            "backend/tests/main.test.ts",
+            "backend/tests/database.test.ts"
+          ],
+          "remainingGaps": [
+            "backend/src/factory.ts:20 (res.headersSent -> next(error)) is hard to reach through createApp without injecting a route. It is left for a later batch.",
+            "The backend createDatabase PrismaPg adapter configuration (connectionTimeoutMillis 10000) is only indirectly covered by repository tests.",
+            "frontend/src/app/AppProviders.tsx lines 9 and 14 are uncovered. The frontend target is already met, so they are lower priority.",
+            "TodoForm.tsx lines 67, 91, 97 and 108 and the TodoEmptyState, TodoItem and TodoList conditional branches (failed list state, overdue badge, hasTodos empty state) still lack tests.",
+            "TodosPage.tsx lines 18 and 81 are uncovered.",
+            "Global 100% coverage is not claimed, and the other applications' targets are not asserted by this batch."
+          ]
+        },
+        "checks": [
+          {
+            "id": "backend:install",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm ci --ignore-scripts --no-audit --no-fund",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/install.log"
+          },
+          {
+            "id": "backend:generate",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run db:generate",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/generate.log"
+          },
+          {
+            "id": "backend:typecheck",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run typecheck",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/typecheck.log"
+          },
+          {
+            "id": "backend:unit",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/unit.log"
+          },
+          {
+            "id": "backend:coverage",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/backend/coverage.log"
+          },
+          {
+            "id": "frontend:install",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm ci --ignore-scripts --no-audit --no-fund",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/install.log"
+          },
+          {
+            "id": "frontend:typecheck",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run typecheck",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/typecheck.log"
+          },
+          {
+            "id": "frontend:unit",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/unit.log"
+          },
+          {
+            "id": "frontend:coverage",
+            "gate": "required",
+            "status": "passed",
+            "reason": "",
+            "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+            "exitCode": 0,
+            "logPath": ".agent-evidence/frontend/coverage.log"
+          }
+        ],
+        "tests": {
+          "backend": {
+            "total": 87,
+            "failed": 0,
+            "failures": []
+          },
+          "frontend": {
+            "total": 68,
+            "failed": 0,
+            "failures": []
+          }
+        },
+        "coverage": {
+          "frontend": {
+            "lines": {
+              "covered": 142,
+              "total": 151,
+              "pct": 94.03
+            },
+            "branches": {
+              "covered": 111,
+              "total": 137,
+              "pct": 81.02
+            },
+            "statements": {
+              "covered": 158,
+              "total": 168,
+              "pct": 94.04
+            },
+            "functions": {
+              "covered": 68,
+              "total": 77,
+              "pct": 88.31
+            }
+          },
+          "backend": {
+            "lines": {
+              "covered": 109,
+              "total": 109,
+              "pct": 100
+            },
+            "branches": {
+              "covered": 47,
+              "total": 48,
+              "pct": 97.91
+            },
+            "statements": {
+              "covered": 128,
+              "total": 129,
+              "pct": 99.22
+            },
+            "functions": {
+              "covered": 32,
+              "total": 32,
+              "pct": 100
+            }
+          },
+          "gaps": [
+            "frontend/src/app/AppProviders.tsx:14",
+            "frontend/src/app/AppProviders.tsx:9",
+            "frontend/src/features/todos/TodosPage.tsx:81",
+            "frontend/src/features/todos/TodosPage.tsx:18",
+            "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:16",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:19",
+            "frontend/src/features/todos/components/TodoEmptyState.tsx:23",
+            "frontend/src/features/todos/components/TodoForm.tsx:67",
+            "frontend/src/features/todos/components/TodoForm.tsx:91",
+            "frontend/src/features/todos/components/TodoForm.tsx:97",
+            "frontend/src/features/todos/components/TodoForm.tsx:108",
+            "frontend/src/features/todos/components/TodoItem.tsx:32",
+            "frontend/src/features/todos/components/TodoItem.tsx:41",
+            "frontend/src/features/todos/components/TodoItem.tsx:42",
+            "frontend/src/features/todos/components/TodoItem.tsx:47",
+            "frontend/src/features/todos/components/TodoItem.tsx:48",
+            "frontend/src/features/todos/components/TodoItem.tsx:51",
+            "frontend/src/features/todos/components/TodoItem.tsx:64",
+            "frontend/src/features/todos/components/TodoList.tsx:43",
+            "frontend/src/features/todos/components/TodoList.tsx:47",
+            "frontend/src/features/todos/components/TodoList.tsx:48",
+            "frontend/src/features/todos/components/TodoList.tsx:49",
+            "frontend/src/features/todos/components/TodoList.tsx:35",
+            "frontend/src/features/todos/components/TodoList.tsx:40",
+            "frontend/src/features/todos/utils/todos.ts:48",
+            "backend/src/factory.ts:20"
+          ]
+        },
+        "callIds": [
+          "3cf4b6d4-ea11-40d9-8726-4651f06d1441",
+          "7d31ff4a-dcc7-4997-aab1-ead72dbfeece"
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "context": {
+      "repository": "BigGafLeo/cloudfide",
+      "repositoryId": 1416918089,
+      "pr": 2,
+      "executionRunId": "38808142174",
+      "executionAttempt": 1,
+      "trigger": {
+        "kind": "dispatch"
+      },
+      "baseSha": "ab2fdbb050a711f5dfe34b9f41a2ff3f298d0d1f",
+      "headSha": "7eedbcc6587c9a44abb4c54d7c223d736c40c5ee",
+      "controlSha": "a92d9fd2823b51994f317707d871b26a517b662d",
+      "task": "coverage-gap",
+      "deadline": "2026-10-16T01:12:58.000Z"
+    },
+    "patchSha256": "3ccd4bc9483234697ac180dbc4bf46d127e5c141b074b30b9dbfaf5967b772cf",
+    "producerJob": "verifier",
+    "checks": [
+      {
+        "id": "backend:install",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm ci --ignore-scripts --no-audit --no-fund",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/install.log"
+      },
+      {
+        "id": "backend:generate",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run db:generate",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/generate.log"
+      },
+      {
+        "id": "backend:typecheck",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run typecheck",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/typecheck.log"
+      },
+      {
+        "id": "backend:unit",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/unit.log"
+      },
+      {
+        "id": "backend:coverage",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/coverage.log"
+      },
+      {
+        "id": "frontend:install",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm ci --ignore-scripts --no-audit --no-fund",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/install.log"
+      },
+      {
+        "id": "frontend:typecheck",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run typecheck",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/typecheck.log"
+      },
+      {
+        "id": "frontend:unit",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/unit.log"
+      },
+      {
+        "id": "frontend:coverage",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/coverage.log"
+      }
+    ],
+    "originalCoverage": {
+      "frontend": {
+        "lines": {
+          "covered": 99,
+          "total": 151,
+          "pct": 65.56
+        },
+        "branches": {
+          "covered": 94,
+          "total": 137,
+          "pct": 68.61
+        },
+        "statements": {
+          "covered": 110,
+          "total": 168,
+          "pct": 65.47
+        },
+        "functions": {
+          "covered": 40,
+          "total": 77,
+          "pct": 51.94
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 49,
+          "total": 109,
+          "pct": 44.95
+        },
+        "branches": {
+          "covered": 22,
+          "total": 48,
+          "pct": 45.83
+        },
+        "statements": {
+          "covered": 54,
+          "total": 129,
+          "pct": 41.86
+        },
+        "functions": {
+          "covered": 14,
+          "total": 32,
+          "pct": 43.75
+        }
+      },
+      "gaps": [
+        "frontend/src/app/AppProviders.tsx:14",
+        "frontend/src/app/AppProviders.tsx:9",
+        "frontend/src/features/todos/TodosPage.tsx:28",
+        "frontend/src/features/todos/TodosPage.tsx:29",
+        "frontend/src/features/todos/TodosPage.tsx:30",
+        "frontend/src/features/todos/TodosPage.tsx:34",
+        "frontend/src/features/todos/TodosPage.tsx:53",
+        "frontend/src/features/todos/TodosPage.tsx:81",
+        "frontend/src/features/todos/TodosPage.tsx:82",
+        "frontend/src/features/todos/TodosPage.tsx:92",
+        "frontend/src/features/todos/TodosPage.tsx:94",
+        "frontend/src/features/todos/TodosPage.tsx:95",
+        "frontend/src/features/todos/TodosPage.tsx:103",
+        "frontend/src/features/todos/TodosPage.tsx:105",
+        "frontend/src/features/todos/TodosPage.tsx:106",
+        "frontend/src/features/todos/TodosPage.tsx:18",
+        "frontend/src/features/todos/TodosPage.tsx:35",
+        "frontend/src/features/todos/TodosPage.tsx:88",
+        "frontend/src/features/todos/TodosPage.tsx:99",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:20",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:21",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:22",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:40",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:42",
+        "frontend/src/features/todos/components/TodoEditor.tsx:24",
+        "frontend/src/features/todos/components/TodoEditor.tsx:27",
+        "frontend/src/features/todos/components/TodoEditor.tsx:20",
+        "frontend/src/features/todos/components/TodoEditor.tsx:26",
+        "frontend/src/features/todos/components/TodoEditor.tsx:28",
+        "frontend/src/features/todos/components/TodoEditor.tsx:37",
+        "frontend/src/features/todos/components/TodoEditor.tsx:42",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:16",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:19",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:23",
+        "frontend/src/features/todos/components/TodoForm.tsx:67",
+        "frontend/src/features/todos/components/TodoForm.tsx:91",
+        "frontend/src/features/todos/components/TodoForm.tsx:97",
+        "frontend/src/features/todos/components/TodoForm.tsx:108",
+        "frontend/src/features/todos/components/TodoItem.tsx:32",
+        "frontend/src/features/todos/components/TodoItem.tsx:41",
+        "frontend/src/features/todos/components/TodoItem.tsx:42",
+        "frontend/src/features/todos/components/TodoItem.tsx:47",
+        "frontend/src/features/todos/components/TodoItem.tsx:48",
+        "frontend/src/features/todos/components/TodoItem.tsx:51",
+        "frontend/src/features/todos/components/TodoItem.tsx:64",
+        "frontend/src/features/todos/components/TodoList.tsx:43",
+        "frontend/src/features/todos/components/TodoList.tsx:47",
+        "frontend/src/features/todos/components/TodoList.tsx:48",
+        "frontend/src/features/todos/components/TodoList.tsx:49",
+        "frontend/src/features/todos/components/TodoList.tsx:35",
+        "frontend/src/features/todos/components/TodoList.tsx:40",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:7",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:8",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:10",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:13",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:14",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:16",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:7",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:8",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:10",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:12",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:13",
+        "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:14",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:6",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:7",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:8",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts:9",
+        "frontend/src/features/todos/hooks/useTodosBusy.ts:5",
+        "frontend/src/features/todos/hooks/useTodosQuery.ts:6",
+        "frontend/src/features/todos/hooks/useTodosQuery.ts:8",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:7",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:8",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:11",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:13",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:14",
+        "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:15",
+        "frontend/src/features/todos/utils/todos.ts:48",
+        "backend/src/factory.ts:10",
+        "backend/src/factory.ts:11",
+        "backend/src/factory.ts:12",
+        "backend/src/factory.ts:13",
+        "backend/src/factory.ts:14",
+        "backend/src/factory.ts:15",
+        "backend/src/factory.ts:16",
+        "backend/src/factory.ts:17",
+        "backend/src/factory.ts:18",
+        "backend/src/factory.ts:19",
+        "backend/src/factory.ts:20",
+        "backend/src/factory.ts:21",
+        "backend/src/factory.ts:22",
+        "backend/src/factory.ts:23",
+        "backend/src/factory.ts:24",
+        "backend/src/factory.ts:26",
+        "backend/src/factory.ts:27",
+        "backend/src/main.ts:3",
+        "backend/src/main.ts:4",
+        "backend/src/main.ts:5",
+        "backend/src/api/health.ts:5",
+        "backend/src/api/health.ts:6",
+        "backend/src/api/health.ts:7",
+        "backend/src/api/health.ts:8",
+        "backend/src/api/health.ts:10",
+        "backend/src/core/database.ts:12",
+        "backend/src/core/lifespan.ts:8",
+        "backend/src/core/lifespan.ts:9",
+        "backend/src/core/lifespan.ts:10",
+        "backend/src/core/lifespan.ts:11",
+        "backend/src/core/lifespan.ts:12",
+        "backend/src/core/lifespan.ts:13",
+        "backend/src/core/lifespan.ts:14",
+        "backend/src/core/lifespan.ts:15",
+        "backend/src/core/lifespan.ts:17",
+        "backend/src/core/lifespan.ts:18",
+        "backend/src/core/lifespan.ts:19",
+        "backend/src/core/lifespan.ts:20",
+        "backend/src/core/lifespan.ts:21",
+        "backend/src/core/lifespan.ts:22",
+        "backend/src/core/lifespan.ts:23",
+        "backend/src/core/lifespan.ts:26",
+        "backend/src/core/lifespan.ts:27",
+        "backend/src/core/lifespan.ts:28",
+        "backend/src/core/lifespan.ts:30",
+        "backend/src/core/lifespan.ts:31",
+        "backend/src/features/todos/router.ts:8",
+        "backend/src/features/todos/router.ts:9",
+        "backend/src/features/todos/router.ts:10",
+        "backend/src/features/todos/router.ts:11",
+        "backend/src/features/todos/router.ts:20",
+        "backend/src/features/todos/router.ts:21",
+        "backend/src/features/todos/router.ts:22",
+        "backend/src/features/todos/router.ts:25",
+        "backend/src/features/todos/router.ts:26",
+        "backend/src/features/todos/router.ts:27",
+        "backend/src/features/todos/router.ts:28",
+        "backend/src/features/todos/router.ts:29",
+        "backend/src/features/todos/router.ts:32",
+        "backend/src/features/todos/router.ts:33"
+      ]
+    },
+    "candidateCoverage": {
+      "frontend": {
+        "lines": {
+          "covered": 142,
+          "total": 151,
+          "pct": 94.03
+        },
+        "branches": {
+          "covered": 111,
+          "total": 137,
+          "pct": 81.02
+        },
+        "statements": {
+          "covered": 158,
+          "total": 168,
+          "pct": 94.04
+        },
+        "functions": {
+          "covered": 68,
+          "total": 77,
+          "pct": 88.31
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 109,
+          "total": 109,
+          "pct": 100
+        },
+        "branches": {
+          "covered": 47,
+          "total": 48,
+          "pct": 97.91
+        },
+        "statements": {
+          "covered": 128,
+          "total": 129,
+          "pct": 99.22
+        },
+        "functions": {
+          "covered": 32,
+          "total": 32,
+          "pct": 100
+        }
+      },
+      "gaps": [
+        "frontend/src/app/AppProviders.tsx:14",
+        "frontend/src/app/AppProviders.tsx:9",
+        "frontend/src/features/todos/TodosPage.tsx:81",
+        "frontend/src/features/todos/TodosPage.tsx:18",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:16",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:19",
+        "frontend/src/features/todos/components/TodoEmptyState.tsx:23",
+        "frontend/src/features/todos/components/TodoForm.tsx:67",
+        "frontend/src/features/todos/components/TodoForm.tsx:91",
+        "frontend/src/features/todos/components/TodoForm.tsx:97",
+        "frontend/src/features/todos/components/TodoForm.tsx:108",
+        "frontend/src/features/todos/components/TodoItem.tsx:32",
+        "frontend/src/features/todos/components/TodoItem.tsx:41",
+        "frontend/src/features/todos/components/TodoItem.tsx:42",
+        "frontend/src/features/todos/components/TodoItem.tsx:47",
+        "frontend/src/features/todos/components/TodoItem.tsx:48",
+        "frontend/src/features/todos/components/TodoItem.tsx:51",
+        "frontend/src/features/todos/components/TodoItem.tsx:64",
+        "frontend/src/features/todos/components/TodoList.tsx:43",
+        "frontend/src/features/todos/components/TodoList.tsx:47",
+        "frontend/src/features/todos/components/TodoList.tsx:48",
+        "frontend/src/features/todos/components/TodoList.tsx:49",
+        "frontend/src/features/todos/components/TodoList.tsx:35",
+        "frontend/src/features/todos/components/TodoList.tsx:40",
+        "frontend/src/features/todos/utils/todos.ts:48",
+        "backend/src/factory.ts:20"
+      ]
+    },
+    "candidateTests": {
+      "backend": {
+        "total": 87,
+        "failed": 0,
+        "failures": []
+      },
+      "frontend": {
+        "total": 68,
+        "failed": 0,
+        "failures": []
+      }
+    },
+    "coverageComparison": {
+      "status": "comparable",
+      "reason": "same head/config/runtime",
+      "deltas": {
+        "frontend": {
+          "lines": {
+            "covered": 43,
+            "total": 0,
+            "pctPoints": 28.47
+          },
+          "branches": {
+            "covered": 17,
+            "total": 0,
+            "pctPoints": 12.41
+          },
+          "statements": {
+            "covered": 48,
+            "total": 0,
+            "pctPoints": 28.57
+          },
+          "functions": {
+            "covered": 28,
+            "total": 0,
+            "pctPoints": 36.37
+          }
+        },
+        "backend": {
+          "lines": {
+            "covered": 60,
+            "total": 0,
+            "pctPoints": 55.05
+          },
+          "branches": {
+            "covered": 25,
+            "total": 0,
+            "pctPoints": 52.08
+          },
+          "statements": {
+            "covered": 74,
+            "total": 0,
+            "pctPoints": 57.36
+          },
+          "functions": {
+            "covered": 18,
+            "total": 0,
+            "pctPoints": 56.25
+          }
+        }
+      },
+      "objectiveMet": false
+    },
+    "facts": []
+  },
+  "artifacts": [
+    {
+      "id": 12008216422,
+      "name": "unit-agent-38808142174-1-verifier",
+      "size_in_bytes": 1985
+    },
+    {
+      "id": 12007742431,
+      "name": "unit-agent-38808142174-1-report",
+      "size_in_bytes": 1934
+    },
+    {
+      "id": 12007715486,
+      "name": "unit-agent-38808142174-1-precollect",
+      "size_in_bytes": 2102
+    },
+    {
+      "id": 12007178466,
+      "name": "unit-agent-38808142174-1-agent",
+      "size_in_bytes": 22539
+    },
+    {
+      "id": 12006884085,
+      "name": "unit-agent-38808142174-1-verifier-logs",
+      "size_in_bytes": 4910
+    },
+    {
+      "id": 12005999954,
+      "name": "unit-agent-38808142174-1-precollect-logs",
+      "size_in_bytes": 4802
+    }
+  ],
+  "interpretation": {
+    "authentication": "Claude Code subscription OAuth; no model API key or API fallback",
+    "usage": "Native token usage retained. CLI list-price cost metadata is not an invoice or a subscription allowance measurement. Normalized estimatedUsd remains null.",
+    "review": "Independent static simplification and test-quality review covered all eleven files without material findings. Optional workflow model reviewer disabled.",
+    "mutation": "Optional Stryker workflow disabled; no new whole-project mutation score claimed.",
+    "remaining": "100% across all metrics and complete behavioral coverage are not claimed. Model remainingGaps are analyst reports."
+  }
+}
