@@ -60,6 +60,9 @@ export async function runReview(
     policy,
     Date.parse(candidate.context.deadline),
     candidate.calls,
+    candidate.context.task === "coverage-gap"
+      ? limits.coverageCalls
+      : limits.calls,
   );
   const apps = (["backend", "frontend"] as const).filter((app) =>
     candidate.files.some((p) => p.startsWith(app + "/")),

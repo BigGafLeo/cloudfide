@@ -1,3 +1,5 @@
+import { candidateSchema } from "../src/contracts.js";
+import { makeCandidate, makePlan } from "./support.js";
 import { expect, it } from "vitest";
 import {
   runContextSchema,
@@ -86,4 +88,39 @@ it("permits disabled workflow, requires explicit valid pricing for active roles"
   expect(() =>
     parsePolicy({ trustedAuthors: [], roles: {}, maxEstimatedUsd: NaN }, []),
   ).toThrow();
+});
+
+it("bounds aggregate plans without changing the per-role schema", () => {
+  const c = makeCandidate();
+  c.context.task = "coverage-gap";
+  const p = makePlan();
+  p.cases = Array.from({ length: 160 }, (_, i) => ({
+    ...p.cases[0]!,
+    id: "round-" + (1 + Math.floor(i / 20)) + ":case-" + i,
+  }));
+  p.paths = Array.from(
+    { length: 160 },
+    (_, i) => "frontend/src/a" + i + ".test.ts",
+  );
+  c.plan = p;
+  c.files = p.paths;
+  expect(candidateSchema.parse(c).plan!.cases).toHaveLength(160);
+  expect(() => testPlanSchema.parse(p)).toThrow();
+  p.cases.push({ ...p.cases[0]!, id: "overflow" });
+  expect(() => candidateSchema.parse(c)).toThrow();
+  p.cases.pop();
+  p.paths.push("frontend/src/overflow.test.ts");
+  c.files = p.paths;
+  expect(() => candidateSchema.parse(c)).toThrow();
+});
+
+it("keeps scoped PR-change artifact limits even after introducing aggregate coverage plans", () => {
+  const c = makeCandidate();
+  const p = makePlan();
+  p.cases = Array.from({ length: 21 }, (_, i) => ({
+    ...p.cases[0]!,
+    id: "c" + i,
+  }));
+  c.plan = p;
+  expect(() => candidateSchema.parse(c)).toThrow();
 });

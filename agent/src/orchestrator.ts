@@ -1,3 +1,4 @@
+import { HostStopError, type HostStopCode } from "./termination.js";
 import { validatePatchPath } from "./paths.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -25,6 +26,7 @@ export interface AgentOutcome {
   skillsUsed: string[];
   status: CandidateManifest["status"];
   reason: string;
+  hostStop?: HostStopCode;
 }
 export async function executeRole(
   role: Role,
@@ -42,8 +44,18 @@ export async function executeRole(
   const adapter = adapters.get(selected.provider);
   if (!adapter) throw new Error("provider not registered");
   await adapter.assertCapabilities();
-  if (signal.aborted || !(await recheck()))
-    throw new Error("stale/closed PR or cancelled");
+  if (signal.aborted) throw new HostStopError("cancelled", "cancelled");
+  let current: boolean;
+  try {
+    current = await recheck();
+  } catch (error) {
+    throw new HostStopError(
+      "recheck-failed",
+      error instanceof Error ? error.message : "head check failed",
+    );
+  }
+  if (signal.aborted) throw new HostStopError("cancelled", "cancelled");
+  if (!current) throw new HostStopError("stale", "stale/closed PR");
   const bundle = await loadRole(role, apps, policy.mutation.enabled);
   const callId = randomUUID(),
     start = Date.now();
@@ -98,15 +110,17 @@ export async function runAgent(
   adapters: Map<string, ProviderAdapter>,
   recheck: () => Promise<boolean>,
   signal: AbortSignal,
+  sharedBudget?: Budget,
 ): Promise<AgentOutcome> {
-  const budget = new Budget(policy, Date.parse(context.deadline)),
+  const budget =
+      sharedBudget ?? new Budget(policy, Date.parse(context.deadline)),
     skillsUsed: string[] = [];
   let plan: TestPlan | null = null;
   if (bundle.missingCritical.length)
     return {
       plan: null,
       writer: null,
-      calls: [],
+      calls: budget.records(),
       skillsUsed,
       status: "inconclusive",
       reason: bundle.missingCritical.join("; "),
@@ -178,6 +192,7 @@ export async function runAgent(
       skillsUsed,
       status: "inconclusive",
       reason: error instanceof Error ? error.message : "agent failed",
+      ...(error instanceof HostStopError ? { hostStop: error.code } : {}),
     };
   }
 }

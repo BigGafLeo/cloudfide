@@ -16,7 +16,7 @@ In the repository, open Settings -> Secrets and variables -> Actions -> New repo
 
 For this public repository, Codex subscription authentication is blocked at GitHub entry points. Personal local Codex probes remain supported; explicit API authentication is a separately billed choice. See the [authentication policy](../README.md#authentication-and-provider-policy).
 
-Standard mode admits at most two model calls and has no automatic repair/retry or paid API fallback. Account limits still apply; configured USD reservations are virtual admission units, not a subscription-quota meter.
+Scoped automatic pr-change runs admit at most two core model calls plus an explicitly enabled reviewer. Manual coverage-gap runs admit at most eight analyst/writer rounds and seventeen calls including that optional reviewer. All rounds share the original budget and four-hour deadline; the configured seventeen subscription reservation units are virtual admission accounting, not a bill or a subscription-quota meter. Account limits still apply. There is no paid API fallback or automatic retry of a failed provider/head check.
 
 ## 3. Open the coverage-gap PR
 
@@ -34,7 +34,7 @@ The manual entry point selects coverage-gap analysis. It collects the exact base
 
 ## 4. Inspect the real outcome
 
-The jobs perform identity resolution, secret-free precollection, analyst -> plan validation -> writer, isolated candidate verification and PR publication. The report binds the tested commit and run/attempt. A failed/inconclusive proposal is a real result to diagnose; do not label it a successful test improvement.
+The jobs perform identity resolution and secret-free precollection. Manual coverage-gap then repeats analyst -> plan validation -> writer -> isolated candidate verification with refreshed tests and gaps, preserving the last verified cumulative proposal when a batch fails or a limit stops further work. A separate final verifier rechecks that proposal before PR publication. The report binds the tested commit and run/attempt. Proposal checks can be accepted while the overall coverage run remains partial. Only the final verifier establishes reached: at least 80% lines and 80% branches separately in frontend and backend, with complete passing checks, comparable scope and no regression in any measured metric. Inspect the round history, shared call ledger and explicit stop reason, including payload capacity or head-check failure. A failed/inconclusive proposal is a real result to diagnose; do not label it a successful test improvement.
 
 In the PR and Actions run, inspect:
 

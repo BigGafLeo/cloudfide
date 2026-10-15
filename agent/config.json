@@ -26,7 +26,21 @@
       "pricingDate": "2026-10-15"
     }
   },
-  "maxEstimatedUsd": 3,
-  "review": { "enabled": false, "gate": "advisory" },
-  "mutation": { "enabled": false, "gate": "advisory" }
+  "maxEstimatedUsd": 17,
+  "review": {
+    "enabled": false,
+    "gate": "advisory"
+  },
+  "mutation": {
+    "enabled": false,
+    "gate": "advisory"
+  },
+  "coverage": {
+    "target": {
+      "lines": 80,
+      "branches": 80
+    },
+    "maxRounds": 8,
+    "noProgressRounds": 2
+  }
 }
