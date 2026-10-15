@@ -11,6 +11,7 @@ import {
   writerResultSchema,
   type RunContext,
   type AnalysisBundle,
+  type FileData,
   type ProviderAdapter,
   type TestPlan,
   type WriterResult,
@@ -111,6 +112,7 @@ export async function runAgent(
   recheck: () => Promise<boolean>,
   signal: AbortSignal,
   sharedBudget?: Budget,
+  availableFiles: FileData[] = bundle.files,
 ): Promise<AgentOutcome> {
   const budget =
       sharedBudget ?? new Budget(policy, Date.parse(context.deadline)),
@@ -151,7 +153,7 @@ export async function runAgent(
         status: plan.decision,
         reason: plan.reason,
       };
-    validateValuePlan(plan, bundle);
+    validateValuePlan(plan, bundle, availableFiles);
     if (plan.cases.some((c) => c.confidence === "unconfirmed"))
       throw new Error("unconfirmed contract: writer not dispatched");
     const generated = await executeRole(

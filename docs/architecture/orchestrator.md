@@ -20,7 +20,7 @@ Verifier i reviewer nie mutują planu/candidate. Publisher oblicza final decyzj�
 
 ## Wartość testu
 
-Każdy przypadek planu wymaga value: action add/strengthen, testPath, existingTests z path/name, regression i rationale (wpływ błędu oraz koszt utrzymania/setup). Host przed writerem sprawdza rzeczywiste pliki w ograniczonym bundle, dozwolony cel i referencję istniejącego testu dla strengthen. Po writerze wymaga pokrycia zaplanowanych celów. Nazwy testów i uzasadnienie są oceniane semantycznie; schema nie dowodzi braku duplikacji ani poprawności asercji.
+Każdy przypadek planu wymaga value: action add/strengthen, testPath, existingTests z path/name, regression i rationale (wpływ błędu oraz koszt utrzymania/setup). Host przed writerem sprawdza rzeczywiste pliki w ograniczonym bundle, dozwolony cel i porównanie testu z tego samego pliku dla każdego istniejącego celu, także action add. Pełna mapa captured/current files służy wyłącznie hostowi do blokowania nadpisania pominiętego istniejącego pliku. Wybrane jednostki i ich bezpośrednie importy otrzymują powiązane testy, bez rekurencyjnego przejścia grafu. Po writerze wymaga pokrycia zaplanowanych celów. Nazwy testów i uzasadnienie są oceniane semantycznie; schema nie dowodzi braku duplikacji ani poprawności asercji.
 
 Final reviewer dostaje oryginalny kod jednostek wskazanych w planie, powiązane testy i bezpośrednie importy, także gdy candidate tworzy zupełnie nowy plik. Brak wymaganego źródła lub porównywanego testu blokuje review. Profil demonstracyjny wymaga passed bez material findings; cały czas obowiązuje jeden dodatkowy call w ramach 17. Review nie dopisuje testów i nie ma automatycznej pętli napraw po review.
 

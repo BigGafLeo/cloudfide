@@ -171,7 +171,11 @@ function valuePlan() {
     })),
   };
 }
-async function runValuePlan(plan = valuePlan(), files = bundle().files) {
+async function runValuePlan(
+  plan = valuePlan(),
+  files = bundle().files,
+  availableFiles = files,
+) {
   const requests: RoleRequest[] = [];
   const adapter: ProviderAdapter = {
     id: "fixture",
@@ -202,6 +206,8 @@ async function runValuePlan(plan = valuePlan(), files = bundle().files) {
     new Map([["fixture", adapter]]),
     async () => true,
     new AbortController().signal,
+    undefined,
+    availableFiles,
   );
   return { out, requests };
 }
@@ -297,4 +303,72 @@ it("rejects writer output missing any planned target", async () => {
   expect(out.status).toBe("inconclusive");
   expect(out.writer).toBeNull();
   expect(out.reason).toMatch(/target/);
+});
+
+it.each([
+  ["test", "frontend/src/lib/http.test.ts"],
+  ["fixture", "frontend/src/test/fixtures/response.ts"],
+])(
+  "rejects blind rewrites of an existing %s omitted from analyst context",
+  async (_kind, path) => {
+    const plan = valuePlan();
+    if (path !== plan.paths[0]) plan.paths.push(path);
+    const files = bundle().files;
+    const available = [
+      ...files,
+      { path, content: "original assertions or fixture" },
+    ];
+    const { out, requests } = await runValuePlan(plan, files, available);
+    expect(out.status).toBe("inconclusive");
+    expect(out.reason).toMatch(/existing.*context/);
+    expect(requests.map((request) => request.role)).toEqual(["analyst"]);
+  },
+);
+
+it.each([
+  { existingTests: [] },
+  {
+    existingTests: [
+      { path: "frontend/src/other.test.ts", name: "other behavior" },
+    ],
+  },
+])(
+  "requires same-file comparison for additions to an existing test target (%j)",
+  async ({ existingTests }) => {
+    const plan = valuePlan();
+    plan.cases[0]!.value.existingTests = existingTests;
+    const files = [
+      ...bundle().files,
+      { path: plan.paths[0]!, content: "it('returns API result',()=>{});" },
+      {
+        path: "frontend/src/other.test.ts",
+        content: "it('other behavior',()=>{});",
+      },
+    ];
+    const { out, requests } = await runValuePlan(plan, files, files);
+    expect(out.status).toBe("inconclusive");
+    expect(requests.map((request) => request.role)).toEqual(["analyst"]);
+  },
+);
+
+it("permits additions that compare the existing target without parsing test names", async () => {
+  const plan = valuePlan();
+  plan.cases[0]!.value.existingTests = [
+    {
+      path: plan.paths[0]!,
+      name: "semantic comparison remains a role judgment",
+    },
+  ];
+  plan.paths.push("frontend/src/test/fixtures/response.ts");
+  const files = [
+    ...bundle().files,
+    { path: plan.paths[0]!, content: "it('returns API result',()=>{});" },
+    { path: plan.paths[1]!, content: "export const response = {};" },
+  ];
+  const { out, requests } = await runValuePlan(plan, files, files);
+  expect(out.status).toBe("candidate");
+  expect(requests.map((request) => request.role)).toEqual([
+    "analyst",
+    "writer",
+  ]);
 });

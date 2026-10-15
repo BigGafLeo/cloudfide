@@ -601,3 +601,51 @@ it.each([false, true])(
     expect(Buffer.byteLength(JSON.stringify(out))).toBeLessThanOrEqual(4194304);
   },
 );
+
+it("does not dispatch a writer for captured fixture rewrites outside the analyst bundle", async () => {
+  const f = await fixture([85]);
+  const path = "frontend/src/test/fixtures/response.ts";
+  f.options.source.files.push({
+    path,
+    content: "export const originalResponse = {};",
+  });
+  const adapter = f.options.adapters.get("fixture")!,
+    run = adapter.run;
+  adapter.run = async (request, signal) => {
+    const native = await run(request, signal);
+    if (request.role !== "analyst") return native;
+    const plan = native.result as ReturnType<typeof makePlan>;
+    plan.paths.push(path);
+    return { ...native, result: plan };
+  };
+  const out = await runCoverageRounds(f.options);
+  expect(out.patchText).toBeNull();
+  expect(out.manifest.calls.every((call) => call.role === "analyst")).toBe(
+    true,
+  );
+  expect(out.manifest.coverageRun?.rounds[0]?.reason).toMatch(
+    /existing.*context/,
+  );
+  expect(f.bundles[0]!.files.some((file) => file.path === path)).toBe(false);
+  expect(f.patches).toHaveLength(0);
+});
+
+it("requires same-file evidence before adding to an accepted prior-round test", async () => {
+  const f = await fixture([65, 85]);
+  const adapter = f.options.adapters.get("fixture")!,
+    run = adapter.run;
+  let analysts = 0;
+  adapter.run = async (request, signal) => {
+    const native = await run(request, signal);
+    if (request.role !== "analyst" || ++analysts === 1) return native;
+    const plan = native.result as ReturnType<typeof makePlan>;
+    plan.paths = ["frontend/src/router1.test.ts"];
+    plan.cases[0]!.value.testPath = plan.paths[0]!;
+    return { ...native, result: plan };
+  };
+  const out = await runCoverageRounds(f.options);
+  expect(out.patchText).toContain("assertion round 1");
+  expect(f.patches).toHaveLength(1);
+  expect(out.manifest.coverageRun?.rounds[1]?.status).toBe("inconclusive");
+  expect(out.manifest.coverageRun?.rounds[1]?.callIds).toHaveLength(1);
+});

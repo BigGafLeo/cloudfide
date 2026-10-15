@@ -116,7 +116,12 @@ export async function collectEvidence(
           id,
           gate: "required",
           status: out.exitCode === 0 ? "passed" : "failed",
-          reason: out.exitCode === 0 ? "" : "command failed",
+          reason:
+            out.exitCode === 0
+              ? ""
+              : command.id === "typecheck"
+                ? typecheckFailureReason(out.stdout, out.stderr)
+                : "command failed",
           command: "npm " + command.args.join(" "),
           exitCode: out.exitCode,
           logPath,
@@ -195,6 +200,23 @@ export async function collectEvidence(
   };
 }
 
+function typecheckFailureReason(stdout: string, stderr: string): string {
+  // Application output is evidence only; never use it to select commands.
+  // Reserve room for both streams and labels within CheckResult's 4096 limit.
+  const diagnostics = (
+    [
+      ["stdout", stdout],
+      ["stderr", stderr],
+    ] as const
+  )
+    .filter(([, output]) => output.trim())
+    .map(([stream, output]) => stream + ":\n" + output.trim().slice(0, 1900))
+    .join("\n");
+  return diagnostics
+    ? "command failed; untrusted application diagnostics (excerpt; full output in log):\n" +
+        diagnostics
+    : "command failed";
+}
 function failedAssertions(report: Record<string, unknown>): string[] {
   const failures: string[] = [];
   if (Array.isArray(report.testResults))

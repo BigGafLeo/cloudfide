@@ -265,6 +265,8 @@ try {
               createAdapters(policy, root),
               () => recheckHead(context, api),
               signal,
+              undefined,
+              source.files,
             );
             manifest = {
               ...terminalCandidate(context, "inconclusive", result.reason),
