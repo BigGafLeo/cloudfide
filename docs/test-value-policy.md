@@ -1,0 +1,13 @@
+# Test value policy
+
+Coverage locates unexecuted code; it does not establish whether assertions protect behavior. The existing 80% line/branch run target is a discovery/stopping signal, not a requirement to invent tests. The assignment does not set a coverage percentage. A valid proposal can remain partial when useful, supported work is exhausted.
+
+The analyst compares tests in the supplied scope, then chooses strengthening or adding. Each case records a target, compared test names/paths, a concrete incorrect behavior, and impact versus maintenance/setup cost. Prefer strengthening an existing behavior test. Another input is justified when it distinguishes a different plausible regression; sharing a branch is insufficient evidence to delete it. Do not add a test solely to increase a percentage or a mutation score. Uncertain contracts belong in remaining gaps.
+
+The writer implements approved cases and preserves prior protections. Assert the request/effect relevant to the claim, await meaningful async milestones and use real isolated state when testing cache behavior. Formatting-only SQL differences should not fail a semantic schema test. Mocked DDL does not establish behavior against a real database. Characterization must be labelled honestly.
+
+The host validates bounded structured value evidence and in-scope references before writer spend, then checks planned targets against writer files. These are admission checks, not semantic proof. The fresh reviewer compares source, original tests, exact patch and verifier evidence. The demonstration profile requires review: unavailable, failed or material findings prevent accepted. It remains one final call in the existing budget, without an automatic repair loop. A reviewer can use a separately configured provider through the existing adapter interface.
+
+The published report shows up to twenty escaped value rationales; the artifact retains complete plans. Impact and cost are qualitative judgments, not a numeric score. Acceptance does not establish a globally minimal test suite, complete oracle verification or a representative mutation score. Optional mutation checks remain separately configurable and disabled in the reference profile.
+
+Review materializes the validated test-only patch in disposable scratch without executing application code. It follows direct imports in proposed tests while preserving original tests for comparison. References to tests created in earlier rounds are supplied by the exact candidate patch and labelled separately from original-snapshot evidence. Missing references from both snapshots and the proposal block review.

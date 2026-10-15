@@ -147,3 +147,49 @@ it("refuses incomparable coverage-gap proposals and every metric regression", ()
   v.candidateCoverage.backend.functions = { covered: 0, total: 2, pct: 0 };
   expect(decide(c, v, null, p)).toBe("failed");
 });
+
+it("requires independent review even when all candidate measurements meet the target", () => {
+  const c = makeCandidate(),
+    v = makeVerification(c),
+    p = activePolicy(),
+    r = makeReview(c);
+  p.review = { enabled: true, gate: "required" };
+  expect(decide(c, v, null, p)).toBe("inconclusive");
+  expect(decide(c, v, r, p)).toBe("accepted");
+  r.result.findings = [
+    {
+      id: "value",
+      severity: "material",
+      location: "http.test.ts:2",
+      claim: "assertion misses the planned empty-body regression",
+      evidence: "only non-null asserted",
+      kind: "other",
+      factId: null,
+    },
+  ];
+  expect(decide(c, v, r, p)).toBe("inconclusive");
+});
+
+it("publishes bounded escaped value rationale without hiding the authoritative review decision", () => {
+  const c = makeCandidate(),
+    v = makeVerification(c),
+    r = makeReview(c),
+    p = activePolicy();
+  const value = c.plan!.cases[0]!.value;
+  value.regression = 'parse an empty body <img src="x"> @everyone';
+  value.rationale = "HTTP correctness; adds no new setup";
+  const report = renderReport({
+    candidate: c,
+    verification: v,
+    review: r,
+    decision: "accepted",
+    policy: p,
+    runUrl: "https://github.com/owner/repo/actions/runs/123",
+  });
+  expect(report).toContain("Planned test value");
+  expect(report).toContain("parse an empty body &lt;img");
+  expect(report).toContain("HTTP correctness; adds no new setup");
+  expect(report).not.toContain("<img");
+  expect(report).not.toContain("@everyone");
+  expect(report).toContain("Review: passed");
+});

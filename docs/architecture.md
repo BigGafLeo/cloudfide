@@ -10,7 +10,7 @@ flowchart LR
   E --> A["Trusted coverage agent: analyst → writer → isolated verification → refreshed gaps"]
   A --> V["Secret-free verifier: candidate unit/typecheck/coverage"]
   V --> P["Publisher: decision + PR comment + patch link"]
-  V -. optional .-> R["Fresh test reviewer"]
+  V --> R["Fresh test reviewer: required in demonstration profile"]
   R --> P
 ```
 

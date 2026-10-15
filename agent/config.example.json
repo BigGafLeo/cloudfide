@@ -28,8 +28,8 @@
   },
   "maxEstimatedUsd": 17,
   "review": {
-    "enabled": false,
-    "gate": "advisory"
+    "enabled": true,
+    "gate": "required"
   },
   "mutation": {
     "enabled": false,

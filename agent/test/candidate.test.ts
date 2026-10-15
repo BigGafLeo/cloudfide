@@ -64,7 +64,13 @@ it("creates an exact new-file patch and independently rejects production paths",
   expect(result.patch?.sha256).toBe(
     createHash("sha256").update(patch).digest("hex"),
   );
-  await validateCandidatePatch(patch, result.files, root);
+  const materialized = await validateCandidatePatch(patch, result.files, root);
+  expect(materialized).toEqual([
+    {
+      path: plan.paths[0]!,
+      content: "import {it} from 'vitest';\nit('works',()=>{});\n",
+    },
+  ]);
   const forged = patch.replaceAll(
     "frontend/src/lib/http.test.ts",
     "backend/src/core/config.ts",
