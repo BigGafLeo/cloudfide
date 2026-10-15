@@ -27,3 +27,21 @@ it('sends only writable task fields on creation', async () => {
     }),
   })
 })
+
+it('patches a task by id and sends only the supplied fields', async () => {
+  vi.mocked(request).mockResolvedValue({ ...todoFixture, completed: true })
+  await expect(todosApi.update(5, { completed: true })).resolves.toEqual({
+    ...todoFixture,
+    completed: true,
+  })
+  expect(request).toHaveBeenCalledWith('/todos/5', {
+    method: 'PATCH',
+    body: '{"completed":true}',
+  })
+})
+
+it('deletes a task by id', async () => {
+  vi.mocked(request).mockResolvedValue(undefined)
+  await expect(todosApi.remove(5)).resolves.toBeUndefined()
+  expect(request).toHaveBeenCalledWith('/todos/5', { method: 'DELETE' })
+})
