@@ -336,5 +336,36 @@ export function renderReport(input: {
         " ms; " +
         call.status,
     );
+  if (c.plan?.cases.length) {
+    rows.push(
+      "",
+      "Planned test value (analyst rationale for independent review, not a measured risk score):",
+      "| Case / action | Target / compared tests | Distinct regression | Impact and maintenance cost |",
+      "|---|---|---|---|",
+    );
+    for (const testCase of c.plan.cases.slice(0, 20)) {
+      const value = testCase.value;
+      const compared =
+        value.existingTests
+          .map((test) => test.path + " :: " + test.name)
+          .join("; ") || "none identified in supplied scope";
+      rows.push(
+        "| " +
+          plain(testCase.id).slice(0, 100) +
+          " / " +
+          value.action +
+          " | " +
+          plain(value.testPath + "; " + compared).slice(0, 400) +
+          " | " +
+          plain(value.regression).slice(0, 400) +
+          " | " +
+          plain(value.rationale).slice(0, 400) +
+          " |",
+      );
+    }
+    rows.push(
+      "Full value plans, including any additional cases, are retained in payload.json. Coverage and case counts do not establish minimality or correctness.",
+    );
+  }
   return rows.join("\n").slice(0, 40000);
 }

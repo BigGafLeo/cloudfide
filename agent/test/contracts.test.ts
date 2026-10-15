@@ -124,3 +124,39 @@ it("keeps scoped PR-change artifact limits even after introducing aggregate cove
   c.plan = p;
   expect(() => candidateSchema.parse(c)).toThrow();
 });
+
+it("requires strict value evidence for every planned case", () => {
+  const plan = makePlan();
+  const valid = {
+    action: "add",
+    testPath: plan.paths[0],
+    existingTests: [],
+    regression: "JSON parsing is attempted for a 204 response",
+    rationale: "Protects empty responses with one isolated fetch stub",
+  };
+  const withValue = { ...plan, cases: [{ ...plan.cases[0], value: valid }] };
+  expect(testPlanSchema.safeParse(withValue).success).toBe(true);
+  const { value: _ignored, ...withoutValue } = withValue.cases[0]!;
+  expect(
+    testPlanSchema.safeParse({ ...plan, cases: [withoutValue] }).success,
+  ).toBe(false);
+  for (const value of [
+    { ...valid, action: "delete" },
+    { ...valid, regression: "  " },
+    { ...valid, rationale: "" },
+    { ...valid, score: 9 },
+    { ...valid, existingTests: [{ path: plan.paths[0], name: "" }] },
+    {
+      ...valid,
+      existingTests: [
+        { path: plan.paths[0], name: "empty body", covered: true },
+      ],
+    },
+  ])
+    expect(
+      testPlanSchema.safeParse({
+        ...plan,
+        cases: [{ ...plan.cases[0], value }],
+      }).success,
+    ).toBe(false);
+});

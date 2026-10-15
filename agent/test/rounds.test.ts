@@ -82,6 +82,7 @@ async function fixture(values: number[] = [65, 82]) {
         const p = makePlan();
         p.paths = ["frontend/src/router" + round + ".test.ts"];
         p.cases[0]!.sourceLocation = "frontend/src/router.ts:1";
+        p.cases[0]!.value.testPath = p.paths[0]!;
         return { ...completedNative(), usage: null, result: p };
       }
       return {
@@ -348,6 +349,8 @@ it("does not verify an identical failed patch twice", async () => {
     if (request.role === "analyst") {
       const p = makePlan();
       p.paths = ["frontend/src/repeated.test.ts"];
+      p.cases[0]!.sourceLocation = "frontend/src/router.ts:1";
+      p.cases[0]!.value.testPath = p.paths[0]!;
       return { ...native, result: p };
     }
     return {
@@ -542,7 +545,7 @@ it("admits payload headroom before spending another batch of individually valid 
       behavior: "x".repeat(4096),
       inputs: "y".repeat(4096),
       expected: "z".repeat(4096),
-      requirementSource: "r".repeat(300),
+      requirementSource: "r".repeat(200),
       assertion: "a".repeat(100),
     }));
     largest = Math.max(largest, Buffer.byteLength(JSON.stringify(plan)));

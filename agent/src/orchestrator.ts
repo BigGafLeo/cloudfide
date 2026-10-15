@@ -1,5 +1,5 @@
 import { HostStopError, type HostStopCode } from "./termination.js";
-import { validatePatchPath } from "./paths.js";
+import { validateValuePlan, validateWriterTargets } from "./value-plan.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { Budget } from "./budget.js";
@@ -151,7 +151,7 @@ export async function runAgent(
         status: plan.decision,
         reason: plan.reason,
       };
-    for (const path of plan.paths) validatePatchPath(path);
+    validateValuePlan(plan, bundle);
     if (plan.cases.some((c) => c.confidence === "unconfirmed"))
       throw new Error("unconfirmed contract: writer not dispatched");
     const generated = await executeRole(
@@ -176,6 +176,7 @@ export async function runAgent(
         status: "inconclusive",
         reason: writer.reason,
       };
+    validateWriterTargets(plan, writer);
     return {
       plan,
       writer,

@@ -39,6 +39,14 @@ export function makePlan(): TestPlan {
         assertion: "real request returns undefined",
         mockBoundary: "fetch only",
         confidence: "contract-backed",
+        value: {
+          action: "add",
+          testPath: "frontend/src/lib/http.test.ts",
+          existingTests: [],
+          regression: "A 204 response attempts to parse an absent JSON body",
+          rationale:
+            "Protects no-body responses with a small isolated fetch stub; no existing request tests are supplied",
+        },
       },
     ],
     paths: ["frontend/src/lib/http.test.ts"],

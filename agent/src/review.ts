@@ -1,3 +1,5 @@
+import { sourcePath } from "./value-plan.js";
+import { selectContextFiles } from "./bundle.js";
 import { Budget } from "./budget.js";
 import { executeRole } from "./orchestrator.js";
 import {
@@ -10,6 +12,7 @@ import {
   type ProviderAdapter,
   type ReviewManifest,
   type FileData,
+  type TestPlan,
 } from "./contracts.js";
 import type { Policy } from "./config.js";
 export async function runReview(
@@ -53,6 +56,18 @@ export async function runReview(
     checks: verification.checks,
     coverage: verification.candidateCoverage,
     facts: verification.facts,
+    comparedTestOrigins: [
+      ...new Set(
+        candidate.plan!.cases.flatMap((c) =>
+          c.value.existingTests.map((t) => t.path),
+        ),
+      ),
+    ].map((path) => ({
+      path,
+      origin: source.files.some((f) => f.path === path)
+        ? "original snapshot"
+        : "candidate patch; absent from original snapshot",
+    })),
   };
   if (Buffer.byteLength(JSON.stringify(input)) > limits.bundle)
     throw new Error("review context bounds");
@@ -108,4 +123,51 @@ export async function runReview(
     call,
     confirmations,
   });
+}
+
+/** Review new test paths through their planned units, rather than requiring them in the original tree. */
+export function selectReviewFiles(
+  files: FileData[],
+  plan: TestPlan | null,
+  proposed: FileData[] = [],
+): FileData[] {
+  if (!plan || plan.decision !== "write")
+    throw new Error("review plan unavailable");
+  const originals = new Map(files.map((file) => [file.path, file]));
+  const byPath = new Map(
+    [...files, ...proposed].map((file) => [file.path, file]),
+  );
+  const selected = new Set<string>(plan.paths);
+  for (const testCase of plan.cases) {
+    const path = sourcePath(testCase.sourceLocation);
+    if (!originals.has(path))
+      throw new Error("review source unavailable: " + path);
+    selected.add(path);
+    for (const existing of testCase.value.existingTests) {
+      if (!byPath.has(existing.path))
+        throw new Error("review existing test unavailable: " + existing.path);
+      selected.add(existing.path);
+    }
+  }
+  // Resolve imports using the actual proposal, but retain original tests for comparison.
+  // Candidate-only full contents already appear in the exact patch.
+  const originalContext = selectContextFiles(
+    files,
+    [...selected],
+    [],
+    "pr-change",
+  );
+  const proposedContext = selectContextFiles(
+    [...byPath.values()],
+    [...selected],
+    [],
+    "pr-change",
+  );
+  return [
+    ...new Map(
+      [...originalContext, ...proposedContext].map((file) => [file.path, file]),
+    ).values(),
+  ].flatMap((file) =>
+    originals.has(file.path) ? [originals.get(file.path)!] : [],
+  );
 }

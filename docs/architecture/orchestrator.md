@@ -17,3 +17,11 @@ coverage-gap kumuluje tylko zweryfikowane treści testów w mapie i generuje pat
 Cel to >=80% lines i >=80% branches osobno frontend/backend, liczony z covered/total przy total>0 oraz pomiaru pct. Trusted policy może podnieść target, nie zmienia configów aplikacji. Wymagana jest porównywalność, stałe mianowniki i brak regresji wszystkich czterech metryk. Oddzielny final verifier jest autorytatywny dla raportu reached/partial; accepted propozycji nie oznacza osiągnięcia celu. objectiveMet nadal oznacza oddzielną aspirację 100%.
 
 Verifier i reviewer nie mutują planu/candidate. Publisher oblicza final decyzję na zwalidowanych wynikach, bez własnego modela. No-change/inconclusive/skipped może przejść bez candidate verifiera do publish. Missing artefact/job failure raportowany jest jako niekompletny run; nigdy synthetic passes.
+
+## Wartość testu
+
+Każdy przypadek planu wymaga value: action add/strengthen, testPath, existingTests z path/name, regression i rationale (wpływ błędu oraz koszt utrzymania/setup). Host przed writerem sprawdza rzeczywiste pliki w ograniczonym bundle, dozwolony cel i referencję istniejącego testu dla strengthen. Po writerze wymaga pokrycia zaplanowanych celów. Nazwy testów i uzasadnienie są oceniane semantycznie; schema nie dowodzi braku duplikacji ani poprawności asercji.
+
+Final reviewer dostaje oryginalny kod jednostek wskazanych w planie, powiązane testy i bezpośrednie importy, także gdy candidate tworzy zupełnie nowy plik. Brak wymaganego źródła lub porównywanego testu blokuje review. Profil demonstracyjny wymaga passed bez material findings; cały czas obowiązuje jeden dodatkowy call w ramach 17. Review nie dopisuje testów i nie ma automatycznej pętli napraw po review.
+
+Review materializes the validated test-only patch in disposable scratch without executing application code. It follows direct imports in proposed tests while preserving original tests for comparison. References to tests created in earlier rounds are supplied by the exact candidate patch and labelled separately from original-snapshot evidence. Missing references from both snapshots and the proposal block review.

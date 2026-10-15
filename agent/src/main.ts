@@ -15,9 +15,9 @@ import { collectPrecollection } from "./precollect.js";
 import { buildBundle, selectContextFiles } from "./bundle.js";
 import { runCoverageRounds } from "./rounds.js";
 import { runAgent } from "./orchestrator.js";
-import { freezeCandidate } from "./candidate.js";
+import { freezeCandidate, validateCandidatePatch } from "./candidate.js";
 import { verifyCandidate } from "./verify.js";
-import { runReview } from "./review.js";
+import { runReview, selectReviewFiles } from "./review.js";
 import { decide, renderReport } from "./report.js";
 import { readArtifact } from "./artifacts.js";
 import {
@@ -342,12 +342,12 @@ try {
     const v = verificationPayloadSchema.parse(await download("verifier"));
     const source = await fetchSnapshots(context, signal);
     try {
-      const files = selectContextFiles(
-        source.files,
+      const proposed = await validateCandidatePatch(
+        c.patchText ?? "",
         c.manifest.files,
-        v.manifest.candidateCoverage.gaps,
-        "pr-change",
+        source.head,
       );
+      const files = selectReviewFiles(source.files, c.manifest.plan, proposed);
       const review = await runReview(
         c.manifest,
         v.manifest,

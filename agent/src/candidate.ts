@@ -9,6 +9,7 @@ import {
   type WriterResult,
   type CallRecord,
   type CandidateManifest,
+  type FileData,
 } from "./contracts.js";
 import { validatePatchPath, assertSafeTarget } from "./paths.js";
 import {
@@ -26,7 +27,7 @@ export async function validateCandidatePatch(
   files: string[],
   headRoot: string,
   maxFiles: number = limits.aggregateFiles,
-): Promise<void> {
+): Promise<FileData[]> {
   if (
     Buffer.byteLength(patchText) > limits.patch ||
     patchText.includes("\0") ||
@@ -68,6 +69,12 @@ export async function validateCandidatePatch(
     await git(root, ["apply", "--check", "--whitespace=error", "-"], patchText);
     await git(root, ["apply", "--whitespace=error", "-"], patchText);
     await assertAppliedScope(root, files);
+    return await Promise.all(
+      files.map(async (path) => ({
+        path,
+        content: await readFile(join(root, path), "utf8"),
+      })),
+    );
   } finally {
     await removeScratch(root);
   }

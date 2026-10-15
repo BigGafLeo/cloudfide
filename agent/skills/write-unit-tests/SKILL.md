@@ -5,9 +5,14 @@ description: Use when creating or updating unit tests for a validated behavior p
 
 # Write planned unit tests
 
-Implement only the supplied case IDs and allowed test paths. Return WriterResult with status, reason, complete files and caseIds. Keep this response within twenty files and twenty case IDs. In later coverage rounds, preserve previously verified assertions shown in the refreshed bundle and use the supplied failed-check history to avoid repeating the same failing proposal. For written, include the full UTF-8 contents of each selected file, preserving relevant existing assertions. When contract/evidence conflicts or a critical dependency is absent, return dispute with no invented expected result.
-Exercise the actual unit. Mock external dependencies at their boundary; never mock the export under test. Use observable output, error or effects to distinguish the intended behavior from a concrete plausible bug. A successful call or toBeDefined alone seldom proves the case.
-Keep tests deterministic: await promises/user interactions, isolate module/env state, restore globals/spies/timers and avoid live network/database, arbitrary sleeps or shared test ordering. Several assertions may protect one behavior. Maintain useful existing tests rather than replacing them with easier assertions.
-Do not modify source, configuration, thresholds, exclusions, locks or setup to manufacture success. Do not execute commands or claim tests ran; the separate verifier provides execution evidence.
-Read references/backend.md or references/frontend.md only for the selected application. When mutation is enabled, use selectively supplied mutation facts to strengthen behavior assertions, without changing source to kill mutants.
-Writer output is a proposal, not a branch commit or an acceptance decision.
+Implement only supplied case IDs and allowed test paths. Before writing, inspect each case's value evidence and compare the named existing tests with its proposed regression. For strengthen, improve that existing scenario and preserve its useful assertions. For add, ensure its distinct protection justifies the cost; shared coverage is not proof of duplication. A new test file is allowed when the supplied comparison supports it. Missing comparison context, unsupported expectation or evidence conflict requires dispute; a filled rationale is not proof of value.
+
+Return WriterResult with status, reason, complete files and caseIds, within twenty files and twenty cases. For written, include full UTF-8 contents of every planned value.testPath and any needed allowed fixture. Preserve relevant existing assertions and previously verified coverage-round work shown in the refreshed bundle. Use failed-check history to avoid repeating failed proposals. Return dispute with no invented oracle when a critical dependency is absent.
+
+Exercise the actual unit. Mock dependencies at their boundary, never the export under test. Construct an input and discriminating assertion that would fail for the planned concrete bad behavior. Check meaningful outputs or effects: a mocked success response cannot prove the outgoing request is correct, and presence alone cannot prove a document has required content. Avoid copying source calculations into the expected result. Several assertions may protect one behavior.
+
+Await the milestone that establishes the claim: request/callback completion, deferred work, cache reconciliation or visible UI. A spy call or immediate resolved mock cannot establish a race or waiting guarantee. Keep tests deterministic; isolate module/env/cache state, restore globals/spies/timers, avoid live network/database, arbitrary sleeps and shared ordering. Do not pin irrelevant whitespace when the contract is semantic.
+
+Do not change source, config, thresholds, exclusions, locks or setup to manufacture success. Do not execute commands or claim tests ran; the separate verifier provides execution evidence. Read only host-selected backend/frontend references; when enabled, use mutation facts to strengthen behavioral assertions without source changes.
+
+The output is a proposal, not a branch commit or acceptance decision.

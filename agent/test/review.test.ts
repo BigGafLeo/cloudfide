@@ -91,3 +91,161 @@ it("uses a fresh selected provider and leaves arbitrary model claims unconfirmed
   expect(prompt).toContain("review-unit-tests");
   expect(prompt).not.toContain("write-unit-tests/SKILL");
 });
+import { selectReviewFiles } from "../src/review.js";
+
+it("includes a new test's real source, original neighboring tests and imported dependencies", () => {
+  const plan = makeCandidate().plan!;
+  const files = [
+    {
+      path: "frontend/src/lib/http.ts",
+      content:
+        "import { parse } from './parse.js'; export const request = parse;",
+    },
+    {
+      path: "frontend/src/lib/parse.ts",
+      content: "export const parse = () => 1;",
+    },
+    {
+      path: "frontend/src/lib/http.other.test.ts",
+      content:
+        "import { request } from './http'; test('existing success', () => request());",
+    },
+    { path: "backend/src/unrelated.ts", content: "export const other = 1;" },
+  ];
+  const chosen = selectReviewFiles(files, plan).map((f) => f.path);
+  expect(chosen).toContain("frontend/src/lib/http.ts");
+  expect(chosen).toContain("frontend/src/lib/parse.ts");
+  expect(chosen).toContain("frontend/src/lib/http.other.test.ts");
+  expect(chosen).not.toContain("backend/src/unrelated.ts");
+});
+
+it("fails closed when a reviewed source or compared existing test is absent", () => {
+  const plan = makeCandidate().plan!;
+  expect(() => selectReviewFiles([], plan)).toThrow(
+    /review source unavailable/,
+  );
+  plan.cases[0]!.value = {
+    action: "strengthen",
+    testPath: plan.paths[0]!,
+    existingTests: [{ path: plan.paths[0]!, name: "existing 204" }],
+    regression: "attempts to parse empty body",
+    rationale: "response correctness with no added setup",
+  };
+  expect(() =>
+    selectReviewFiles(
+      [
+        {
+          path: "frontend/src/lib/http.ts",
+          content: "export const request = () => {};",
+        },
+      ],
+      plan,
+    ),
+  ).toThrow(/review existing test unavailable/);
+});
+
+it("reviews a compared test created in an earlier round and follows imports from proposed tests", () => {
+  const plan = makeCandidate().plan!;
+  const target = plan.paths[0]!;
+  plan.cases[0]!.value = {
+    ...plan.cases[0]!.value,
+    action: "strengthen",
+    existingTests: [{ path: target, name: "earlier generated 204" }],
+  };
+  const files = [
+    {
+      path: "frontend/src/lib/http.ts",
+      content: "export const request=()=>undefined;",
+    },
+    {
+      path: "frontend/src/test/assertRequest.ts",
+      content: "export const assertEmpty=()=>true;",
+    },
+  ];
+  const proposed = [
+    {
+      path: target,
+      content:
+        "import {request} from './http'; import {assertEmpty} from '../test/assertRequest'; test('earlier generated 204',()=>assertEmpty(request()));",
+    },
+  ];
+  const chosen = selectReviewFiles(files, plan, proposed);
+  expect(chosen.map((f) => f.path)).toContain(
+    "frontend/src/test/assertRequest.ts",
+  );
+  expect(chosen.map((f) => f.path)).not.toContain(target); // exact candidate content remains in patch
+  expect(() => selectReviewFiles(files, plan, [])).toThrow(
+    /review existing test unavailable/,
+  );
+});
+
+it("preserves original tests for comparison while following a proposed test's new imports", () => {
+  const plan = makeCandidate().plan!,
+    target = plan.paths[0]!;
+  const files = [
+    {
+      path: "frontend/src/lib/http.ts",
+      content: "export const request=()=>undefined;",
+    },
+    { path: target, content: "test('original 204',()=>{});" },
+    {
+      path: "frontend/src/test/assertRequest.ts",
+      content: "export const assertEmpty=()=>true;",
+    },
+  ];
+  const proposed = [
+    {
+      path: target,
+      content:
+        "import {assertEmpty} from '../test/assertRequest'; test('changed',()=>assertEmpty());",
+    },
+  ];
+  const selected = selectReviewFiles(files, plan, proposed);
+  expect(selected.find((f) => f.path === target)?.content).toBe(
+    files[1]!.content,
+  );
+  expect(
+    selected.some((f) => f.path === "frontend/src/test/assertRequest.ts"),
+  ).toBe(true);
+});
+
+it("keeps helper evidence imported only by an original test as well as new imports", () => {
+  const plan = makeCandidate().plan!,
+    target = plan.paths[0]!;
+  const files = [
+    {
+      path: "frontend/src/lib/http.ts",
+      content: "export const request=()=>undefined;",
+    },
+    {
+      path: target,
+      content:
+        "import {oldAssert} from '../test/oldAssert'; test('original',()=>oldAssert());",
+    },
+    {
+      path: "frontend/src/test/oldAssert.ts",
+      content: "export const oldAssert=()=>true;",
+    },
+    {
+      path: "frontend/src/test/newAssert.ts",
+      content: "export const newAssert=()=>true;",
+    },
+  ];
+  const proposed = [
+    {
+      path: target,
+      content:
+        "import {newAssert} from '../test/newAssert'; test('changed',()=>newAssert());",
+    },
+  ];
+  const selected = selectReviewFiles(files, plan, proposed);
+  expect(selected.find((f) => f.path === target)?.content).toBe(
+    files[1]!.content,
+  );
+  expect(selected.map((f) => f.path)).toEqual(
+    expect.arrayContaining([
+      "frontend/src/test/oldAssert.ts",
+      "frontend/src/test/newAssert.ts",
+    ]),
+  );
+});

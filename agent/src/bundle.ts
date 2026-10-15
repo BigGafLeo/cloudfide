@@ -78,7 +78,7 @@ export function selectContextFiles(
   for (const path of [...selected]) {
     const content = byPath.get(path)!.content;
     for (const match of content.matchAll(
-      /(?:from\s+|import\s*)['"]([^'"]+)['"]/g,
+      /(?:from\s+|import\s*(?:\(\s*)?)['"]([^'"]+)['"]/g,
     )) {
       const specifier = match[1]!;
       if (!specifier.startsWith(".")) continue;

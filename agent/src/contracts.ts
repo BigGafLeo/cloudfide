@@ -73,6 +73,20 @@ export const caseSchema = z.strictObject({
   assertion: nonempty,
   mockBoundary: nonempty,
   confidence: z.enum(["contract-backed", "characterization", "unconfirmed"]),
+  value: z.strictObject({
+    action: z.enum(["add", "strengthen"]),
+    testPath: nonempty,
+    existingTests: z
+      .array(
+        z.strictObject({
+          path: nonempty,
+          name: text.trim().min(1),
+        }),
+      )
+      .max(20),
+    regression: text.trim().min(1),
+    rationale: text.trim().min(1),
+  }),
 });
 export type Case = z.infer<typeof caseSchema>;
 function planSchema(maxCases: number, maxPaths: number) {
