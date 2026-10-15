@@ -1,0 +1,595 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "repository": "https://github.com/BigGafLeo/cloudfide",
+  "pullRequest": "https://github.com/BigGafLeo/cloudfide/pull/2",
+  "execution": {
+    "runId": "38758028657",
+    "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38758028657",
+    "attempt": 1,
+    "task": "coverage-gap",
+    "result": "accepted",
+    "testedHeadSha": "50891869346e3d8cdcbd24a7b3c0908e324bf5ec",
+    "controlSha": "ab2fdbb050a711f5dfe34b9f41a2ff3f298d0d1f",
+    "baseSha": "ab2fdbb050a711f5dfe34b9f41a2ff3f298d0d1f"
+  },
+  "proposal": {
+    "patchSha256": "272e0470691debd52111e2cf0eca1ab90960214b7db603ce57c28c74815419f3",
+    "patchBytes": 11671,
+    "files": [
+      "backend/tests/config.test.ts",
+      "frontend/src/lib/http.test.ts",
+      "frontend/src/features/todos/utils/todos.test.ts",
+      "frontend/src/hooks/useNotice.test.ts",
+      "frontend/src/features/todos/api/todos.test.ts"
+    ],
+    "analystDecision": "write",
+    "analystReason": "Checks pass but coverage is low. Backend lines are 33% and frontend lines 47%. Several exported units with clear contracts are untested. These are config env resolution, the frontend http request error mapping, selectTodos sort/filter branches, validateTodo, isOverdue, formatDate and useNotice. I selected a bounded set of pure or low-mock cases. I excluded lifespan, factory and the other large component tests for this round.",
+    "cases": [
+      {
+        "id": "be-config-override",
+        "sourceLocation": "backend/src/core/config.ts:7-9",
+        "behavior": "resolveDatabaseUrl prefers the explicit override over DATABASE_URL and rewrites the postgresql+psycopg: scheme to postgresql:",
+        "requirementSource": "Code intent: the existing SQLAlchemy-style URL is normalized for Prisma (characterization of the scheme rewrite)",
+        "inputs": "override='postgresql+psycopg://u:p@h:5432/d'; process.env.DATABASE_URL='postgresql://other/x' (stubbed with vi.stubEnv)",
+        "expected": "'postgresql://u:p@h:5432/d'",
+        "assertion": "toBe exact string; second case: with no override, DATABASE_URL is returned (also normalized)",
+        "mockBoundary": "vi.stubEnv / unstubAllEnvs only; no module mocks",
+        "confidence": "characterization"
+      },
+      {
+        "id": "be-config-compose",
+        "sourceLocation": "backend/src/core/config.ts:10-19",
+        "behavior": "Without DATABASE_URL, the URL is built from the POSTGRES_* and DB_PORT variables, and the credentials and database name are URL-encoded",
+        "requirementSource": "Standard URL semantics via the WHATWG URL API and encodeURIComponent for the db name",
+        "inputs": "DATABASE_URL unset or empty; POSTGRES_USER='user', POSTGRES_PASSWORD='p@ss', POSTGRES_HOST='db', DB_PORT='5433', POSTGRES_DB='my db'",
+        "expected": "A URL parsing to protocol postgresql:, hostname db, port 5433, username user, decoded password p@ss, pathname /my%20db",
+        "assertion": "Parse the result with new URL and assert each part",
+        "mockBoundary": "vi.stubEnv only",
+        "confidence": "characterization"
+      },
+      {
+        "id": "be-config-missing",
+        "sourceLocation": "backend/src/core/config.ts:11-13",
+        "behavior": "Each missing required variable throws a named error",
+        "requirementSource": "Explicit error message in the source: 'Missing environment variable: NAME'",
+        "inputs": "Full set of vars with a single one deleted, iterated with it.each over the five names; DATABASE_URL set to empty string",
+        "expected": "Throws Error('Missing environment variable: <NAME>')",
+        "assertion": "expect(() => resolveDatabaseUrl()).toThrow(exact message)",
+        "mockBoundary": "vi.stubEnv; empty string used to unset",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "fe-http-success",
+        "sourceLocation": "frontend/src/lib/http.ts:3-24",
+        "behavior": "request prefixes /api, merges headers and returns JSON, or undefined on 204",
+        "requirementSource": "Function signature request<T> and the 204 branch in the source",
+        "inputs": "fetch mocked: 200 with {a:1}, and 204; init.headers {X:'1'}",
+        "expected": "Resolves {a:1} and undefined respectively; fetch called with '/api/path' and headers containing Content-Type application/json and X",
+        "assertion": "toEqual and toHaveBeenCalledWith(expect.objectContaining)",
+        "mockBoundary": "global fetch via vi.stubGlobal",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "fe-http-errors",
+        "sourceLocation": "frontend/src/lib/http.ts:5-22",
+        "behavior": "Network failure, 422, server detail and fallback errors map to user messages; an abort rethrows the original error",
+        "requirementSource": "Explicit user-facing messages in the source",
+        "inputs": "fetch rejects (no signal); fetch rejects with an already-aborted signal; 422; 400 with {detail:'Nope'}; 500 with non-JSON body",
+        "expected": "'Cannot connect to the server. Please try again.'; the original AbortError; the 'Check the task details...' message; 'Nope'; 'The operation failed. Please try again.'",
+        "assertion": "rejects.toThrow, or rejects.toBe(error) for the abort case",
+        "mockBoundary": "global fetch",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "fe-validate-todo",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:7-24",
+        "behavior": "validateTodo checks title, description and due date boundaries",
+        "requirementSource": "Explicit messages and limits (120, 2000, valid date) in the source, matching the backend validators",
+        "inputs": "title '  ' ; title 'x'x120 and 121 ; description 2000 and 2001 chars; due_date '2026-02-30', '2024-02-29', '2025-02-29', '2026-1-1', null",
+        "expected": "Error only for blank title, 121-char title, 2001-char description, and the invalid dates; {} for the valid boundary values",
+        "assertion": "toEqual on the error record",
+        "mockBoundary": "none (pure)",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "fe-select-sorts",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:26-56",
+        "behavior": "selectTodos handles the completed filter, the due sort with nulls last and id tiebreak, and the newest sort",
+        "requirementSource": "Filter and Sort type unions plus the source tiebreak logic",
+        "inputs": "todos with due_date null/earlier/later; completed/active mix; equal created_at with different ids",
+        "expected": "The completed filter returns only completed; the due sort orders earlier, later, then null; equal keys order by id descending; newest orders by created_at descending",
+        "assertion": "toEqual of the id order",
+        "mockBoundary": "none (pure)",
+        "confidence": "characterization"
+      },
+      {
+        "id": "fe-is-overdue",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:58-62",
+        "behavior": "isOverdue is true only for incomplete tasks with a due date before the local today",
+        "requirementSource": "Function name and boolean contract",
+        "inputs": "vi.useFakeTimers/setSystemTime to local 2026-10-15; due 2026-10-14, 2026-10-15, null; completed true or false",
+        "expected": "true only for incomplete with 2026-10-14; false for today, null, and completed",
+        "assertion": "toBe(true/false)",
+        "mockBoundary": "fake timers",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "fe-format-date",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:64-70",
+        "behavior": "formatDate renders a calendar date in en-GB format without a timezone shift",
+        "requirementSource": "The en-GB Intl formatter with the T12:00:00 anchor in the source",
+        "inputs": "'2026-10-15' and '2024-02-29'",
+        "expected": "'15 Oct 2026' and '29 Feb 2024'",
+        "assertion": "toBe",
+        "mockBoundary": "none",
+        "confidence": "characterization"
+      },
+      {
+        "id": "fe-use-notice",
+        "sourceLocation": "frontend/src/hooks/useNotice.ts:3-12",
+        "behavior": "The notice message appears after notify and clears after 4000 ms; a repeat notify restarts the timer",
+        "requirementSource": "Explicit 4000 ms timeout in the source",
+        "inputs": "renderHook(useNotice) with fake timers; notify('A'); advance 3999 ms; advance 1 ms; notify('B') twice with the same message",
+        "expected": "message 'A' at 3999 ms, '' at 4000 ms; re-notifying the same text restarts the timer",
+        "assertion": "result.current.message after act(advanceTimersByTime)",
+        "mockBoundary": "fake timers",
+        "confidence": "contract-backed"
+      },
+      {
+        "id": "fe-api-update",
+        "sourceLocation": "frontend/src/features/todos/api/todos.ts:20-33",
+        "behavior": "todosApi.update sends a PATCH with the id in the path, and remove sends DELETE",
+        "requirementSource": "REST routes in the backend router (PATCH and DELETE /todos/:id)",
+        "inputs": "update(5, {completed:true}); remove(5)",
+        "expected": "request('/todos/5', {method:'PATCH', body: JSON.stringify({completed:true})}) (undefined fields are dropped by JSON.stringify); request('/todos/5', {method:'DELETE'})",
+        "assertion": "toHaveBeenCalledWith on the mocked request",
+        "mockBoundary": "vi.mock('../../../lib/http')",
+        "confidence": "contract-backed"
+      }
+    ],
+    "skillsUsed": [
+      "analyze-unit-gaps",
+      "analyze-unit-gaps/references/backend.md",
+      "analyze-unit-gaps/references/frontend.md",
+      "write-unit-tests",
+      "write-unit-tests/references/backend.md",
+      "write-unit-tests/references/frontend.md"
+    ]
+  },
+  "calls": [
+    {
+      "role": "analyst",
+      "provider": "claude",
+      "authentication": "subscription",
+      "requestedModel": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 24018,
+      "usage": {
+        "inputTokens": 38527,
+        "cachedInputTokens": 0,
+        "outputTokens": 3451,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "writer",
+      "provider": "claude",
+      "authentication": "subscription",
+      "requestedModel": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 37031,
+      "usage": {
+        "inputTokens": 41451,
+        "cachedInputTokens": 0,
+        "outputTokens": 6831,
+        "estimatedUsd": null
+      }
+    }
+  ],
+  "billingNote": "The workflow used the official Claude Code CLI with subscription authentication. No model API key or paid API fallback was used. Usage is not an invoice or subscription quota meter; dollar admission reservations are virtual.",
+  "original": {
+    "tests": {
+      "backend": {
+        "total": 48,
+        "failed": 0,
+        "failures": []
+      },
+      "frontend": {
+        "total": 18,
+        "failed": 0,
+        "failures": []
+      }
+    },
+    "coverage": {
+      "backend": {
+        "lines": {
+          "covered": 36,
+          "total": 109,
+          "pct": 33.02
+        },
+        "branches": {
+          "covered": 16,
+          "total": 48,
+          "pct": 33.33
+        },
+        "statements": {
+          "covered": 39,
+          "total": 129,
+          "pct": 30.23
+        },
+        "functions": {
+          "covered": 13,
+          "total": 32,
+          "pct": 40.62
+        }
+      },
+      "frontend": {
+        "lines": {
+          "covered": 72,
+          "total": 151,
+          "pct": 47.68
+        },
+        "branches": {
+          "covered": 60,
+          "total": 137,
+          "pct": 43.79
+        },
+        "statements": {
+          "covered": 78,
+          "total": 168,
+          "pct": 46.42
+        },
+        "functions": {
+          "covered": 31,
+          "total": 77,
+          "pct": 40.25
+        }
+      }
+    }
+  },
+  "verifiedCandidate": {
+    "tests": {
+      "backend": {
+        "total": 56,
+        "failed": 0,
+        "failures": []
+      },
+      "frontend": {
+        "total": 44,
+        "failed": 0,
+        "failures": []
+      }
+    },
+    "coverage": {
+      "backend": {
+        "lines": {
+          "covered": 49,
+          "total": 109,
+          "pct": 44.95
+        },
+        "branches": {
+          "covered": 22,
+          "total": 48,
+          "pct": 45.83
+        },
+        "statements": {
+          "covered": 54,
+          "total": 129,
+          "pct": 41.86
+        },
+        "functions": {
+          "covered": 14,
+          "total": 32,
+          "pct": 43.75
+        }
+      },
+      "frontend": {
+        "lines": {
+          "covered": 99,
+          "total": 151,
+          "pct": 65.56
+        },
+        "branches": {
+          "covered": 94,
+          "total": 137,
+          "pct": 68.61
+        },
+        "statements": {
+          "covered": 110,
+          "total": 168,
+          "pct": 65.47
+        },
+        "functions": {
+          "covered": 40,
+          "total": 77,
+          "pct": 51.94
+        }
+      }
+    },
+    "requiredChecks": [
+      {
+        "id": "backend:install",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm ci --ignore-scripts --no-audit --no-fund",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/install.log"
+      },
+      {
+        "id": "backend:generate",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run db:generate",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/generate.log"
+      },
+      {
+        "id": "backend:typecheck",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run typecheck",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/typecheck.log"
+      },
+      {
+        "id": "backend:unit",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/unit.log"
+      },
+      {
+        "id": "backend:coverage",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/backend/coverage.log"
+      },
+      {
+        "id": "frontend:install",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm ci --ignore-scripts --no-audit --no-fund",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/install.log"
+      },
+      {
+        "id": "frontend:typecheck",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run typecheck",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/typecheck.log"
+      },
+      {
+        "id": "frontend:unit",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/unit.log"
+      },
+      {
+        "id": "frontend:coverage",
+        "gate": "required",
+        "status": "passed",
+        "reason": "",
+        "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+        "exitCode": 0,
+        "logPath": ".agent-evidence/frontend/coverage.log"
+      }
+    ],
+    "localRequiredChecksPassed": 9,
+    "localMatchesGitHubCoverage": true
+  },
+  "comparison": {
+    "status": "comparable",
+    "reason": "same head/config/runtime",
+    "deltas": {
+      "frontend": {
+        "lines": {
+          "covered": 27,
+          "total": 0,
+          "pctPoints": 17.88
+        },
+        "branches": {
+          "covered": 34,
+          "total": 0,
+          "pctPoints": 24.82
+        },
+        "statements": {
+          "covered": 32,
+          "total": 0,
+          "pctPoints": 19.05
+        },
+        "functions": {
+          "covered": 9,
+          "total": 0,
+          "pctPoints": 11.69
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 13,
+          "total": 0,
+          "pctPoints": 11.93
+        },
+        "branches": {
+          "covered": 6,
+          "total": 0,
+          "pctPoints": 12.5
+        },
+        "statements": {
+          "covered": 15,
+          "total": 0,
+          "pctPoints": 11.63
+        },
+        "functions": {
+          "covered": 1,
+          "total": 0,
+          "pctPoints": 3.13
+        }
+      }
+    },
+    "objectiveMet": false
+  },
+  "assertionSensitivity": {
+    "method": "Five selected manual semantic fault injections in a disposable copy; not a Stryker or whole-repository mutation score.",
+    "passed": 5,
+    "cases": [
+      {
+        "id": "config",
+        "source": "backend/src/core/config.ts",
+        "sourceSha256": "9d8de19bcc12ef4d3ecb277b7946b5febb4c4a66e29155c5e0a81206018dc13a",
+        "negativeControl": {
+          "exitCode": 0,
+          "tests": 8,
+          "failed": 0
+        },
+        "mutated": {
+          "exitCode": 1,
+          "tests": 8,
+          "failed": 1,
+          "intendedAssertionFailures": [
+            "resolveDatabaseUrl prefers the override over DATABASE_URL and rewrites the psycopg scheme"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "tests": 8,
+          "failed": 0
+        },
+        "restoredByteIdentical": true
+      },
+      {
+        "id": "http",
+        "source": "frontend/src/lib/http.ts",
+        "sourceSha256": "d244ad7974bfe845cb090446ab84e2c3c7ac0719f0451264182b5ee47e0ce9d0",
+        "negativeControl": {
+          "exitCode": 0,
+          "tests": 7,
+          "failed": 0
+        },
+        "mutated": {
+          "exitCode": 1,
+          "tests": 7,
+          "failed": 1,
+          "intendedAssertionFailures": [
+            "request prefixes /api, merges headers and returns the JSON body"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "tests": 7,
+          "failed": 0
+        },
+        "restoredByteIdentical": true
+      },
+      {
+        "id": "sort",
+        "source": "frontend/src/features/todos/utils/todos.ts",
+        "sourceSha256": "620984d5b881f1e2587e0d080eec1e9759c24f1c05d3bb4ec3391ba1dee55731",
+        "negativeControl": {
+          "exitCode": 0,
+          "tests": 18,
+          "failed": 0
+        },
+        "mutated": {
+          "exitCode": 1,
+          "tests": 18,
+          "failed": 1,
+          "intendedAssertionFailures": [
+            "selectTodos sorts by due date with missing dates last and id as tiebreak"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "tests": 18,
+          "failed": 0
+        },
+        "restoredByteIdentical": true
+      },
+      {
+        "id": "notice",
+        "source": "frontend/src/hooks/useNotice.ts",
+        "sourceSha256": "36476048db3fb50b79a8b8dc47e148bf21e0bad5246517832d79ded681bcbbcb",
+        "negativeControl": {
+          "exitCode": 0,
+          "tests": 2,
+          "failed": 0
+        },
+        "mutated": {
+          "exitCode": 1,
+          "tests": 2,
+          "failed": 2,
+          "intendedAssertionFailures": [
+            "shows a notice and clears it after 4000 ms",
+            "restarts the timer when the same message is notified again"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "tests": 2,
+          "failed": 0
+        },
+        "restoredByteIdentical": true
+      },
+      {
+        "id": "delete",
+        "source": "frontend/src/features/todos/api/todos.ts",
+        "sourceSha256": "9fe2337a0fa70a6b990c0d3cd97c829fe8169e68aab6c40e69dcf79a827d2077",
+        "negativeControl": {
+          "exitCode": 0,
+          "tests": 4,
+          "failed": 0
+        },
+        "mutated": {
+          "exitCode": 1,
+          "tests": 4,
+          "failed": 1,
+          "intendedAssertionFailures": [
+            "deletes a task by id"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "tests": 4,
+          "failed": 0
+        },
+        "restoredByteIdentical": true
+      }
+    ]
+  },
+  "independentReview": {
+    "critical": 0,
+    "important": 0,
+    "minorDeferred": "The abort-identity test does not separately assert forwarding the identical AbortSignal to fetch."
+  },
+  "remainingWork": {
+    "objectiveMet": false,
+    "analystReportedGaps": [
+      "backend/src/core/lifespan.ts startup, shutdown and error cleanup are untested",
+      "backend/src/factory.ts error handler (422 invalid JSON, 413, 500) and 404 fallback are untested",
+      "backend/src/features/todos/router.ts GET/PATCH/DELETE by id and the invalid-id 422 branch are untested",
+      "backend/src/api/health.ts is untested",
+      "frontend TodosPage toggle/notice flows, TodoEditor, DeleteTodoDialog, TodoForm, TodoItem, TodoEmptyState and the mutation hooks are untested",
+      "frontend AppProviders is untested",
+      "The backend update repository path with a mixed due_date is covered; TodoList failed-with-no-todos branch remains untested"
+    ],
+    "optionalWorkflowReviewerEnabled": false,
+    "workflowMutationChecksEnabled": false,
+    "featurePullRequestDemonstration": "pending",
+    "handover": "Before submission remove the author model secret and disable model access; recipients use their own credentials."
+  }
+}

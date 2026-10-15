@@ -6,6 +6,10 @@ export const limits = {
   payload: 4 * 1024 * 1024,
   files: 20,
   calls: 3,
+  coverageCalls: 17,
+  rounds: 8,
+  aggregateFiles: 160,
+  aggregateCases: 160,
   roleMs: 30 * 60_000,
   runMs: 4 * 60 * 60_000,
   log: 10 * 1024 * 1024,
@@ -71,24 +75,32 @@ export const caseSchema = z.strictObject({
   confidence: z.enum(["contract-backed", "characterization", "unconfirmed"]),
 });
 export type Case = z.infer<typeof caseSchema>;
-export const testPlanSchema = z
-  .strictObject({
-    decision: z.enum(["write", "no-change", "inconclusive"]),
-    reason: nonempty,
-    cases: z.array(caseSchema).max(20),
-    paths: z.array(nonempty).max(20),
-    remainingGaps: z.array(text).max(100),
-  })
-  .refine(
-    (p) => p.decision !== "write" || (p.cases.length > 0 && p.paths.length > 0),
-    "write requires cases/paths",
-  )
-  .refine(
-    (p) =>
-      new Set(p.cases.map((c) => c.id)).size === p.cases.length &&
-      new Set(p.paths).size === p.paths.length,
-    "duplicate cases/paths",
-  );
+function planSchema(maxCases: number, maxPaths: number) {
+  return z
+    .strictObject({
+      decision: z.enum(["write", "no-change", "inconclusive"]),
+      reason: nonempty,
+      cases: z.array(caseSchema).max(maxCases),
+      paths: z.array(nonempty).max(maxPaths),
+      remainingGaps: z.array(text).max(100),
+    })
+    .refine(
+      (p) =>
+        p.decision !== "write" || (p.cases.length > 0 && p.paths.length > 0),
+      "write requires cases/paths",
+    )
+    .refine(
+      (p) =>
+        new Set(p.cases.map((c) => c.id)).size === p.cases.length &&
+        new Set(p.paths).size === p.paths.length,
+      "duplicate cases/paths",
+    );
+}
+export const testPlanSchema = planSchema(20, 20);
+export const aggregatedPlanSchema = planSchema(
+  limits.aggregateCases,
+  limits.aggregateFiles,
+);
 export type TestPlan = z.infer<typeof testPlanSchema>;
 export const fileSchema = z.strictObject({
   path: nonempty,
@@ -204,10 +216,11 @@ export type ArtifactRef = z.infer<typeof artifactRefSchema>;
 export const candidateSchema = z
   .strictObject({
     context: runContextSchema,
-    plan: testPlanSchema.nullable(),
+    plan: aggregatedPlanSchema.nullable(),
+    coverageRun: z.lazy(() => coverageRunSchema).optional(),
     patch: artifactRefSchema.nullable(),
-    files: z.array(nonempty).max(limits.files),
-    calls: z.array(callSchema).max(limits.calls),
+    files: z.array(nonempty).max(limits.aggregateFiles),
+    calls: z.array(callSchema).max(limits.coverageCalls),
     skillsUsed: z.array(nonempty).max(20),
     producerJob: z.literal("agent"),
     reason: text.optional(),
@@ -229,6 +242,15 @@ export const candidateSchema = z
   .refine(
     (c) => c.status !== "no-change" || c.plan?.decision === "no-change",
     "no-change needs plan",
+  )
+  .refine(
+    (c) =>
+      c.context.task !== "pr-change" ||
+      (c.files.length <= limits.files &&
+        c.calls.length <= limits.calls &&
+        (c.plan?.cases.length ?? 0) <= 20 &&
+        (c.plan?.paths.length ?? 0) <= 20),
+    "scoped PR bounds",
   );
 export type CandidateManifest = z.infer<typeof candidateSchema>;
 const metricSchema = z
@@ -275,6 +297,38 @@ export const comparisonSchema = z
     "delta relation",
   );
 export type CoverageComparison = z.infer<typeof comparisonSchema>;
+export const coverageRunSchema = z.strictObject({
+  initialCoverage: coverageSchema,
+  stopReason: z.enum([
+    "target-reached",
+    "round-limit",
+    "no-progress",
+    "budget-exhausted",
+    "stale",
+    "cancelled",
+    "deadline",
+    "incomplete",
+    "context-limit",
+    "recheck-failed",
+    "payload-limit",
+  ]),
+  rounds: z
+    .array(
+      z.strictObject({
+        round: count.positive().max(limits.rounds),
+        units: z.array(nonempty).max(8),
+        status: z.enum(["accepted", "rejected", "no-change", "inconclusive"]),
+        reason: text,
+        plan: testPlanSchema.nullable(),
+        checks: z.array(checkSchema).max(30),
+        tests: z.lazy(() => collectedTestCountsSchema).optional(),
+        coverage: coverageSchema.nullable(),
+        callIds: z.array(nonempty).max(2),
+      }),
+    )
+    .max(limits.rounds),
+});
+export type CoverageRun = z.infer<typeof coverageRunSchema>;
 export const factSchema = z.strictObject({
   id: nonempty,
   kind: z.enum(["scope-violation", "oracle-counterexample"]),
@@ -282,6 +336,22 @@ export const factSchema = z.strictObject({
   evidenceRef: nonempty,
 });
 export type VerificationFact = z.infer<typeof factSchema>;
+const collectedTestCountsSchema = z.strictObject({
+  backend: z
+    .strictObject({
+      total: count.positive(),
+      failed: count,
+      failures: z.array(text).max(10),
+    })
+    .optional(),
+  frontend: z
+    .strictObject({
+      total: count.positive(),
+      failed: count,
+      failures: z.array(text).max(10),
+    })
+    .optional(),
+});
 export const verificationSchema = z.strictObject({
   context: runContextSchema,
   patchSha256: hashSchema,
@@ -289,6 +359,7 @@ export const verificationSchema = z.strictObject({
   checks: z.array(checkSchema).max(30),
   originalCoverage: coverageSchema,
   candidateCoverage: coverageSchema,
+  candidateTests: collectedTestCountsSchema.optional(),
   coverageComparison: comparisonSchema,
   facts: z.array(factSchema).max(50),
 });

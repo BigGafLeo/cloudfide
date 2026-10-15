@@ -13,6 +13,7 @@ import { createAdapters } from "./providers/index.js";
 import { fetchSnapshots } from "./source.js";
 import { collectPrecollection } from "./precollect.js";
 import { buildBundle, selectContextFiles } from "./bundle.js";
+import { runCoverageRounds } from "./rounds.js";
 import { runAgent } from "./orchestrator.js";
 import { freezeCandidate } from "./candidate.js";
 import { verifyCandidate } from "./verify.js";
@@ -234,7 +235,20 @@ try {
                 remainingGaps: [],
               },
             };
-          else {
+          else if (context.task === "coverage-gap") {
+            const result = await runCoverageRounds({
+              context,
+              source,
+              evidence,
+              policy,
+              adapters: createAdapters(policy, root),
+              recheck: () => recheckHead(context, api),
+              signal,
+              outputRoot: out,
+            });
+            manifest = result.manifest;
+            patchText = result.patchText;
+          } else {
             const bundle = buildBundle(
               context,
               evidence.head,
@@ -421,6 +435,7 @@ try {
           policy,
         ),
         runUrl,
+        policy,
       }) +
       (failures.length
         ? "\n\nMissing evidence: " +

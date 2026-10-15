@@ -1,12 +1,12 @@
-# Verified scope before the first GitHub run
+# Verified scope and first GitHub run
 
-Status: 2026-10-15. These are real local results. A complete model-assisted GitHub PR run and generated application-test improvements have not yet been demonstrated.
+Status: 2026-10-15. Local compatibility checks and the first model-assisted GitHub PR run are verified below. The demonstration remains bounded and does not establish complete coverage.
 
 ## Controller and execution boundary
 
 The controller suite has 84 cases in 27 files. Windows passed 82 with two platform-specific skips; Linux passed 83 with one Docker-host-specific skip. Typecheck, build and formatting passed. Windows exercised the real Docker execution boundary and timeout cleanup; Linux exercised symlink and signal/credential-lease cleanup. These complementary runs do not claim that the Docker-host case ran inside the Linux test container.
 
-The pinned Linux collector previously passed all nine application checks. Existing application suites contain 48 backend tests and 18 frontend tests. No application source, existing tests or coverage exclusions were changed for the bootstrap.
+The pinned Linux collector previously passed all nine application checks. At bootstrap, application suites contained 48 backend tests and 18 frontend tests. No application source, existing tests or coverage exclusions were changed for the bootstrap.
 
 ## Native adapters
 
@@ -34,6 +34,14 @@ The [baseline report](testing-baseline.md) and [machine-readable snapshot](testi
 
 The isolated Stryker 10.0.0 / Vitest 4.1.11 pilot killed five mapper mutants and four SuccessNotice TSX mutants. [mutation-conformance.json](../agent/mutation-conformance.json) records that limited scope; this is not a repository-wide mutation score. Mutation and fresh model review remain disabled in the starting configuration.
 
+## First real PR proposal
+
+[Run 38758028657](https://github.com/BigGafLeo/cloudfide/actions/runs/38758028657) accepted a five-file frontend/backend unit-test proposal for [PR #2](https://github.com/BigGafLeo/cloudfide/pull/2), using exactly two Claude Code subscription calls requesting Sonnet. The isolated verifier passed all nine checks. Local execution reproduced 56 backend tests and 44 frontend tests with zero failures. Line coverage changed from 36/109 to 49/109 on the backend and 72/151 to 99/151 on the frontend; branch coverage changed from 16/48 to 22/48 and 60/137 to 94/137. Measurement scope and configuration were unchanged.
+
+Five selected manual semantic regressions failed the intended assertions. Every focused command passed before mutation and after byte-identical restoration. These checks do not constitute a whole-project mutation score. Independent review/simplify found no material issue; security diff review covered all five generated test files with no findings. A minor assertion for forwarding the identical AbortSignal remains deferred.
+
+See [the full summary](first-coverage-run.md) and [retained evidence](agent-run-2026-10-15.json) for the captured SHA, patch digest, actual analyst plan, loaded skills, native usage, checks, remaining gaps and sensitivity results.
+
 ## Reproduction and pending evidence
 
 From the repository root, controller fixture checks need no model credentials:
@@ -47,4 +55,4 @@ npm --prefix agent run build
 
 A real native probe additionally needs pinned Linux Node/native CLIs and the recipient's own eligible authentication. The application commands are in the baseline report. The [GitHub guide](github-first-run.md) describes activation and the first PR run.
 
-Still to record: actual analyst decisions and loaded skills, generated frontend/backend unit tests, assertion sensitivity, before/after coverage, the GitHub run and report links, and an optional feature PR demonstrating the automatic trigger. No placeholder or fixture result substitutes for those outcomes.
+Recorded: actual analyst/writer decisions and skills, the test-only proposal, passing unit/typecheck/coverage checks, assertion sensitivity and real PR/run links. Pending: remaining unit-test gaps toward the 100% objective and an optional changed-feature PR demonstrating automatic model-assisted analysis. The earlier automatic documentation-only run proved triggering and publication without model calls. Optional reviewer and mutation workflow results are not claimed.

@@ -1,3 +1,5 @@
+import { coveragePolicy, defaultCoveragePolicy } from "./config.js";
+import { coverageGoalMet, coverageDoesNotRegress } from "./coverage.js";
 import {
   candidateSchema,
   verificationSchema,
@@ -81,6 +83,11 @@ export function decide(
       )
     )
       return "inconclusive";
+    if (c.context.task === "coverage-gap") {
+      if (v.coverageComparison.status !== "comparable") return "inconclusive";
+      if (!coverageDoesNotRegress(v.originalCoverage, v.candidateCoverage))
+        return "failed";
+    }
     if (policy.review.enabled && policy.review.gate === "required") {
       if (
         !r ||
@@ -109,6 +116,7 @@ export function renderReport(input: {
   review: ReviewManifest | null;
   decision: Decision;
   runUrl: string;
+  policy?: Policy;
   logArtifacts?: { kind: "precollect" | "verifier"; id: number }[];
 }): string {
   const { candidate: c, verification: v, review: r, decision } = input;
@@ -118,6 +126,17 @@ export function renderReport(input: {
     "/actions/runs/" +
     c.context.executionRunId;
   if (input.runUrl !== url) throw new Error("untrusted run URL");
+  const target = input.policy
+    ? coveragePolicy(input.policy).target
+    : defaultCoveragePolicy.target;
+  const reached = Boolean(
+    v &&
+    input.policy &&
+    decide(c, v, r, input.policy) === "accepted" &&
+    v.coverageComparison.status === "comparable" &&
+    coverageDoesNotRegress(v.originalCoverage, v.candidateCoverage) &&
+    coverageGoalMet(v.candidateCoverage, target),
+  );
   const rows = [
     "<!-- cloudfide-unit-agent -->",
     "<!-- execution:" +
@@ -125,7 +144,13 @@ export function renderReport(input: {
       ":" +
       c.context.executionAttempt +
       " -->",
-    "## Unit-test agent: " + decision,
+    "## Unit-test agent" +
+      (c.context.task === "coverage-gap"
+        ? " proposal: " +
+          decision +
+          "; coverage run: " +
+          (reached ? "reached" : "partial")
+        : ": " + decision),
     "Tested head: " + c.context.headSha,
     "Control revision: " + c.context.controlSha,
     "[Run and artifacts](" + url + ")",
@@ -151,6 +176,59 @@ export function renderReport(input: {
         log.id +
         ")",
     );
+  }
+  if (c.context.task === "coverage-gap") {
+    rows.push(
+      "",
+      "Global coverage run goal: " +
+        (reached ? "reached" : "partial") +
+        ". Each app requires lines >= " +
+        target.lines +
+        "% and branches >= " +
+        target.branches +
+        "%; only the final verifier establishes completion.",
+    );
+    if (c.coverageRun) {
+      rows.push(
+        "Controller stop reason: " + c.coverageRun.stopReason,
+        "Shared model calls: " + (c.calls.length + (r ? 1 : 0)),
+        "",
+        "| Measurement | Status | Backend lines / branches | Frontend lines / branches |",
+        "|---|---|---|---|",
+      );
+      const initial = c.coverageRun.initialCoverage;
+      rows.push(
+        "| initial | trusted precollection | " +
+          initial.backend.lines.pct +
+          "% / " +
+          initial.backend.branches.pct +
+          "% | " +
+          initial.frontend.lines.pct +
+          "% / " +
+          initial.frontend.branches.pct +
+          "% |",
+      );
+      for (const round of c.coverageRun.rounds) {
+        const cv = round.coverage;
+        rows.push(
+          "| round " +
+            round.round +
+            " | " +
+            round.status +
+            ": " +
+            plain(round.reason) +
+            " | " +
+            (cv
+              ? cv.backend.lines.pct + "% / " + cv.backend.branches.pct + "%"
+              : "unavailable") +
+            " | " +
+            (cv
+              ? cv.frontend.lines.pct + "% / " + cv.frontend.branches.pct + "%"
+              : "unavailable") +
+            " |",
+        );
+      }
+    }
   }
   if (c.patch)
     rows.push(
@@ -247,7 +325,11 @@ export function renderReport(input: {
         plain(call.model) +
         ": " +
         (call.usage?.estimatedUsd === null || !call.usage
-          ? "unknown, reservation " + call.reservedEstimateUsd + " USD retained"
+          ? "unknown, reservation " +
+            call.reservedEstimateUsd +
+            (input.policy?.roles[call.role]?.auth === "subscription"
+              ? " virtual units retained (not a bill or quota)"
+              : " USD retained")
           : call.usage.estimatedUsd + " USD estimated") +
         "; " +
         call.elapsedMs +

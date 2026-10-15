@@ -35,3 +35,18 @@ it("releases known excess reservation but counts every host call", () => {
   }
   expect(() => b.reserve("c4", "analyst", Date.now())).toThrow(/call/);
 });
+
+it("enforces a shared seventeen-call ceiling including the inherited reviewer", () => {
+  const p = activePolicy();
+  p.maxEstimatedUsd = 100;
+  const b = new Budget(p, Date.now() + 10000, [], 17);
+  for (let i = 0; i < 16; i++) {
+    b.reserve("round" + i, i % 2 ? "writer" : "analyst", Date.now());
+    b.finish("round" + i, completedNative(0.01), 1);
+  }
+  const review = new Budget(p, Date.now() + 10000, b.records(), 17);
+  review.reserve("review", "reviewer", Date.now());
+  review.finish("review", completedNative(0.01), 1);
+  expect(review.records()).toHaveLength(17);
+  expect(() => review.reserve("extra", "analyst", Date.now())).toThrow(/call/);
+});

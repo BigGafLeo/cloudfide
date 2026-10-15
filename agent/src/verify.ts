@@ -93,6 +93,7 @@ export async function verifyCandidate(
       checks: checked.checks,
       originalCoverage: original.coverage,
       candidateCoverage: checked.coverage,
+      candidateTests: checked.tests,
       coverageComparison: compareCoverage(
         original.coverage,
         checked.coverage,

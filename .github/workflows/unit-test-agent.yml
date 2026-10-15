@@ -96,7 +96,7 @@ jobs:
     needs: [resolve, precollect]
     if: needs.resolve.outputs.eligible == 'true'
     runs-on: ${{ fromJSON(needs.resolve.outputs.model-runner) }}
-    timeout-minutes: 90
+    timeout-minutes: 180
     concurrency:
       group: unit-agent-model-${{ github.repository_id }}-${{ needs.resolve.outputs.pr }}
       cancel-in-progress: true
@@ -122,6 +122,8 @@ jobs:
       - run: node native/node_modules/@anthropic-ai/claude-code/install.cjs
       - name: Add pinned native CLIs
         run: echo "$PWD/native/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Prepare pinned isolated test runtime
+        run: docker pull node:24.13.1@sha256:00e9195ebd49985a6da8921f419978d85dfe354589755192dc090425ce4da2f7
       - run: npm start -- agent
         id: agent
         env:

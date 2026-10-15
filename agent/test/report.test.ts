@@ -1,3 +1,4 @@
+import { compareCoverage } from "../src/coverage.js";
 import { expect, it } from "vitest";
 import { decide, renderReport } from "../src/report.js";
 import {
@@ -71,4 +72,78 @@ it("rejects stale review and escapes untrusted report instructions/images", () =
   expect(report).not.toContain("@everyone");
   expect(report).toContain("objective");
   expect(report).toContain(c.context.headSha);
+});
+
+it("keeps proposal acceptance separate from the final verifier coverage goal", () => {
+  const c = makeCandidate();
+  c.context.task = "coverage-gap";
+  const v = makeVerification(c),
+    p = activePolicy();
+  v.coverageComparison = compareCoverage(
+    v.originalCoverage,
+    v.candidateCoverage,
+    true,
+    "same runtime",
+  );
+  c.coverageRun = {
+    initialCoverage: v.originalCoverage,
+    rounds: [],
+    stopReason: "target-reached",
+  };
+  const render = () =>
+    renderReport({
+      candidate: c,
+      verification: v,
+      review: null,
+      decision: decide(c, v, null, p),
+      policy: p,
+      runUrl: "https://github.com/owner/repo/actions/runs/123",
+    });
+  expect(decide(c, v, null, p)).toBe("accepted");
+  expect(render()).toContain("coverage run: partial");
+  for (const app of ["backend", "frontend"] as const)
+    for (const metric of [
+      "lines",
+      "branches",
+      "statements",
+      "functions",
+    ] as const)
+      v.candidateCoverage[app][metric] = { covered: 80, total: 100, pct: 80 };
+  // A changed denominator cannot establish a comparable goal.
+  expect(render()).toContain("coverage run: partial");
+  for (const app of ["backend", "frontend"] as const)
+    for (const metric of [
+      "lines",
+      "branches",
+      "statements",
+      "functions",
+    ] as const)
+      v.originalCoverage[app][metric] = { covered: 50, total: 100, pct: 50 };
+  v.coverageComparison = compareCoverage(
+    v.originalCoverage,
+    v.candidateCoverage,
+    true,
+    "same runtime",
+  );
+  expect(render()).toContain("coverage run: reached");
+  v.candidateCoverage.frontend.branches = { covered: 79, total: 100, pct: 79 };
+  expect(render()).toContain("coverage run: partial");
+  v.candidateCoverage.frontend.branches = { covered: 80, total: 100, pct: 80 };
+  v.checks.pop();
+  expect(render()).toContain("coverage run: partial");
+});
+it("refuses incomparable coverage-gap proposals and every metric regression", () => {
+  const c = makeCandidate();
+  c.context.task = "coverage-gap";
+  const v = makeVerification(c),
+    p = activePolicy();
+  expect(decide(c, v, null, p)).toBe("inconclusive");
+  v.coverageComparison = compareCoverage(
+    v.originalCoverage,
+    v.candidateCoverage,
+    true,
+    "same runtime",
+  );
+  v.candidateCoverage.backend.functions = { covered: 0, total: 2, pct: 0 };
+  expect(decide(c, v, null, p)).toBe("failed");
 });

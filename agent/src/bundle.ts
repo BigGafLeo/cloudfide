@@ -49,26 +49,13 @@ export function selectContextFiles(
   changed: string[],
   gaps: string[],
   task: "pr-change" | "coverage-gap",
+  attempted: string[] = [],
 ): FileData[] {
   const byPath = new Map(files.map((f) => [f.path, f])),
     selected = new Set<string>();
   const units =
     task === "coverage-gap"
-      ? (["backend", "frontend"] as const).flatMap((app) =>
-          [
-            ...new Set(
-              gaps
-                .map((g) => g.replace(/:\d+$/, ""))
-                .filter((p) => p.startsWith(app + "/")),
-            ),
-          ]
-            .sort(
-              (a, b) =>
-                Number(!/\/(lib|utils|core)\//.test(a)) -
-                Number(!/\/(lib|utils|core)\//.test(b)),
-            )
-            .slice(0, 4),
-        )
+      ? selectCoverageUnits(files, gaps, attempted)
       : changed.filter((p) => /\.(ts|tsx)$/.test(p));
   for (const path of units) {
     if (!/^(backend|frontend)\//.test(path) || !byPath.has(path)) continue;
@@ -107,4 +94,46 @@ export function selectContextFiles(
     }
   }
   return [...selected].map((p) => byPath.get(p)!).filter(Boolean);
+}
+export function selectCoverageUnits(
+  files: FileData[],
+  gaps: string[],
+  attempted: string[] = [],
+): string[] {
+  const byPath = new Map(files.map((f) => [f.path, f]));
+  const attempts = new Map<string, number>();
+  for (const path of attempted)
+    attempts.set(path, (attempts.get(path) ?? 0) + 1);
+  function priority(path: string): number {
+    if (/router|routes/i.test(path)) return 0;
+    if (/hook|mutation|cache/i.test(path)) return 1;
+    if (
+      /form|save|delete|toggle/i.test(path) ||
+      /onError|catch\s*\(/.test(byPath.get(path)?.content ?? "")
+    )
+      return 2;
+    if (/factory|lifecycle|app\.ts/i.test(path)) return 3;
+    return 4;
+  }
+  return (["backend", "frontend"] as const).flatMap((app) =>
+    [
+      ...new Set(
+        gaps
+          .map((g) => g.replace(/:\d+(?::\d+)?$/, ""))
+          .filter(
+            (p) =>
+              p.startsWith(app + "/") &&
+              byPath.has(p) &&
+              !/\.test\.tsx?$/.test(p),
+          ),
+      ),
+    ]
+      .sort(
+        (a, b) =>
+          (attempts.get(a) ?? 0) - (attempts.get(b) ?? 0) ||
+          priority(a) - priority(b) ||
+          a.localeCompare(b),
+      )
+      .slice(0, 4),
+  );
 }
