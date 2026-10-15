@@ -230,6 +230,7 @@ export async function runCoverageRounds(
       recheck,
       signal,
       budget,
+      [...allFiles.values()],
     );
     result.skillsUsed.forEach((s) => skills.add(s));
     const record: CoverageRun["rounds"][number] = {

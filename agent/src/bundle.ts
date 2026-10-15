@@ -57,9 +57,7 @@ export function selectContextFiles(
     task === "coverage-gap"
       ? selectCoverageUnits(files, gaps, attempted)
       : changed.filter((p) => /\.(ts|tsx)$/.test(p));
-  for (const path of units) {
-    if (!/^(backend|frontend)\//.test(path) || !byPath.has(path)) continue;
-    selected.add(path);
+  function includeTests(path: string): void {
     const stem = path.replace(/\.(tsx?|test\.tsx?)$/, "");
     for (const f of files)
       if (
@@ -74,6 +72,11 @@ export function selectContextFiles(
           ))
       )
         selected.add(f.path);
+  }
+  for (const path of units) {
+    if (!/^(backend|frontend)\//.test(path) || !byPath.has(path)) continue;
+    selected.add(path);
+    includeTests(path);
   }
   for (const path of [...selected]) {
     const content = byPath.get(path)!.content;
@@ -93,6 +96,13 @@ export function selectContextFiles(
         if (byPath.has(target + extension)) selected.add(target + extension);
     }
   }
+  // Match tests for imported production units without expanding another import hop.
+  for (const path of [...selected])
+    if (
+      /^(backend|frontend)\/src\/.+\.tsx?$/.test(path) &&
+      !/\.test\.tsx?$/.test(path)
+    )
+      includeTests(path);
   return [...selected].map((p) => byPath.get(p)!).filter(Boolean);
 }
 export function selectCoverageUnits(

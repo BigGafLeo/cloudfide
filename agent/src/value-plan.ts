@@ -1,4 +1,9 @@
-import type { AnalysisBundle, TestPlan, WriterResult } from "./contracts.js";
+import type {
+  AnalysisBundle,
+  FileData,
+  TestPlan,
+  WriterResult,
+} from "./contracts.js";
 import { validatePatchPath } from "./paths.js";
 
 /** Repository-relative source path, optionally followed by :line[:column]. */
@@ -14,10 +19,17 @@ function assertTestPath(path: string): void {
 export function validateValuePlan(
   plan: TestPlan,
   bundle: AnalysisBundle,
+  availableFiles: FileData[] = bundle.files,
 ): void {
   for (const path of plan.paths) validatePatchPath(path);
   const paths = new Set(plan.paths);
   const supplied = new Set(bundle.files.map((f) => f.path));
+  const existingPaths = new Set(availableFiles.map((f) => f.path));
+  for (const path of plan.paths)
+    if (existingPaths.has(path) && !supplied.has(path))
+      throw new Error(
+        "existing output is absent from supplied context: " + path,
+      );
   for (const c of plan.cases) {
     const value = c.value;
     assertTestPath(value.testPath);
@@ -43,11 +55,12 @@ export function validateValuePlan(
         );
     }
     if (
-      value.action === "strengthen" &&
+      (value.action === "strengthen" || existingPaths.has(value.testPath)) &&
       !value.existingTests.some((test) => test.path === value.testPath)
     )
       throw new Error(
-        "strengthen requires an existing test in its target: " + value.testPath,
+        "existing/strengthen target requires a compared test in its target: " +
+          value.testPath,
       );
   }
 }

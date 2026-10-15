@@ -77,3 +77,58 @@ it("includes literal dynamic imports used by existing design-system mocks withou
     ),
   ).toEqual([paths[0], paths[1]]);
 });
+
+it.each(["coverage-gap", "pr-change"] as const)(
+  "includes existing tests for one-hop imported production units in %s context",
+  (task) => {
+    const files = [
+      {
+        path: "frontend/src/features/TodosPage.tsx",
+        content:
+          "import { listTodos } from '../api/todos'; import { formatDate } from '../utils/dates';",
+      },
+      {
+        path: "frontend/src/api/todos.ts",
+        content:
+          "import { request } from '../lib/http'; export const listTodos = request;",
+      },
+      {
+        path: "frontend/src/utils/dates.ts",
+        content: "export const formatDate = String;",
+      },
+      {
+        path: "frontend/src/api/todos.test.ts",
+        content: "it('returns API result', () => listTodos());",
+      },
+      {
+        path: "frontend/tests/dates.test.ts",
+        content: "it('formats dates', () => formatDate());",
+      },
+      {
+        path: "frontend/src/lib/http.ts",
+        content: "export const request = fetch;",
+      },
+      {
+        path: "frontend/src/lib/http.test.ts",
+        content: "it('requests JSON', () => request());",
+      },
+      {
+        path: "frontend/src/unrelated.test.ts",
+        content: "it('unrelated', () => {});",
+      },
+    ];
+    const selected = selectContextFiles(
+      files,
+      ["frontend/src/features/TodosPage.tsx"],
+      ["frontend/src/features/TodosPage.tsx:1"],
+      task,
+    ).map((file) => file.path);
+    expect(selected).toEqual([
+      "frontend/src/features/TodosPage.tsx",
+      "frontend/src/api/todos.ts",
+      "frontend/src/utils/dates.ts",
+      "frontend/src/api/todos.test.ts",
+      "frontend/tests/dates.test.ts",
+    ]);
+  },
+);

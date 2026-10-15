@@ -41,6 +41,6 @@
       "branches": 80
     },
     "maxRounds": 8,
-    "noProgressRounds": 2
+    "noProgressRounds": 3
   }
 }

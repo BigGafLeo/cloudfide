@@ -46,6 +46,13 @@ interface Case {
   assertion: string;
   mockBoundary: string;
   confidence: "contract-backed" | "characterization" | "unconfirmed";
+  value: {
+    action: "add" | "strengthen";
+    testPath: string;
+    existingTests: { path: string; name: string }[];
+    regression: string;
+    rationale: string;
+  };
 }
 interface TestPlan {
   decision: "write" | "no-change" | "inconclusive";
