@@ -1,6 +1,8 @@
 import { z } from "zod";
 export const limits = {
   bundle: 200 * 1024,
+  // Final review includes the cumulative plan, exact patch and original evidence.
+  reviewBundle: 512 * 1024,
   output: 256 * 1024,
   patch: 1024 * 1024,
   payload: 4 * 1024 * 1024,

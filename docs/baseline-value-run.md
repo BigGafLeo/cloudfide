@@ -50,3 +50,9 @@ The same diagnostics expose remaining limits: removing cancelQueries still passe
 The [derived evidence](evidence/baseline-value-run-38825695235.json) retains identities, complete case/value plan, counts, coverage, calls, native review and summarized diagnostic outcomes. The [exact patch JSON](evidence/baseline-value-patch-38825695235.json) preserves patchText and its digest beyond temporary Actions retention. It is review data and has not been applied to backend/frontend. Local diagnostics are separate from the workflow's disabled Stryker option and are not a representative mutation score.
 
 The subsequent controller update makes threshold stopping configurable and tightens the required oracle-counterexample gate. Those changes do not alter either historical run or the preserved patch: the accepted second-run proposal still has the documented follow-up gaps. Controller regression tests and local role-pressure samples are separate from a fresh native adapter run.
+
+## Third attempt: bounded continuation and measured tokens
+
+[Run 38832961036](https://github.com/BigGafLeo/cloudfide/actions/runs/38832961036) used controller 1dc3bb796225d9ae22a3b54cafd0593254d8d81a on the unchanged original PR5 application. It continued after reaching 80% in accepted round 6, stopped at eight rounds and produced 166 passing candidate tests. Final lines/branches were 97.24%/97.91% backend and 99.33%/97.08% frontend. The workflow failed and the proposal is **inconclusive**: required review input exceeded the host byte limit before Opus was invoked.
+
+The 16 completed Sonnet calls consumed 1,010,221 input tokens including cache and 119,138 output tokens, including the rejected round; reviewer calls/tokens were zero. See the [complete outcome, context-size diagnosis and per-call token ledger](baseline-continuation-run.md). No generated application changes were applied or merged.
