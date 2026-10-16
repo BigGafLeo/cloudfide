@@ -23,10 +23,12 @@ const check = z
   .refine((c) => c.enabled || c.gate === "advisory", "disabled required check");
 export const defaultCoveragePolicy = {
   target: { lines: 80, branches: 80 },
+  stopAtTarget: true,
   maxRounds: limits.rounds,
   noProgressRounds: 2,
 };
 const coveragePolicySchema = z.strictObject({
+  stopAtTarget: z.boolean().optional(),
   target: z.strictObject({
     lines: z.number().min(80).max(100),
     branches: z.number().min(80).max(100),
@@ -48,7 +50,12 @@ const policySchema = z.strictObject({
 });
 export type Policy = z.infer<typeof policySchema>;
 export function coveragePolicy(policy: Policy) {
-  return policy.coverage ?? defaultCoveragePolicy;
+  return {
+    ...defaultCoveragePolicy,
+    ...policy.coverage,
+    stopAtTarget:
+      policy.coverage?.stopAtTarget ?? defaultCoveragePolicy.stopAtTarget,
+  };
 }
 export function parsePolicy(
   input: unknown,

@@ -36,6 +36,7 @@
     "gate": "advisory"
   },
   "coverage": {
+    "stopAtTarget": false,
     "target": {
       "lines": 80,
       "branches": 80
