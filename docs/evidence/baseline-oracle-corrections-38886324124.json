@@ -1,0 +1,227 @@
+{
+  "sourceRunId": "38886324124",
+  "sourceRunDecision": "inconclusive",
+  "rawPatchSha256": "cf020d54dbc0de78babf0880914b865bc7c362b2ac6e3c84102f5dcd658985f2",
+  "disposition": "Development follow-up corrected four test-discrimination findings. This does not change the native decision or imply native approval of the raw proposal.",
+  "changedTestFiles": [
+    "frontend/src/features/todos/components/TodoList.test.tsx",
+    "frontend/src/features/todos/hooks/useTodoFilters.test.ts",
+    "frontend/src/features/todos/TodosPage.test.tsx",
+    "frontend/src/features/todos/utils/todos.test.ts"
+  ],
+  "revisedTestFiles": [
+    "backend/tests/config.test.ts",
+    "backend/tests/database.test.ts",
+    "backend/tests/factory.test.ts",
+    "backend/tests/lifespan.test.ts",
+    "backend/tests/router.test.ts",
+    "frontend/src/features/todos/api/todos.test.ts",
+    "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+    "frontend/src/features/todos/components/TodoEditor.test.tsx",
+    "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+    "frontend/src/features/todos/components/TodoForm.test.tsx",
+    "frontend/src/features/todos/components/TodoItem.test.tsx",
+    "frontend/src/features/todos/components/TodoList.test.tsx",
+    "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+    "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+    "frontend/src/features/todos/hooks/useTodoFilters.test.ts",
+    "frontend/src/features/todos/hooks/useTodosBusy.test.tsx",
+    "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+    "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+    "frontend/src/features/todos/TodosPage.test.tsx",
+    "frontend/src/features/todos/utils/todos.test.ts",
+    "frontend/src/hooks/useNotice.test.ts",
+    "frontend/src/lib/http.test.ts"
+  ],
+  "revisedTestContentsSha256": "cd60d1fe9725253ce1363b80aa92b88b270a927ac97e627b74ec71a14d9eb4fb",
+  "digestDefinition": "SHA-256 of UTF-8 JSON.stringify([{path,content},...]) sorted by path using localeCompare(en); no indentation or trailing newline.",
+  "verification": {
+    "runtime": "Windows Node24.13.1, Vitest4.1.11; independent installed frontend dependencies, unchanged lockfile",
+    "focusedCorrectedTests": 43,
+    "sharedProductionUnchanged": true,
+    "workingCopyProductionSha256": {
+      "src/features/todos/TodosPage.tsx": "e767757e68417e6c90c362718eae34370e8c67c9dec8d6c1e5f189c481efbb57",
+      "src/features/todos/utils/todos.ts": "b7ab86bf045eeb400be29b08b4cd7da91476359e88ac420d0b55eb4bfd108af8",
+      "src/features/todos/hooks/useTodoFilters.ts": "5a72441f1d64c785dabee1d1bbb2f51bc8c365787314247aa07d754d57decdd1",
+      "src/features/todos/components/TodoList.tsx": "e761cb8962ea58dfb6ad199c6a5458393f8a7ca37000eab9f0a80a4c7eae112b"
+    },
+    "matrices": {
+      "raw-UTC": {
+        "productionRestored": true,
+        "results": [
+          {
+            "label": "unmutated-control",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 42,
+            "passed": 42,
+            "failed": 0,
+            "failingTests": []
+          },
+          {
+            "label": "notice-request-state",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 10,
+            "passed": 10,
+            "failed": 0,
+            "failingTests": []
+          },
+          {
+            "label": "utc-calendar",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 25,
+            "passed": 25,
+            "failed": 0,
+            "failingTests": []
+          },
+          {
+            "label": "hook-ignores-sort",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 3,
+            "passed": 3,
+            "failed": 0,
+            "failingTests": []
+          },
+          {
+            "label": "row-edit-delete-swap",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 4,
+            "passed": 4,
+            "failed": 0,
+            "failingTests": []
+          }
+        ]
+      },
+      "revised-UTC": {
+        "productionRestored": true,
+        "results": [
+          {
+            "label": "unmutated-control",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 43,
+            "passed": 43,
+            "failed": 0,
+            "failingTests": []
+          },
+          {
+            "label": "notice-request-state",
+            "timezone": "UTC",
+            "exitCode": 1,
+            "tests": 11,
+            "passed": 10,
+            "failed": 1,
+            "failingTests": [
+              {
+                "name": "toggles a task with completed=false by sending the opposite state (saved: false)",
+                "assertions": [
+                  "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'Task marked as active.' ]"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "utc-calendar",
+            "timezone": "UTC",
+            "exitCode": 1,
+            "tests": 25,
+            "passed": 24,
+            "failed": 1,
+            "failingTests": [
+              {
+                "name": "isOverdue uses the local calendar date shortly after midnight (due 2026-10-15)",
+                "assertions": [
+                  "AssertionError: expected false to be true // Object.is equality"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "hook-ignores-sort",
+            "timezone": "UTC",
+            "exitCode": 1,
+            "tests": 3,
+            "passed": 2,
+            "failed": 1,
+            "failingTests": [
+              {
+                "name": "recomputes visible tasks from the sort setter",
+                "assertions": [
+                  "AssertionError: expected [ 2, 1 ] to deeply equal [ 1, 2 ]"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "row-edit-delete-swap",
+            "timezone": "UTC",
+            "exitCode": 1,
+            "tests": 4,
+            "passed": 3,
+            "failed": 1,
+            "failingTests": [
+              {
+                "name": "binds each row callback to its own task and passes busy through",
+                "assertions": [
+                  "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "green-UTC": {
+        "productionRestored": true,
+        "results": [
+          {
+            "label": "unmutated-control",
+            "timezone": "UTC",
+            "exitCode": 0,
+            "tests": 43,
+            "passed": 43,
+            "failed": 0,
+            "failingTests": []
+          }
+        ]
+      },
+      "green-Europe-Warsaw": {
+        "productionRestored": true,
+        "results": [
+          {
+            "label": "unmutated-control",
+            "timezone": "Europe/Warsaw",
+            "exitCode": 0,
+            "tests": 43,
+            "passed": 43,
+            "failed": 0,
+            "failingTests": []
+          }
+        ]
+      },
+      "green-America-Los_Angeles": {
+        "productionRestored": true,
+        "results": [
+          {
+            "label": "unmutated-control",
+            "timezone": "America/Los_Angeles",
+            "exitCode": 0,
+            "tests": 43,
+            "passed": 43,
+            "failed": 0,
+            "failingTests": []
+          }
+        ]
+      }
+    },
+    "typecheck": "passed",
+    "limitations": [
+      "Four selected source counterexamples, not an exhaustive mutation-testing score.",
+      "These process-timezone checks ran on Windows; full Linux suite evidence is in the associated CI run.",
+      "No live model was used for this targeted correction verification; the initial native run usage remains separately retained."
+    ]
+  }
+}

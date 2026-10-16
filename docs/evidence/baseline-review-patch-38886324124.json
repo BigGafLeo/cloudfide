@@ -1,0 +1,1000 @@
+{
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 5,
+    "executionRunId": "38886324124",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "dispatch"
+    },
+    "baseSha": "02c70037444df82f34d283183bdbbc604be74bbd",
+    "headSha": "6ac67eb6ea965bc92c7e1afdee75f8868180eb48",
+    "controlSha": "7ff867f45492951a4e93cc62c28881733cca0d7a",
+    "task": "coverage-gap",
+    "deadline": "2026-10-16T14:18:12.000Z"
+  },
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "cf020d54dbc0de78babf0880914b865bc7c362b2ac6e3c84102f5dcd658985f2",
+    "bytes": 78598
+  },
+  "files": [
+    "backend/tests/router.test.ts",
+    "backend/tests/config.test.ts",
+    "frontend/src/features/todos/api/todos.test.ts",
+    "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+    "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+    "frontend/src/features/todos/components/TodoEditor.test.tsx",
+    "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+    "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+    "frontend/src/hooks/useNotice.test.ts",
+    "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+    "frontend/src/lib/http.test.ts",
+    "frontend/src/features/todos/utils/todos.test.ts",
+    "backend/tests/factory.test.ts",
+    "backend/tests/database.test.ts",
+    "frontend/src/features/todos/components/TodoForm.test.tsx",
+    "frontend/src/features/todos/components/TodoItem.test.tsx",
+    "frontend/src/features/todos/components/TodoList.test.tsx",
+    "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+    "frontend/src/features/todos/TodosPage.test.tsx",
+    "frontend/src/features/todos/hooks/useTodoFilters.test.ts",
+    "backend/tests/lifespan.test.ts",
+    "frontend/src/features/todos/hooks/useTodosBusy.test.tsx"
+  ],
+  "plan": {
+    "decision": "write",
+    "reason": "Verified cumulative coverage batches",
+    "cases": [
+      {
+        "id": "round-1:router-id-get",
+        "sourceLocation": "backend/src/features/todos/router.ts:8",
+        "behavior": "The id param is validated before any handler runs. A valid id is passed to the repository as a number, and a missing todo returns 404.",
+        "requirementSource": "idSchema in validators.ts (positive safe integer) and the router's 422/404 responses; characterization of the detail text.",
+        "inputs": "GET /api/todos/abc and GET /api/todos/0; GET /api/todos/1 with repository.get resolving todo; GET /api/todos/2 with get resolving null.",
+        "expected": "422 for abc and 0, with repository.get never called. 200 with the todo body, and get called with the number 1. 404 with detail 'Task not found.' for the missing id.",
+        "assertion": "Check status and body. expect(get).toHaveBeenCalledWith(1) and expect(get).not.toHaveBeenCalled() for the invalid ids.",
+        "mockBoundary": "Repository mocked with vi.fn; real express router and supertest.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "creates tasks with trimmed input and defaults"
+            }
+          ],
+          "regression": "The param check is removed or the id is passed as a string. The repository would then be queried with 'abc' or '1' instead of being rejected or receiving a number.",
+          "rationale": "Existing tests only cover list and create, so every id-based route is untested. The setup is a few lines and reuses the existing setup() helper."
+        }
+      },
+      {
+        "id": "round-1:router-patch-delete",
+        "sourceLocation": "backend/src/features/todos/router.ts:25",
+        "behavior": "PATCH validates the body and forwards the parsed payload. DELETE returns 204 on success and 404 when nothing was deleted.",
+        "requirementSource": "updateSchema (non-empty strict partial) and the router's status codes; characterization.",
+        "inputs": "PATCH /api/todos/1 with {title:'  New  '}; PATCH with {}; PATCH with {id:5}; PATCH /api/todos/9 with update resolving null; DELETE /api/todos/1 with delete resolving true; DELETE /api/todos/2 with delete resolving false.",
+        "expected": "The valid patch returns 200 and update is called with (1, {title:'New'}). Empty and unknown-field bodies return 422 with update not called. A missing todo returns 404. DELETE returns 204 with an empty body, then 404.",
+        "assertion": "Check status codes, toHaveBeenCalledWith(1, {title:'New'}), update not.toHaveBeenCalled for the invalid bodies, and an empty response.body for 204.",
+        "mockBoundary": "Repository mocked; real express and supertest.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "creates tasks with trimmed input and defaults"
+            }
+          ],
+          "regression": "PATCH passes the raw req.body, so the title is untrimmed and unknown fields reach the repository. Or DELETE returns 204 when the todo is missing.",
+          "rationale": "Lines 25-33 of the router are uncovered. The existing validation test covers create only, so patch validation and the delete outcome mapping have no protection."
+        }
+      },
+      {
+        "id": "round-1:config-resolve-url",
+        "sourceLocation": "backend/src/core/config.ts:7",
+        "behavior": "resolveDatabaseUrl precedence: override, then DATABASE_URL, then the POSTGRES_* parts. It rewrites the SQLAlchemy driver prefix and reports the first missing variable.",
+        "requirementSource": "Code behavior: the postgresql+psycopg: to postgresql: compatibility rewrite and the 'Missing environment variable' error; characterization.",
+        "inputs": "An override argument alongside DATABASE_URL; DATABASE_URL='postgresql+psycopg://u:p@h:5432/d'; DATABASE_URL unset with POSTGRES_USER=u, POSTGRES_PASSWORD='p@ss', POSTGRES_HOST=h, DB_PORT=5432, POSTGRES_DB='my db'; the same with POSTGRES_HOST unset. Env is isolated with vi.stubEnv and unstubbed in afterEach.",
+        "expected": "The override wins. The psycopg prefix becomes 'postgresql://u:p@h:5432/d'. The assembled URL has the raw encoded form 'postgresql://u:p%40ss@h:5432/my%20db'. A missing host throws 'Missing environment variable: POSTGRES_HOST'.",
+        "assertion": "toBe on the exact strings, including the percent-encoded password and db name, and toThrow with the exact message.",
+        "mockBoundary": "No mocks; process.env stubbed per test.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/config.test.ts",
+          "existingTests": [],
+          "regression": "Credentials or the db name are not encoded, or the psycopg prefix is left in place so the pg adapter rejects the URL. The env precedence could also be reordered.",
+          "rationale": "No config test exists in the supplied context, and config.ts lines 7-19 are uncovered. Raw-string assertions keep the case discriminating despite URL normalization."
+        }
+      },
+      {
+        "id": "round-1:api-update-remove",
+        "sourceLocation": "frontend/src/features/todos/api/todos.ts:21",
+        "behavior": "todosApi.update sends a PATCH containing only the provided writable fields. todosApi.remove sends DELETE to the id URL.",
+        "requirementSource": "Comment in todos.ts that read-only fields are never sent; PATCH/DELETE routes in the backend router.",
+        "inputs": "update(7, {completed:true}) and update(7, {...todoFixture, completed:true}), where the second call includes id, created_at and updated_at. remove(7).",
+        "expected": "The first call is '/todos/7' with method PATCH and body '{\"completed\":true}'. The second body contains no id, created_at or updated_at. remove calls '/todos/7' with {method:'DELETE'}.",
+        "assertion": "toHaveBeenCalledWith on exact options, plus JSON.parse(body) keys equal to the expected key list.",
+        "mockBoundary": "lib/http request mocked, as in the existing test.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/api/todos.test.ts",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/api/todos.test.ts",
+              "name": "sends only writable task fields on creation"
+            },
+            {
+              "path": "frontend/src/features/todos/api/todos.test.ts",
+              "name": "passes the abort signal when fetching tasks"
+            }
+          ],
+          "regression": "update serializes the whole input, so a toggle overwrites other fields or read-only fields leak into the PATCH. Or remove uses the wrong URL or method.",
+          "rationale": "The existing test covers only create. The completed-toggle payload is a user-visible save path, and a spy on the mocked saved result would not detect a wrong outgoing body."
+        }
+      },
+      {
+        "id": "round-1:create-hook-cache",
+        "sourceLocation": "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:10",
+        "behavior": "After a successful create, the saved todo is placed first in the list cache with any duplicate id removed. A pending list refetch is cancelled so it cannot overwrite the cache.",
+        "requirementSource": "Comment in the hook: stop an older refetch from overwriting the confirmed server response.",
+        "inputs": "A QueryClient with the list cache seeded as [older(id 3), todoFixture(id 7, stale)]. todosApi.create mocked to resolve saved id 7 with a new title. Run mutateAsync inside renderHook with a QueryClientProvider.",
+        "expected": "The list cache equals [saved, older]: saved is first and only one id 7 remains.",
+        "assertion": "expect(queryClient.getQueryData(todoKeys.list)).toEqual([saved, older]). A second, deferred-fetchQuery scenario asserts that the pending fetch is cancelled, so the cache keeps saved after the fetch resolves.",
+        "mockBoundary": "todosApi mocked; real QueryClient and hook.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+          "existingTests": [],
+          "regression": "The duplicate id is not filtered, giving a double entry. Or the saved todo is appended instead of prepended, or cancelQueries is dropped so a stale refetch overwrites it.",
+          "rationale": "No hook tests are in the supplied context, since TodoEditor mocks the hook entirely. The lines are uncovered, and the cache merge and cancellation are real logic that component tests cannot observe."
+        }
+      },
+      {
+        "id": "round-1:delete-dialog-failure-success",
+        "sourceLocation": "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+        "behavior": "Confirming deletion calls mutateAsync with the todo id and then onDeleted. A rejected mutation does not call onDeleted or onClose.",
+        "requirementSource": "Comment in the component: keep the confirmation open so the server error is visible and retry is possible.",
+        "inputs": "Case 1: mutateAsync resolves, click 'Delete task'. Case 2: mutateAsync rejects, click 'Delete task'. Case 3: busy=true.",
+        "expected": "Case 1: mutateAsync is called with 7 and onDeleted is called once. Case 2: after the rejection settles, onDeleted and onClose are not called. Case 3: both buttons are disabled and clicking does nothing.",
+        "assertion": "toHaveBeenCalledWith(todoFixture.id), toHaveBeenCalledTimes(1), and not.toHaveBeenCalled after await waitFor on the mutateAsync rejection.",
+        "mockBoundary": "useDeleteTodoMutation mocked; design-system mocks.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+              "name": "shows a deletion error and allows cancelling without deleting"
+            }
+          ],
+          "regression": "onDeleted fires even when the delete fails, or the wrong id is sent. Or the busy guard is removed, allowing a double delete.",
+          "rationale": "The existing test covers only the cancel path, and lines 19-22 and 40-42 are uncovered. The deletion payload and the keep-open guarantee are the key behaviors."
+        }
+      },
+      {
+        "id": "round-1:editor-edit-and-failure",
+        "sourceLocation": "frontend/src/features/todos/components/TodoEditor.tsx:24",
+        "behavior": "Editing an existing todo calls the update mutation with {id, input} and reports 'Changes saved.'. A rejected save does not call onSaved.",
+        "requirementSource": "Component code, plus the comment that the mutation exposes the server error and permits retrying.",
+        "inputs": "todo = {...todoFixture, id: 9}, with update mutateAsync resolving. Then update mutateAsync rejecting.",
+        "expected": "The success case calls update with {id: 9, input: todoFixture} and onSaved('Changes saved.'). create is not called and the dialog is named 'Edit task'. The rejection case never calls onSaved or onClose.",
+        "assertion": "toHaveBeenCalledWith({id: 9, input: todoFixture}), and onSaved not.toHaveBeenCalled after the rejection settles.",
+        "mockBoundary": "Both mutation hooks mocked; TodoForm and the design system mocked as in the existing file.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+              "name": "creates a new task and reports a successful save"
+            }
+          ],
+          "regression": "The edit path calls create, or sends the wrong id. Or the success notice appears despite a failed save.",
+          "rationale": "The existing test covers only the 'new' branch. The edit branch and the catch path (lines 24-28) carry the update payload and the failure semantics."
+        }
+      },
+      {
+        "id": "round-2:update-hook-cache",
+        "sourceLocation": "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:7",
+        "behavior": "Update mutation sends id and partial input to todosApi.update and replaces only the matching todo in the list cache; with no cached list it does not create one.",
+        "requirementSource": "Source behavior of onSuccess map-replace; characterization, mirrors the create hook's cache contract.",
+        "inputs": "Cache [older(id 3), todoFixture(id 7)]; todosApi.update mocked to resolve saved {id 7, completed true}; mutateAsync({id:7, input:{completed:true}}). Second run with an empty cache.",
+        "expected": "todosApi.update called with (7, {completed:true}); cache equals [older, saved] in the original order; with no cache, getQueryData stays undefined.",
+        "assertion": "expect(todosApi.update).toHaveBeenCalledWith(7,{completed:true}); expect(getQueryData(todoKeys.list)).toEqual([older, saved]); expect(getQueryData(todoKeys.list)).toBeUndefined() for the empty case.",
+        "mockBoundary": "Mock ../api/todos todosApi.update only; real QueryClient and renderHook wrapper.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+              "name": "sends the input and puts the saved task first without duplicating its id"
+            }
+          ],
+          "regression": "Replacing the wrong item, replacing every item, dropping other items, reordering the list, or fabricating a cache when none existed.",
+          "rationale": "Hook has no test and every line is uncovered. TodoEditor and TodosPage tests mock it, so nothing checks the cache result. A QueryClient test is cheap using the existing create-hook pattern."
+        }
+      },
+      {
+        "id": "round-2:delete-hook-cache",
+        "sourceLocation": "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:7",
+        "behavior": "Delete mutation calls todosApi.remove with the id and removes only that todo from the list cache.",
+        "requirementSource": "Source behavior of onSuccess filter; characterization.",
+        "inputs": "Cache [older(id 3), todoFixture(id 7)]; todosApi.remove resolves undefined; mutateAsync(7).",
+        "expected": "remove called with 7; cache equals [older]. With no cache, it stays undefined.",
+        "assertion": "expect(todosApi.remove).toHaveBeenCalledWith(7); expect(getQueryData(todoKeys.list)).toEqual([older]).",
+        "mockBoundary": "Mock ../api/todos todosApi.remove only; real QueryClient.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+              "name": "creates the list cache when none exists"
+            }
+          ],
+          "regression": "Filtering the wrong id (for example keeping the deleted task, or removing everything), or leaving the deleted task in the cache.",
+          "rationale": "The dialog test mocks the hook, so the cache effect is unprotected and every hook line is uncovered. The test is small."
+        }
+      },
+      {
+        "id": "round-2:notice-autodismiss",
+        "sourceLocation": "frontend/src/hooks/useNotice.ts:5",
+        "behavior": "notify exposes the message and clears it after 4000 ms. A newer notice restarts the timer.",
+        "requirementSource": "Source behavior (4000 ms timeout, cleanup on change); characterization.",
+        "inputs": "Fake timers; renderHook; act(notify('Saved')); advance 3999 ms; then 1 ms. Separate: notify('A'), advance 3000, notify('B'), advance 3000.",
+        "expected": "Message 'Saved' stays until 4000 ms, then ''. 'B' is still shown 3000 ms after the second notify; the first timer must not clear it.",
+        "assertion": "expect(result.current.message).toBe('Saved') at 3999 ms; toBe('') after 4000 ms; toBe('B') at +3000 ms.",
+        "mockBoundary": "vi.useFakeTimers only; no module mocks.",
+        "confidence": "characterization",
+        "value": {
+          "action": "strengthen",
+          "testPath": "frontend/src/hooks/useNotice.test.ts",
+          "existingTests": [
+            {
+              "path": "frontend/src/hooks/useNotice.test.ts",
+              "name": "starts without a notice and exposes a notification callback"
+            }
+          ],
+          "regression": "Notice never dismissing, dismissing early, or a stale timer from the earlier notice clearing the newer one.",
+          "rationale": "The existing test only checks the initial state, so notify and the timeout and cleanup lines go unexecuted. Every page-level test mocks this hook, so this is the only place the behavior can be protected."
+        }
+      },
+      {
+        "id": "round-2:todos-query-signal",
+        "sourceLocation": "frontend/src/features/todos/hooks/useTodosQuery.ts:6",
+        "behavior": "The list query fetches through todosApi.list, forwards the abort signal, and caches under todoKeys.list.",
+        "requirementSource": "Source behavior; the todosApi.list(signal) signature supports cancellation (characterization).",
+        "inputs": "todosApi.list mocked to resolve [todoFixture]; renderHook with a QueryClient wrapper and retry false.",
+        "expected": "data eventually equals [todoFixture]; list was called with an AbortSignal instance; the cache under todoKeys.list holds the data.",
+        "assertion": "await waitFor(() => expect(result.current.data).toEqual([todoFixture])); expect(vi.mocked(todosApi.list).mock.calls[0][0]).toBeInstanceOf(AbortSignal); expect(queryClient.getQueryData(todoKeys.list)).toEqual([todoFixture]).",
+        "mockBoundary": "Mock ../api/todos todosApi.list; real QueryClient.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/api/todos.test.ts",
+              "name": "passes the abort signal when fetching tasks"
+            }
+          ],
+          "regression": "Dropping the signal so that the cancelQueries in the mutation hooks cannot abort the fetch, or using the wrong query key so mutations write to a different cache entry.",
+          "rationale": "The api test only covers the api layer. Nothing connects the query hook to the key that the mutation hooks update. The test is small."
+        }
+      },
+      {
+        "id": "round-3:fe-http-errors",
+        "sourceLocation": "frontend/src/lib/http.ts:3",
+        "behavior": "request maps network failure, 422, server detail, unparseable error bodies and 204 to the documented user-facing results; abort errors pass through unchanged",
+        "requirementSource": "Messages and branches in request() itself. Characterization: the 422 text mirrors the backend limits of 120 title and 2000 description characters.",
+        "inputs": "Stub global fetch: (a) reject with TypeError, no signal; (b) reject with AbortError and an aborted signal; (c) status 422; (d) status 500 with {detail:'Boom'}; (e) status 500 with a non-JSON body; (f) 204; (g) 200 with JSON; also check the request URL and headers.",
+        "expected": "(a) rejects 'Cannot connect to the server. Please try again.'; (b) rejects with the same AbortError object; (c) rejects with the 'Check the task details…' message; (d) rejects 'Boom'; (e) rejects 'The operation failed. Please try again.'; (f) resolves undefined; (g) resolves the parsed body. fetch is called with '/api'+path and a Content-Type: application/json header, and a caller-supplied header is merged in.",
+        "assertion": "await expect(request(...)).rejects.toThrow(exact message); expect(error).toBe(abortError); expect(fetch).toHaveBeenCalledWith('/api/todos', expect.objectContaining({headers: expect.objectContaining({'Content-Type':'application/json'})}))",
+        "mockBoundary": "Only global fetch is stubbed via vi.stubGlobal; request is exercised for real.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/lib/http.test.ts",
+          "existingTests": [],
+          "regression": "A network failure surfaces a raw TypeError, or a caller's abort is turned into a connection message. Alternatively a 422 or non-JSON error leaks the wrong text, or a 204 tries response.json() and throws.",
+          "rationale": "src/lib/http.ts has about 11 uncovered lines. todos.test.ts mocks request entirely, so no supplied test exercises it. The tests are cheap because they only need fetch stubs."
+        }
+      },
+      {
+        "id": "round-3:fe-validate-todo",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:8",
+        "behavior": "validateTodo enforces title and description length boundaries (after trimming) and strict calendar-date validity",
+        "requirementSource": "Backend validators and the 422 message document title <=120, description <=2000 and a valid date. Message text 'Enter a task title.' is asserted in TodoForm.test.tsx.",
+        "inputs": "Title of 120 chars vs 121 chars; padded 120-char title; description of 2000 vs 2001 chars; due_date '2024-02-29' (valid), '2026-02-30', '2025-02-29', '2026-1-5', null, and empty title.",
+        "expected": "120-char title (even padded with spaces), 2000-char description and valid dates yield {}. A 121-char title yields title: 'The title must be at most 120 characters.', 2001 chars yields the 2000-char description message, invalid dates yield due_date: 'Enter a valid date.', and an empty title yields 'Enter a task title.'.",
+        "assertion": "expect(validateTodo({...base, title:'x'.repeat(121)})).toEqual({title:'The title must be at most 120 characters.'}) and the equivalent exact-object assertions for each input",
+        "mockBoundary": "None; pure function.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/utils/todos.test.ts",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/utils/todos.test.ts",
+              "name": "combines status with a case-insensitive search in the description"
+            },
+            {
+              "path": "frontend/src/features/todos/utils/todos.test.ts",
+              "name": "sorts by priority without changing the source array"
+            }
+          ],
+          "regression": "Off-by-one at the length limits (>= 120), validating the untrimmed length, accepting rolled-over dates like 2026-02-30, or accepting malformed formats.",
+          "rationale": "Existing tests cover only selectTodos. validateTodo has several uncovered branches (lines 10-20), and the boundary behavior is user-visible. The cost is one table-driven test."
+        }
+      },
+      {
+        "id": "round-3:fe-select-due-sort",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:46",
+        "behavior": "Sorting by due date places undated tasks last, with newest id first on ties; the default sort is newest created_at first",
+        "requirementSource": "Characterization of sort 'due' and 'newest' in selectTodos; the 'due' and 'newest' modes are part of the Sort type.",
+        "inputs": "Todos: id1 due 2026-11-01, id2 due null, id3 due 2026-10-05, id4 due 2026-11-01. Separately created_at values that differ, plus a tie that is broken by id.",
+        "expected": "due sort yields ids [3,4,1,2]. newest sort yields order by created_at desc, ties by id desc.",
+        "assertion": "expect(selectTodos(todos,'all','','due').map(t=>t.id)).toEqual([3,4,1,2])",
+        "mockBoundary": "None.",
+        "confidence": "characterization",
+        "value": {
+          "action": "strengthen",
+          "testPath": "frontend/src/features/todos/utils/todos.test.ts",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/utils/todos.test.ts",
+              "name": "sorts by priority without changing the source array"
+            }
+          ],
+          "regression": "Null due dates sort first, or the tie-break flips, so tasks appear in the wrong order.",
+          "rationale": "Only the priority sort is tested; the due and newest comparators (lines 50-66) are unexecuted. One extra scenario is cheap."
+        }
+      },
+      {
+        "id": "round-3:be-factory-errors",
+        "sourceLocation": "backend/src/factory.ts:10",
+        "behavior": "createApp returns JSON 404 for unknown routes, 422 for malformed JSON, 413 for oversized bodies and a generic 500 that does not leak the error, and it serves openapi.json",
+        "requirementSource": "Explicit status codes and detail strings in factory.ts; the JSON error shape {detail} matches router.test.ts.",
+        "inputs": "createApp with a fake database object whose todo.findFirst resolves, or rejects 'secret db failure' for the 500 case. Mock node:fs readFileSync to return '{\"openapi\":\"3.1.0\"}'. Requests: GET /nope; POST /api/todos with body '{bad' and Content-Type JSON; POST with a body over 100kb; GET /api/health with the rejecting database; GET /openapi.json; GET /api/health success.",
+        "expected": "404 {detail:'Not Found'}; 422 {detail:'Invalid JSON.'}; 413 {detail:'Request body too large.'}; 500 {detail:'Internal Server Error'} with no 'secret db failure' in the body and console.error called (spied); /openapi.json 200 with the stubbed document; the x-powered-by header is absent; health returns {status:'ok'}.",
+        "assertion": "expect(res.body).toEqual({detail:...}) for each status; expect(res.text).not.toContain('secret db failure'); expect(res.headers['x-powered-by']).toBeUndefined()",
+        "mockBoundary": "Database is a fake object; node:fs is mocked so openapi.json is not read; console.error is spied. Express and supertest run for real.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/factory.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "The error handler leaks internal error text or maps a parse failure to 500, an unknown route returns Express HTML, or the openapi route serves an empty document.",
+          "rationale": "factory.ts and health.ts (about 17 uncovered lines) have no tests. router.test.ts mounts only the todos router, so none of the app-level error contract is observed. The setup is one supertest app with a stubbed fs."
+        }
+      },
+      {
+        "id": "round-3:be-init-ddl",
+        "sourceLocation": "backend/src/core/database.ts:11",
+        "behavior": "initialize issues one CREATE TABLE IF NOT EXISTS todos statement carrying the columns, CHECK constraints and defaults the repository relies on",
+        "requirementSource": "Comment in initialize(): compatible with the existing SQLAlchemy table; columns match TodoRecord fields.",
+        "inputs": "A fake database with $executeRaw = vi.fn() resolving; call initialize(fake); join the tagged-template strings array.",
+        "expected": "$executeRaw called once. The SQL matches /CREATE TABLE IF NOT EXISTS todos/, a title VARCHAR(120) NOT NULL with a check on length(title) >= 1, priority CHECK IN ('low','medium','high') with DEFAULT 'medium', description DEFAULT '', completed DEFAULT FALSE, and due_date DATE nullable. The call rejects if $executeRaw rejects.",
+        "assertion": "Regexes with \\s* between tokens (e.g. /priority IN \\('low', 'medium', 'high'\\)/), not exact whitespace; await expect(initialize(failing)).rejects.toThrow('db down')",
+        "mockBoundary": "$executeRaw is a stub; this does not prove real database idempotency or constraint enforcement.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/database.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/repository.test.ts",
+              "name": "propagates database errors"
+            }
+          ],
+          "regression": "A column, a CHECK value (e.g. a dropped 'high') or a default is removed from the bootstrap DDL, or an initialize error is swallowed.",
+          "rationale": "database.ts line 12 is the only uncovered statement and nothing asserts the schema. The claim is limited to the asserted columns, CHECK predicates and defaults; the cost is one small test."
+        }
+      },
+      {
+        "id": "round-3:fe-todoform-payload",
+        "sourceLocation": "frontend/src/features/todos/components/TodoForm.tsx:67",
+        "behavior": "TodoForm submits trimmed description and chosen due date, shows an external error, calls onCancel, and disables controls while busy",
+        "requirementSource": "TodoForm props contract (onSubmit, onCancel, busy, error); the 'Saving…' label is in the component.",
+        "inputs": "Case A: type title 'T', description '  notes  ', due date 2026-10-15, submit. Case B: set a date then clear it, submit. Case C: render with error='Server rejected'; click Cancel. Case D: render busy.",
+        "expected": "A: onSubmit gets {title:'T',description:'notes',priority:'medium',due_date:'2026-10-15',completed:false}. B: due_date is null. C: the alert shows 'Server rejected' and onCancel is called once with onSubmit not called. D: 'Saving…' button and Cancel are disabled and the title input is disabled.",
+        "assertion": "expect(onSubmit).toHaveBeenCalledWith({...exact object}); expect(screen.getByTestId('alert')).toHaveTextContent('Server rejected'); expect(cancel).toBeDisabled()",
+        "mockBoundary": "Design system replaced with the repo's design-system mocks, as in existing tests; no network.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "strengthen",
+          "testPath": "frontend/src/features/todos/components/TodoForm.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/TodoForm.test.tsx",
+              "name": "submits trimmed values and the selected priority"
+            },
+            {
+              "path": "frontend/src/features/todos/components/TodoForm.test.tsx",
+              "name": "rejects a whitespace-only title without submitting"
+            }
+          ],
+          "regression": "The description is submitted untrimmed, the cleared date is sent as '' instead of null, the server error is not displayed, or busy does not lock the form.",
+          "rationale": "The existing tests exercise only title and priority, leaving description, date, error, cancel and busy paths (lines 67, 91, 97, 108) unexecuted. The existing mock-based setup makes the added cases cheap."
+        }
+      },
+      {
+        "id": "round-4:todoitem-completed-overdue",
+        "sourceLocation": "frontend/src/features/todos/components/TodoItem.tsx:41",
+        "behavior": "A completed task shows the Completed badge and a 'Mark as active' checkbox label. An active task with a past due date shows a formatted date plus the overdue marker. The description renders, and toggle and delete forward to their own callbacks.",
+        "requirementSource": "characterization of TodoItem props and the isOverdue/formatDate contract (overdue = not completed with a past due date)",
+        "inputs": "Case A: todo {completed:true, description:'Notes', due_date:'2000-01-05'}. Case B: todo {completed:false, due_date:'2000-01-05'}. Case C: todo {completed:false, due_date:'2999-01-05'}.",
+        "expected": "A: 'Completed' badge, checkbox checked with name 'Mark as active: <title>', description visible, no 'overdue' text. B: '5 Jan 2000 · overdue' is shown. C: '5 Jan 2999' is shown without 'overdue'. Clicking the checkbox calls onToggle once and Delete calls onDelete once, with onEdit untouched.",
+        "assertion": "getByText/getByRole checks on badge, checkbox state and accessible names; toHaveBeenCalledTimes on each callback; queryByText(/overdue/) absent for A and C.",
+        "mockBoundary": "The design system is mocked through design-system/mocks as in the existing test. Callbacks are vi.fn. Dates are far-past and far-future so no clock mock is needed.",
+        "confidence": "characterization",
+        "value": {
+          "action": "strengthen",
+          "testPath": "frontend/src/features/todos/components/TodoItem.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/TodoItem.test.tsx",
+              "name": "shows an active task and forwards edit requests"
+            }
+          ],
+          "regression": "A completed task is flagged overdue. The toggle label is not flipped for completed tasks. Delete is wired to onEdit. The date or overdue marker is dropped.",
+          "rationale": "The existing test only covers an active task with no due date and no description. The Completed, overdue, description and toggle/delete branches are uncovered (lines 32, 41-51, 64). Setup is one render per input."
+        }
+      },
+      {
+        "id": "round-4:todolist-failed-state",
+        "sourceLocation": "frontend/src/features/todos/components/TodoList.tsx:35",
+        "behavior": "A failed load with no known todos shows the unavailable message instead of the empty state. A failure with known todos that all filtered out still shows the matching-empty state.",
+        "requirementSource": "characterization of the TodoList branch order loading > (failed && !hasTodos) > items > empty state",
+        "inputs": "Case A: loading=false, failed=true, hasTodos=false, todos=[]. Case B: failed=true, hasTodos=true, todos=[].",
+        "expected": "A: heading 'The task list is temporarily unavailable' is shown and 'Empty task list' is absent. B: 'Empty task list' is shown and the unavailable heading is absent.",
+        "assertion": "getByRole('heading', {name}) and queryByText assertions in both cases.",
+        "mockBoundary": "TodoEmptyState and TodoItem are mocked as in the existing file. The design system uses the shared mocks.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/components/TodoList.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/TodoList.test.tsx",
+              "name": "shows loading feedback before showing an empty list"
+            }
+          ],
+          "regression": "A failed fetch renders the 'Add your first task' empty state, or the error replaces filtered results when stale data exists.",
+          "rationale": "The existing test covers only loading versus empty. Lines 40-43 are unexecuted, and the `failed && !hasTodos` condition has two discriminating inputs that a single test cannot separate."
+        }
+      },
+      {
+        "id": "round-4:todoempty-states",
+        "sourceLocation": "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+        "behavior": "With no tasks at all, the empty state invites creation, and its button calls onCreate unless disabled. With existing but filtered-out tasks, it shows filter guidance and no create button.",
+        "requirementSource": "characterization of TodoEmptyState props",
+        "inputs": "hasTodos=false with disabled=false, then disabled=true. hasTodos=true.",
+        "expected": "hasTodos=false: heading 'Add your first task' and the write-down text; clicking the button calls onCreate once; when disabled the button is disabled and a click does not call onCreate. hasTodos=true: heading 'No matching tasks', filter-guidance text, and no button.",
+        "assertion": "getByRole and getByText queries, toBeDisabled, toHaveBeenCalledTimes, queryByRole('button') null.",
+        "mockBoundary": "The design system is mocked via design-system/mocks. onCreate is vi.fn.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/TodoList.test.tsx",
+              "name": "shows loading feedback before showing an empty list"
+            }
+          ],
+          "regression": "The create button appears while filters hide existing tasks. The disabled flag is ignored. The two messages are swapped.",
+          "rationale": "No dedicated test exists. TodoList.test.tsx mocks this component, so none of its branches (lines 13-23) run. This is a new small file with no existing target to strengthen."
+        }
+      },
+      {
+        "id": "round-4:todospage-toggle-payload",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:28",
+        "behavior": "Toggling sends the opposite completed state for the chosen task and notifies according to the saved result. It does nothing while busy. A failed toggle shows no notice.",
+        "requirementSource": "characterization of TodosPage.toggle (input {completed: !todo.completed}) and its notices",
+        "inputs": "Change the TodoList mock to expose buttons that call onToggle(todo). Run it.each over todo.completed=false with saved.completed=true, and todo.completed=true with saved.completed=false. Add a busy=true case and a mutateAsync rejection case.",
+        "expected": "mutateAsync is called with {id, input:{completed:!original}}. The notice is 'Another task complete. Well done!' or 'Task marked as active.' respectively. When busy, mutateAsync is not called. On rejection notify is not called and there is no unhandled rejection.",
+        "assertion": "toHaveBeenCalledWith on mutateAsync; the notify mock gets the exact message; not.toHaveBeenCalled for the busy and rejected cases.",
+        "mockBoundary": "The hooks and child components are mocked as in the existing file. Only the TodoList mock is extended to render a toggle button.",
+        "confidence": "characterization",
+        "value": {
+          "action": "strengthen",
+          "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "displays a query failure and resets mutation errors before retrying"
+            }
+          ],
+          "regression": "The toggle sends the original completed value, or the wrong id. The notice follows the clicked todo instead of the saved result. A busy page still mutates. A failed save shows a success notice.",
+          "rationale": "The existing test only covers retry. Lines 28-35 (toggle) are unexecuted. A mocked saved result can make the notice right while the outgoing input is wrong, so the opposite-state inputs plus saved results in both directions are needed. The cost is a modest mock tweak."
+        }
+      },
+      {
+        "id": "round-4:usetodofilters-state",
+        "sourceLocation": "frontend/src/features/todos/hooks/useTodoFilters.ts:6",
+        "behavior": "The hook starts with filter 'all', empty search and sort 'newest', and recomputes visible todos when its setters are called.",
+        "requirementSource": "characterization of the useTodoFilters return shape, delegating to selectTodos",
+        "inputs": "todos: two todos, one completed with 'Alpha' in the title and one active with 'Beta'. Call renderHook, then act setFilter('completed'), setSearch('alp') and setSort('priority').",
+        "expected": "Initial: filter 'all', search '', sort 'newest', visible has both todos. After setFilter('completed') only the completed todo is visible. After a non-matching setSearch('beta') visible is empty. State values reflect the setters.",
+        "assertion": "Assertions on result.current fields and on visible ids after each act.",
+        "mockBoundary": "None; the pure selectTodos is used for real. The hook is rendered with renderHook and needs no providers.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useTodoFilters.test.ts",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/utils/todos.test.ts",
+              "name": "combines status with a case-insensitive search in the description"
+            }
+          ],
+          "regression": "Defaults change, a setter is wired to the wrong state, or visible ignores the current filter or search.",
+          "rationale": "utils tests cover selectTodos but not the hook's state wiring (lines 6-9 uncovered). The test is cheap and needs no mocks."
+        }
+      },
+      {
+        "id": "round-4:lifespan-startup-failure",
+        "sourceLocation": "backend/src/core/lifespan.ts:8",
+        "behavior": "If startup fails after the database client is created, start() disconnects the database and rethrows the original error without creating the app.",
+        "requirementSource": "characterization of the start() try/catch cleanup, where catch awaits $disconnect and rethrows",
+        "inputs": "Mock ./database.js, ./config.js and ../factory.js. Case A: $connect rejects with Error('connect failed'). Case B: initialize rejects with Error('init failed').",
+        "expected": "start() rejects with the same error. $disconnect is called once and createApp is not called.",
+        "assertion": "await expect(start()).rejects.toThrow(message); expect($disconnect).toHaveBeenCalledTimes(1); expect(createApp).not.toHaveBeenCalled().",
+        "mockBoundary": "The database, config and factory modules are mocked, so there is no real DB, no listening server and no signal handlers. The success path is intentionally not exercised.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/lifespan.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/database.test.ts",
+              "name": "propagates database failures"
+            }
+          ],
+          "regression": "A failed startup leaks the open database connection, swallows the error, or starts the HTTP app after the database failed.",
+          "rationale": "lifespan.ts lines 8-31 are fully uncovered. The existing database test only checks that initialize() propagates errors. The failure cleanup is the most valuable contract, and it can be tested with plain module mocks."
+        }
+      },
+      {
+        "id": "round-5:update-cancels-inflight-list",
+        "sourceLocation": "frontend/src/features/todos/hooks/useUpdateTodoMutation.ts:11",
+        "behavior": "After a successful update, an in-flight list fetch is cancelled so a stale server copy cannot overwrite the saved task.",
+        "requirementSource": "Characterization: mirrors the documented intent in useCreateTodoMutation.ts (stop an older refetch from overwriting the confirmed server response); the same cancelQueries call exists in the update hook.",
+        "inputs": "Cache [older, todoFixture]; deferred fetchQuery on todoKeys.list in flight; update mutation resolves saved (completed: true); then the stale fetch resolves with [older, todoFixture (completed false)].",
+        "expected": "The fetch signal is aborted by the mutation, and the final cache is [older, saved].",
+        "assertion": "expect(signal.aborted).toBe(true) after mutateAsync; after resolving the stale fetch, expect(getQueryData(todoKeys.list)).toEqual([older, saved]).",
+        "mockBoundary": "todosApi.update mocked; real QueryClient; the deferred fetch promise is controlled by the test.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+              "name": "sends the id and partial input and replaces only the matching task in place"
+            },
+            {
+              "path": "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+              "name": "does not create a list cache when none exists"
+            },
+            {
+              "path": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+              "name": "cancels an in-flight list fetch so it cannot overwrite the saved task"
+            }
+          ],
+          "regression": "Removing cancelQueries from onSuccess lets the stale refetch overwrite the updated task, reverting the toggle in the UI. The existing update tests never have a fetch in flight, so they would not notice.",
+          "rationale": "Only the create hook asserts this guarantee. The setup is a small copy of the existing create test, and the race is a realistic UI bug."
+        }
+      },
+      {
+        "id": "round-5:delete-cancels-inflight-list",
+        "sourceLocation": "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:10",
+        "behavior": "After a successful delete, an in-flight list fetch is cancelled so a stale list cannot resurrect the deleted task.",
+        "requirementSource": "Characterization: same cancelQueries-before-setQueryData pattern as the create hook, whose comment states the intent.",
+        "inputs": "Cache [older, todoFixture]; deferred list fetch in flight; remove(7) resolves; the stale fetch then resolves with [older, todoFixture].",
+        "expected": "The fetch signal is aborted, and the final cache is [older].",
+        "assertion": "expect(signal.aborted).toBe(true); after resolving the stale fetch, expect(getQueryData(todoKeys.list)).toEqual([older]).",
+        "mockBoundary": "todosApi.remove mocked; real QueryClient; deferred fetch controlled by the test.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+              "name": "removes the task by id and keeps the others in order"
+            },
+            {
+              "path": "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+              "name": "leaves the cache untouched when the delete fails"
+            },
+            {
+              "path": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+              "name": "cancels an in-flight list fetch so it cannot overwrite the saved task"
+            }
+          ],
+          "regression": "Dropping cancelQueries lets a pending refetch restore the deleted task after the delete succeeds.",
+          "rationale": "No delete test has a fetch in flight. The case reuses an established pattern at low cost."
+        }
+      },
+      {
+        "id": "round-5:page-editor-saved-closes-and-notifies",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:88",
+        "behavior": "Opening the editor shows TodoEditor. When the editor reports a save, the page closes it and shows the supplied notice.",
+        "requirementSource": "Characterization of the onSaved handler in TodosPage.tsx (setEditor(null); notify(notice)). Coverage gaps list lines 88-99 as unexecuted.",
+        "inputs": "Change the TodoEditor mock to render a stub with a 'Save' button that calls onSaved('New task added.'). Render the page with an empty list and notify mocked. Click the page's create action (e.g. a stub that calls onCreate), then click 'Save'.",
+        "expected": "The editor stub is mounted after create is requested. After Save, notify is called once with 'New task added.' and the editor stub is gone.",
+        "assertion": "expect(screen.getByText('Editor')).toBeVisible(); after the click, expect(notify).toHaveBeenCalledExactlyOnceWith('New task added.') and expect(screen.queryByText('Editor')).not.toBeInTheDocument().",
+        "mockBoundary": "The existing mocks stay in place. TodosHeader is changed to expose a create button, and TodoEditor is changed to a stub that surfaces onSaved.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "displays a query failure and resets mutation errors before retrying"
+            },
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "shows no notice when a toggle fails"
+            }
+          ],
+          "regression": "If onSaved stops clearing the editor, the drawer stays open after a successful save. If it stops forwarding the notice, the user gets no confirmation or the wrong text.",
+          "rationale": "All current page tests mock the editor and delete dialog to null, so that wiring is untested. The cost is a small mock change; existing tests are unaffected because the editor renders only when state is set."
+        }
+      },
+      {
+        "id": "round-5:page-delete-confirmed-closes-and-notifies",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:103",
+        "behavior": "Requesting delete from a list item opens DeleteTodoDialog for that task. On deletion the page closes it and notifies 'Task deleted.'.",
+        "requirementSource": "Characterization of the onDelete/onDeleted wiring in TodosPage.tsx. Coverage gaps list lines 103-106 as unexecuted.",
+        "inputs": "Make the TodoList mock also render a 'Delete <title>' button calling onDelete(todo). Make the DeleteTodoDialog mock render a stub showing todo.title with a 'Confirm' button calling onDeleted(). Click delete, then Confirm.",
+        "expected": "The dialog stub shows the selected todo's title. After Confirm, notify is called once with 'Task deleted.' and the dialog is unmounted.",
+        "assertion": "expect(screen.getByText('Dialog: '+title)).toBeVisible(); after Confirm, expect(notify).toHaveBeenCalledExactlyOnceWith('Task deleted.') and expect the dialog stub to be absent.",
+        "mockBoundary": "The page hooks and child components stay mocked as in the existing file; the DeleteTodoDialog and TodoList mocks are extended to expose callbacks.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "ignores toggle requests while the page is busy"
+            },
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "toggles a task with completed=%s by sending the opposite state (saved: %s)"
+            }
+          ],
+          "regression": "Passing the wrong todo to the dialog could delete the wrong task. A missing setDeleting(null) leaves the confirmation open after deletion. A changed or missing notice leaves the user without feedback.",
+          "rationale": "This is the page's only delete path and no test reaches it. The cost is a stub extension in the existing mock file."
+        }
+      },
+      {
+        "id": "round-6:lifespan-listen-success",
+        "sourceLocation": "backend/src/core/lifespan.ts:12",
+        "behavior": "On success, start listens on API_PORT (default 8000) at 0.0.0.0, registers SIGTERM/SIGINT shutdown handlers, and returns {server, database} without disconnecting.",
+        "requirementSource": "Characterization of start(); the port/host values come from the source.",
+        "inputs": "createApp mocked to return a fake app whose listen(port, host, cb) asynchronously invokes cb and exposes address(). Run once with API_PORT='9123' and once unset. process.once is spied on and mocked so no real handlers are installed. console.log is silenced.",
+        "expected": "listen is called with (9123, '0.0.0.0', fn) and, when unset, with (8000, '0.0.0.0', fn). start() resolves to {server, database} with the same database object. process.once is registered for SIGTERM and SIGINT. database.$disconnect is not called.",
+        "assertion": "expect(app.listen).toHaveBeenCalledWith(9123,'0.0.0.0',expect.any(Function)); expect(result.database).toBe(database); expect(onceSpy).toHaveBeenCalledWith('SIGTERM',expect.any(Function)); expect(database.$disconnect).not.toHaveBeenCalled()",
+        "mockBoundary": "database, config and factory modules mocked as in the existing file; fake app and listener are EventEmitter-based; process.once is stubbed.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/lifespan.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "disconnects and rethrows when connecting fails, without initializing or creating the app"
+            },
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "disconnects and rethrows when initialization fails, without creating the app"
+            }
+          ],
+          "regression": "A change that ignores API_PORT, binds to the wrong host, disconnects the database after a successful start, or omits the signal handlers would still pass the two failure-only tests.",
+          "rationale": "Lines 12-28 of lifespan.ts are executed by no test, and the existing tests only cover the early failure paths. The setup is a small fake listener, so the cost is low."
+        }
+      },
+      {
+        "id": "round-6:lifespan-listen-error",
+        "sourceLocation": "backend/src/core/lifespan.ts:14",
+        "behavior": "If the HTTP listener emits 'error' (e.g. EADDRINUSE), start rejects with that error and disconnects the database.",
+        "requirementSource": "Characterization of the catch block in start(): the database is disconnected and the error rethrown after any startup failure.",
+        "inputs": "Fake app.listen returns an EventEmitter; the test emits an Error('EADDRINUSE') on a microtask and never calls the listen callback.",
+        "expected": "start() rejects with 'EADDRINUSE'. database.$disconnect is called exactly once. createApp was called with the database. process.once is not called for signals.",
+        "assertion": "await expect(start()).rejects.toThrow('EADDRINUSE'); expect(database.$disconnect).toHaveBeenCalledTimes(1); expect(onceSpy).not.toHaveBeenCalled()",
+        "mockBoundary": "same module mocks as the lifespan tests; fake listener; process.once spied.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/lifespan.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "disconnects and rethrows when initialization fails, without creating the app"
+            },
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "disconnects and rethrows when connecting fails, without initializing or creating the app"
+            }
+          ],
+          "regression": "A listener error that leaves the Prisma connection open, or that leaves start() pending forever, would go unnoticed because the existing tests never reach the listen stage.",
+          "rationale": "The existing tests cover only connect and init failures. The listen-error path is a distinct failure after the app is created, so it needs its own case. It reuses the same fake listener as the success case."
+        }
+      },
+      {
+        "id": "round-6:busy-mutation-key",
+        "sourceLocation": "frontend/src/features/todos/hooks/useTodosBusy.ts:5",
+        "behavior": "useTodosBusy is true only while a mutation under the ['todos'] key prefix is pending.",
+        "requirementSource": "Characterization of useTodosBusy. The todoKeys.all prefix is the filter key, and TodosPage uses the hook to disable actions.",
+        "inputs": "A real QueryClient inside a provider. (1) No mutations. (2) A pending mutation with mutationKey todoKeys.update, held by a deferred promise. (3) A pending mutation with an unrelated key ['other']. The test resolves the deferred mutation at the end.",
+        "expected": "false with no mutations. true while the todos-keyed mutation is pending, then false once it settles. false for a pending mutation with an unrelated key.",
+        "assertion": "expect(result.current).toBe(false); await waitFor(()=>expect(result.current).toBe(true)); resolve(); await waitFor(()=>expect(result.current).toBe(false)); unrelated key keeps false",
+        "mockBoundary": "No mocks. A real QueryClient mutationCache is driven via queryClient.getMutationCache().build/execute or a useMutation helper in the same wrapper.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/hooks/useTodosBusy.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "ignores toggle requests while the page is busy"
+            }
+          ],
+          "regression": "Dropping the mutationKey filter would make unrelated mutations block the page. Changing the '> 0' comparison, or using a key that does not match the create/update/delete keys, would leave tasks editable during saves. TodosPage tests mock this hook entirely, so neither would be caught.",
+          "rationale": "The hook has no direct test, and its line is uncovered. TodosPage mocks it, so its real key-matching behaviour is unprotected. A small QueryClient fixture follows the repo's existing wrapper convention."
+        }
+      },
+      {
+        "id": "round-6:overdue-boundary",
+        "sourceLocation": "frontend/src/features/todos/utils/todos.ts:48",
+        "behavior": "isOverdue is true only for an incomplete task whose due date is strictly before the local calendar date. A task due today, a completed task, or a task with no due date is not overdue.",
+        "requirementSource": "Characterization of isOverdue. The function name and its local-date computation set the expectations.",
+        "inputs": "vi.useFakeTimers with setSystemTime at local 2026-10-16 12:00. Tasks: due 2026-10-15 active, due 2026-10-16 active, due 2026-10-15 completed, due_date null, due 2026-10-17 active.",
+        "expected": "true, false, false, false, false in that order.",
+        "assertion": "expect(isOverdue(t)).toBe(expected) via it.each",
+        "mockBoundary": "No mocks; fake timers only.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/utils/todos.test.ts",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/utils/todos.test.ts",
+              "name": "validates %s"
+            },
+            {
+              "path": "frontend/src/features/todos/components/TodoItem.test.tsx",
+              "name": "marks an active task with a past due date as overdue"
+            }
+          ],
+          "regression": "Changing '<' to '<=' would mark tasks due today as overdue. Using the UTC date instead of the local date would break the boundary near midnight. Dropping the completed check would flag finished tasks. TodoItem tests use only far-past (2000) and far-future (2999) dates, so none of these is caught.",
+          "rationale": "The boundary cases are cheap to test as a table. The utils test file does not exercise isOverdue directly, and the TodoItem tests use distant dates that cannot detect off-by-one-day mistakes."
+        }
+      },
+      {
+        "id": "round-6:config-empty-override",
+        "sourceLocation": "backend/src/core/config.ts:7",
+        "behavior": "An empty-string override or an empty DATABASE_URL is treated as absent, falling back to the next source.",
+        "requirementSource": "Characterization: the code uses `override || env` and `if (explicit)`.",
+        "inputs": "(a) override '' with DATABASE_URL='postgresql://env/db'. (b) DATABASE_URL='' with the full POSTGRES_* set (user u, password p, host h, port 5432, db d).",
+        "expected": "(a) 'postgresql://env/db'. (b) 'postgresql://u:p@h:5432/d'.",
+        "assertion": "expect(resolveDatabaseUrl('')).toBe('postgresql://env/db'); expect(resolveDatabaseUrl()).toBe('postgresql://u:p@h:5432/d')",
+        "mockBoundary": "vi.stubEnv via the existing stubEnv helper; no other mocks.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/config.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/config.test.ts",
+              "name": "prefers the override over DATABASE_URL"
+            },
+            {
+              "path": "backend/tests/config.test.ts",
+              "name": "prefers DATABASE_URL over the POSTGRES_* parts"
+            }
+          ],
+          "regression": "Switching to `??` or `!== undefined` would return an empty URL from a blank docker-compose DATABASE_URL instead of falling back to the POSTGRES_* parts.",
+          "rationale": "Blank env values are common in compose and CI. Existing tests only use non-empty or absent values, so the falsy-string boundary is not protected. Setup is two lines using the existing helper."
+        }
+      },
+      {
+        "id": "round-7:lifespan-shutdown-graceful",
+        "sourceLocation": "backend/src/core/lifespan.ts:19",
+        "behavior": "The SIGTERM/SIGINT handler closes the HTTP server, disconnects the database only after the server has closed, and cancels the forced-exit timer. A failed disconnect is logged and sets process.exitCode to 1.",
+        "requirementSource": "Characterization of the shutdown handler in start(). No external spec was supplied.",
+        "inputs": "Start with a fake listener that has a close(cb) spy. Capture the handler registered via the mocked process.once('SIGTERM'). Use fake timers and a spy on process.exit. Invoke the handler, then call the captured close callback. Run once with $disconnect resolving and once with it rejecting.",
+        "expected": "Before the close callback runs, $disconnect has not been called. After it runs, $disconnect is called once and process.exit is not called, even after advancing 10000 ms. In the rejecting case console.error receives the error and process.exitCode is 1. The test restores process.exitCode.",
+        "assertion": "expect(listener.close).toHaveBeenCalledTimes(1); expect(database.$disconnect).not.toHaveBeenCalled() before the callback; toHaveBeenCalledTimes(1) after it; expect(exit).not.toHaveBeenCalled() after vi.advanceTimersByTime(10000); in the failure case expect(error).toHaveBeenCalledWith(err) and expect(process.exitCode).toBe(1).",
+        "mockBoundary": "Mock process.once, process.exit and console.error. Use a fake listener with a close spy. The database, createApp and config modules are already mocked. Use fake timers.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/lifespan.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "listens on API_PORT=%s (port %i) at 0.0.0.0, registers signal handlers and keeps the database connected"
+            },
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "rejects, disconnects the database and registers no signal handlers when the listener errors"
+            }
+          ],
+          "regression": "The handler disconnects the database before the server finishes closing, drops in-flight requests, never clears the timeout so the process is force-exited after a clean shutdown, or swallows a disconnect error without setting a failing exit code.",
+          "rationale": "Existing tests only assert that the signal handlers are registered. They never run the handler, so lines 19-23 are unexecuted and a broken shutdown order or exit code would pass. One extra it.each-style test with a small fake-listener tweak is cheap compared with the operational risk."
+        }
+      },
+      {
+        "id": "round-7:lifespan-shutdown-forced-exit",
+        "sourceLocation": "backend/src/core/lifespan.ts:19",
+        "behavior": "If the server never finishes closing, the shutdown handler force-exits with code 1 after 10000 ms.",
+        "requirementSource": "Characterization of the shutdown timeout in start().",
+        "inputs": "Capture the handler, use fake timers, call the handler without invoking the close callback, then advance the timers by 9999 ms and by 1 ms.",
+        "expected": "process.exit is not called at 9999 ms and is called once with 1 at 10000 ms. $disconnect is not called.",
+        "assertion": "expect(exit).not.toHaveBeenCalled() at 9999 ms; expect(exit).toHaveBeenCalledWith(1) after the final 1 ms.",
+        "mockBoundary": "Mock process.exit and process.once. Use fake timers and a fake listener whose close never calls back.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/lifespan.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/lifespan.test.ts",
+              "name": "listens on API_PORT=%s (port %i) at 0.0.0.0, registers signal handlers and keeps the database connected"
+            }
+          ],
+          "regression": "The forced-exit timer is removed or uses the wrong delay or exit code, so a hung connection keeps the process alive forever during deploys.",
+          "rationale": "This guard is the only protection against a hung shutdown. It is currently unexecuted and cheap to verify with fake timers."
+        }
+      },
+      {
+        "id": "round-7:todospage-close-callbacks",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:92",
+        "behavior": "Cancelling the editor or the delete dialog closes it without showing a success notice.",
+        "requirementSource": "Characterization of the onClose wiring in TodosPage. The onClose props are part of the TodoEditor and DeleteTodoDialog interfaces.",
+        "inputs": "Extend the TodoEditor and DeleteTodoDialog mocks in TodosPage.test.tsx with a Cancel button that calls onClose. Open the editor via Create task and click Cancel. Then open the delete dialog for a task and click Cancel.",
+        "expected": "The Editor and the Dialog elements are removed after Cancel. notify is never called.",
+        "assertion": "expect(screen.queryByText('Editor')).not.toBeInTheDocument(); expect(screen.queryByText(/^Dialog:/)).not.toBeInTheDocument(); expect(notify).not.toHaveBeenCalled().",
+        "mockBoundary": "Child components are already mocked in this file. Only the mock factories gain an onClose button. Hooks stay mocked via mockPage.",
+        "confidence": "characterization",
+        "value": {
+          "action": "strengthen",
+          "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "opens the editor on create and closes it with the notice when saved"
+            },
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "opens the delete dialog for the chosen task and closes it with a notice once deleted"
+            }
+          ],
+          "regression": "onClose is wired to the save path, so cancelling announces 'New task added.' or 'Task deleted.' even though nothing happened. Alternatively onClose does not clear state, which leaves the drawer stuck open.",
+          "rationale": "The existing tests cover only the saved and deleted exits, so lines 92 and 103 are unexecuted. A false success notice on cancel would pass every current assertion. The only extra setup is a Cancel button in the existing mocks."
+        }
+      },
+      {
+        "id": "round-8:todolist-binds-callbacks-to-row",
+        "sourceLocation": "frontend/src/features/todos/components/TodoList.tsx:43",
+        "behavior": "When todos are present, each TodoItem receives callbacks bound to its own todo, with the busy flag passed through. onToggle, onEdit and onDelete are called with that row's todo.",
+        "requirementSource": "TodoListProps types in TodoList.tsx: onToggle, onEdit and onDelete take a Todo; busy is a boolean",
+        "inputs": "todos=[first(id 1), second(id 2)], hasTodos, loading=false, failed=false, busy=true. TodoItem is mocked to render buttons that call its onToggle, onEdit and onDelete props, and to show its busy prop. Click the second row's three buttons.",
+        "expected": "Both rows render and the empty state is absent. Each parent callback is called once with the second todo object, never the first. Each row shows busy=true.",
+        "assertion": "expect(onToggle).toHaveBeenCalledWith(second); same for onEdit and onDelete; expect(onToggle).not.toHaveBeenCalledWith(first); expect(screen.getAllByRole('listitem')).toHaveLength(2); expect(screen.queryByText('Empty task list')).not.toBeInTheDocument()",
+        "mockBoundary": "The TodoItem and TodoEmptyState child components and the design-system mocks are mocked. The TodoList mapping and wiring is real.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/components/TodoList.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/components/TodoList.test.tsx",
+              "name": "shows loading feedback before showing an empty list"
+            },
+            {
+              "path": "frontend/src/features/todos/components/TodoList.test.tsx",
+              "name": "keeps the empty state when a failure happens while known tasks are filtered out"
+            }
+          ],
+          "regression": "The map passes the wrong todo or a shared closure, for example always the first todo, or swaps onEdit and onDelete. The row is not rendered when todos are non-empty. busy is not forwarded. The existing tests never render a non-empty list, so none of these would fail.",
+          "rationale": "Every existing test passes todos=[], so lines 43-49 are unexecuted and per-row callback binding is unprotected. A small TodoItem mock exposing its props is cheap, and the wiring decides which task gets toggled or deleted."
+        }
+      },
+      {
+        "id": "round-8:todospage-edit-opens-chosen-todo",
+        "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:81",
+        "behavior": "Choosing edit on a row opens the editor for that todo. Saving closes it and shows the 'Changes saved.' notice.",
+        "requirementSource": "TodosPage wiring: onEdit={setEditor} and TodoEditor's todo prop (Todo | 'new')",
+        "inputs": "visible=[first, second]. Extend the mocked TodoList with 'Edit <title>' buttons that call onEdit(todo). Extend the mocked TodoEditor to render its todo prop's title, or 'new'. Click 'Edit Second task', then the mocked editor's save button. The mocked editor's onSaved callback must pass 'Changes saved.' for this case.",
+        "expected": "The editor shows 'Editing: Second task' and not the first task. After saving, the editor is gone and notify was called once with the saved message.",
+        "assertion": "expect(screen.getByText('Editing: Second task')).toBeVisible(); expect(screen.queryByText('Editing: First task')).not.toBeInTheDocument(); after save, expect(notify).toHaveBeenCalledOnce() and expect(screen.queryByText(/^Editing:/)).not.toBeInTheDocument()",
+        "mockBoundary": "The hooks, TodoEditor, TodoList and design-system are mocked. TodosPage's editor state and notice wiring is real.",
+        "confidence": "characterization",
+        "value": {
+          "action": "add",
+          "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+          "existingTests": [
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "opens the editor on create and closes it with the notice when saved"
+            },
+            {
+              "path": "frontend/src/features/todos/TodosPage.test.tsx",
+              "name": "opens the delete dialog for the chosen task and closes it with a notice once deleted"
+            }
+          ],
+          "regression": "onEdit opens the 'new' editor, or the wrong or first todo, so users edit or overwrite the wrong task. The edit flow does not close or notify after saving.",
+          "rationale": "The create and delete flows are covered, but the edit entry point is not: the TodoList mock exposes no onEdit and the TodoEditor mock never shows which todo it received. A modest mock extension reuses the existing mockPage pattern and protects against editing the wrong task."
+        }
+      }
+    ],
+    "paths": [
+      "backend/tests/router.test.ts",
+      "backend/tests/config.test.ts",
+      "frontend/src/features/todos/api/todos.test.ts",
+      "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+      "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+      "frontend/src/features/todos/components/TodoEditor.test.tsx",
+      "frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx",
+      "frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx",
+      "frontend/src/hooks/useNotice.test.ts",
+      "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+      "frontend/src/lib/http.test.ts",
+      "frontend/src/features/todos/utils/todos.test.ts",
+      "backend/tests/factory.test.ts",
+      "backend/tests/database.test.ts",
+      "frontend/src/features/todos/components/TodoForm.test.tsx",
+      "frontend/src/features/todos/components/TodoItem.test.tsx",
+      "frontend/src/features/todos/components/TodoList.test.tsx",
+      "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+      "frontend/src/features/todos/TodosPage.test.tsx",
+      "frontend/src/features/todos/hooks/useTodoFilters.test.ts",
+      "backend/tests/lifespan.test.ts",
+      "frontend/src/features/todos/hooks/useTodosBusy.test.tsx"
+    ],
+    "remainingGaps": [
+      "backend/src/factory.ts:20 (headersSent -> next(error) branch) needs a handler that fails after headers are sent; left uncovered as speculative setup",
+      "backend/src/main.ts startup catch (lines 3-5) is a module-level side effect and is not worth a test",
+      "frontend/src/app/AppProviders.tsx default client and theme wiring: low value and no supplied test",
+      "frontend/src/features/todos/utils/todos.ts:48 (formatDate) has no direct test, and the rendered output is only partly covered through TodoItem",
+      "TodoItem.tsx, DeleteTodoDialog.tsx and Api/health sources were not supplied, so no cases were analyzed for them"
+    ]
+  },
+  "skillsUsed": [
+    "analyze-unit-gaps",
+    "analyze-unit-gaps/references/backend.md",
+    "analyze-unit-gaps/references/frontend.md",
+    "write-unit-tests",
+    "write-unit-tests/references/backend.md",
+    "write-unit-tests/references/frontend.md"
+  ],
+  "patchText": "diff --git a/backend/tests/config.test.ts b/backend/tests/config.test.ts\nnew file mode 100644\nindex 0000000..e766afc\n--- /dev/null\n+++ b/backend/tests/config.test.ts\n@@ -0,0 +1,50 @@\n+import { afterEach, describe, it, expect, vi } from 'vitest';\n+import { resolveDatabaseUrl } from '../src/core/config.ts';\n+\n+const names = ['DATABASE_URL', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_HOST', 'DB_PORT', 'POSTGRES_DB'];\n+\n+function stubEnv(values: Record<string, string>) {\n+  for (const name of names) vi.stubEnv(name, values[name]);\n+}\n+\n+afterEach(() => vi.unstubAllEnvs());\n+\n+describe('resolveDatabaseUrl', () => {\n+  it('prefers the override over DATABASE_URL', () => {\n+    stubEnv({ DATABASE_URL: 'postgresql://env/db' });\n+    expect(resolveDatabaseUrl('postgresql://override/db')).toBe('postgresql://override/db');\n+  });\n+  it('rewrites the SQLAlchemy driver prefix', () => {\n+    stubEnv({ DATABASE_URL: 'postgresql+psycopg://u:p@h:5432/d' });\n+    expect(resolveDatabaseUrl()).toBe('postgresql://u:p@h:5432/d');\n+    expect(resolveDatabaseUrl('postgresql+psycopg://o:p@h:5432/x')).toBe('postgresql://o:p@h:5432/x');\n+  });\n+  it('prefers DATABASE_URL over the POSTGRES_* parts', () => {\n+    stubEnv({ DATABASE_URL: 'postgresql://direct/db', POSTGRES_USER: 'u', POSTGRES_PASSWORD: 'p', POSTGRES_HOST: 'h', DB_PORT: '5432', POSTGRES_DB: 'd' });\n+    expect(resolveDatabaseUrl()).toBe('postgresql://direct/db');\n+  });\n+  it('assembles an encoded URL from the POSTGRES_* parts', () => {\n+    stubEnv({ POSTGRES_USER: 'u', POSTGRES_PASSWORD: 'p@ss', POSTGRES_HOST: 'h', DB_PORT: '5432', POSTGRES_DB: 'my db' });\n+    expect(resolveDatabaseUrl()).toBe('postgresql://u:p%40ss@h:5432/my%20db');\n+  });\n+  it('encodes a literal percent in the database name', () => {\n+    stubEnv({ POSTGRES_USER: 'u', POSTGRES_PASSWORD: 'p', POSTGRES_HOST: 'h', DB_PORT: '5432', POSTGRES_DB: 'a%b' });\n+    expect(resolveDatabaseUrl()).toBe('postgresql://u:p@h:5432/a%25b');\n+  });\n+  it('treats an empty override as absent and falls back to DATABASE_URL', () => {\n+    stubEnv({ DATABASE_URL: 'postgresql://env/db' });\n+    expect(resolveDatabaseUrl('')).toBe('postgresql://env/db');\n+  });\n+  it('treats an empty DATABASE_URL as absent and assembles the URL from the POSTGRES_* parts', () => {\n+    stubEnv({ DATABASE_URL: '', POSTGRES_USER: 'u', POSTGRES_PASSWORD: 'p', POSTGRES_HOST: 'h', DB_PORT: '5432', POSTGRES_DB: 'd' });\n+    expect(resolveDatabaseUrl()).toBe('postgresql://u:p@h:5432/d');\n+  });\n+  it('reports a missing variable by name', () => {\n+    stubEnv({ POSTGRES_USER: 'u', POSTGRES_PASSWORD: 'p', DB_PORT: '5432', POSTGRES_DB: 'd' });\n+    expect(() => resolveDatabaseUrl()).toThrow('Missing environment variable: POSTGRES_HOST');\n+  });\n+  it('reports the first missing variable in declaration order', () => {\n+    stubEnv({ POSTGRES_PASSWORD: 'p', DB_PORT: '5432', POSTGRES_DB: 'd' });\n+    expect(() => resolveDatabaseUrl()).toThrow('Missing environment variable: POSTGRES_USER');\n+  });\n+});\ndiff --git a/backend/tests/database.test.ts b/backend/tests/database.test.ts\nnew file mode 100644\nindex 0000000..0b43b19\n--- /dev/null\n+++ b/backend/tests/database.test.ts\n@@ -0,0 +1,32 @@\n+import { describe, expect, it, vi } from 'vitest';\n+import { initialize } from '../src/core/database.ts';\n+import type { Database } from '../src/features/todos/types.ts';\n+\n+function fakeDatabase(executeRaw = vi.fn().mockResolvedValue(0)) {\n+  return { database: { $executeRaw: executeRaw } as unknown as Database, executeRaw };\n+}\n+\n+describe('initialize', () => {\n+  it('issues a single CREATE TABLE IF NOT EXISTS with the columns, checks and defaults', async () => {\n+    const { database, executeRaw } = fakeDatabase();\n+    await initialize(database);\n+    expect(executeRaw).toHaveBeenCalledTimes(1);\n+    const sql = (executeRaw.mock.calls[0][0] as readonly string[]).join('');\n+    expect(sql).toMatch(/CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s+todos/i);\n+    expect(sql).toMatch(/\\bid\\s+SERIAL\\s+PRIMARY\\s+KEY/i);\n+    expect(sql).toMatch(/\\btitle\\s+VARCHAR\\s*\\(\\s*120\\s*\\)\\s+NOT\\s+NULL/i);\n+    expect(sql).toMatch(/CHECK\\s*\\(\\s*length\\s*\\(\\s*title\\s*\\)\\s*>=\\s*1\\s*\\)/i);\n+    expect(sql).toMatch(/\\bdescription\\s+VARCHAR\\s*\\(\\s*2000\\s*\\)\\s+NOT\\s+NULL\\s+DEFAULT\\s+''/i);\n+    expect(sql).toMatch(/\\bpriority\\s+VARCHAR\\s*\\(\\s*6\\s*\\)\\s+NOT\\s+NULL\\s+DEFAULT\\s+'medium'/i);\n+    expect(sql).toMatch(/CHECK\\s*\\(\\s*priority\\s+IN\\s*\\(\\s*'low'\\s*,\\s*'medium'\\s*,\\s*'high'\\s*\\)\\s*\\)/i);\n+    expect(sql).toMatch(/\\bdue_date\\s+DATE\\s*,/i);\n+    expect(sql).toMatch(/\\bcompleted\\s+BOOLEAN\\s+NOT\\s+NULL\\s+DEFAULT\\s+FALSE/i);\n+    expect(sql).toMatch(/\\bcreated_at\\s+TIMESTAMPTZ\\s+NOT\\s+NULL/i);\n+    expect(sql).toMatch(/\\bupdated_at\\s+TIMESTAMPTZ\\s+NOT\\s+NULL/i);\n+  });\n+\n+  it('propagates database failures', async () => {\n+    const { database } = fakeDatabase(vi.fn().mockRejectedValue(new Error('db down')));\n+    await expect(initialize(database)).rejects.toThrow('db down');\n+  });\n+});\ndiff --git a/backend/tests/factory.test.ts b/backend/tests/factory.test.ts\nnew file mode 100644\nindex 0000000..ef65f93\n--- /dev/null\n+++ b/backend/tests/factory.test.ts\n@@ -0,0 +1,70 @@\n+import request from 'supertest';\n+import { afterEach, describe, expect, it, vi } from 'vitest';\n+import type { Database } from '../src/features/todos/types.ts';\n+\n+const specification = { openapi: '3.1.0', info: { title: 'Stub API', version: '1' }, paths: {} };\n+\n+vi.mock('node:fs', async (importOriginal) => {\n+  const actual = await importOriginal<typeof import('node:fs')>();\n+  const readFileSync = ((path: unknown, ...rest: unknown[]) =>\n+    String(path).endsWith('openapi.json')\n+      ? JSON.stringify({ openapi: '3.1.0', info: { title: 'Stub API', version: '1' }, paths: {} })\n+      : (actual.readFileSync as (...args: unknown[]) => unknown)(path, ...rest)) as typeof actual.readFileSync;\n+  return { ...actual, readFileSync, default: { ...actual, readFileSync } };\n+});\n+\n+const { createApp } = await import('../src/factory.ts');\n+\n+function setup(findFirst = vi.fn().mockResolvedValue(null)) {\n+  const database = { todo: { findFirst } } as unknown as Database;\n+  return { app: createApp(database), findFirst };\n+}\n+\n+afterEach(() => vi.restoreAllMocks());\n+\n+describe('createApp', () => {\n+  it('returns a JSON 404 for unknown routes', async () => {\n+    const response = await request(setup().app).get('/nope');\n+    expect(response.status).toBe(404);\n+    expect(response.body).toEqual({ detail: 'Not Found' });\n+  });\n+\n+  it('returns 422 for malformed JSON', async () => {\n+    const response = await request(setup().app).post('/api/todos').set('Content-Type', 'application/json').send('{bad');\n+    expect(response.status).toBe(422);\n+    expect(response.body).toEqual({ detail: 'Invalid JSON.' });\n+  });\n+\n+  it('returns 413 for oversized bodies', async () => {\n+    const body = JSON.stringify({ title: 'x'.repeat(200 * 1024) });\n+    const response = await request(setup().app).post('/api/todos').set('Content-Type', 'application/json').send(body);\n+    expect(response.status).toBe(413);\n+    expect(response.body).toEqual({ detail: 'Request body too large.' });\n+  });\n+\n+  it('returns a generic 500 without leaking the error and logs it', async () => {\n+    const error = new Error('secret db failure');\n+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});\n+    const { app } = setup(vi.fn().mockRejectedValue(error));\n+    const response = await request(app).get('/api/health');\n+    expect(response.status).toBe(500);\n+    expect(response.body).toEqual({ detail: 'Internal Server Error' });\n+    expect(response.text).not.toContain('secret db failure');\n+    expect(logged).toHaveBeenCalledWith(error);\n+  });\n+\n+  it('reports health after querying the database and hides x-powered-by', async () => {\n+    const { app, findFirst } = setup();\n+    const response = await request(app).get('/api/health');\n+    expect(response.status).toBe(200);\n+    expect(response.body).toEqual({ status: 'ok' });\n+    expect(findFirst).toHaveBeenCalledWith({ select: { id: true } });\n+    expect(response.headers['x-powered-by']).toBeUndefined();\n+  });\n+\n+  it('serves the OpenAPI document', async () => {\n+    const response = await request(setup().app).get('/openapi.json');\n+    expect(response.status).toBe(200);\n+    expect(response.body).toEqual(specification);\n+  });\n+});\ndiff --git a/backend/tests/lifespan.test.ts b/backend/tests/lifespan.test.ts\nnew file mode 100644\nindex 0000000..7bff635\n--- /dev/null\n+++ b/backend/tests/lifespan.test.ts\n@@ -0,0 +1,178 @@\n+import { EventEmitter } from 'node:events';\n+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';\n+import { createDatabase, initialize } from '../src/core/database.ts';\n+import { resolveDatabaseUrl } from '../src/core/config.ts';\n+import { createApp } from '../src/factory.ts';\n+import { start } from '../src/core/lifespan.ts';\n+\n+vi.mock('../src/core/database.ts', () => ({ createDatabase: vi.fn(), initialize: vi.fn() }));\n+vi.mock('../src/core/config.ts', () => ({ resolveDatabaseUrl: vi.fn() }));\n+vi.mock('../src/factory.ts', () => ({ createApp: vi.fn() }));\n+\n+function setup() {\n+  const database = { $connect: vi.fn().mockResolvedValue(undefined), $disconnect: vi.fn().mockResolvedValue(undefined) };\n+  vi.mocked(resolveDatabaseUrl).mockReturnValue('postgresql://test:test@localhost:5432/test');\n+  vi.mocked(createDatabase).mockReturnValue(database as unknown as ReturnType<typeof createDatabase>);\n+  vi.mocked(initialize).mockResolvedValue(undefined);\n+  return database;\n+}\n+\n+function fakeApp(behavior: 'listening' | 'error', port = 8000) {\n+  const listener = Object.assign(new EventEmitter(), { address: () => ({ port }), close: vi.fn() });\n+  const listen = vi.fn((_port: number, _host: string, callback: () => void) => {\n+    queueMicrotask(() => {\n+      if (behavior === 'listening') callback();\n+      else listener.emit('error', new Error('EADDRINUSE'));\n+    });\n+    return listener;\n+  });\n+  vi.mocked(createApp).mockReturnValue({ listen } as unknown as ReturnType<typeof createApp>);\n+  return { listen, listener };\n+}\n+\n+async function startServing(signal: 'SIGTERM' | 'SIGINT' = 'SIGTERM') {\n+  const database = setup();\n+  const { listener } = fakeApp('listening');\n+  const once = vi.spyOn(process, 'once').mockImplementation(() => process);\n+  vi.spyOn(console, 'log').mockImplementation(() => {});\n+  const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never);\n+  await start();\n+  const registration = once.mock.calls.find(([name]) => name === signal);\n+  const shutdown = registration?.[1] as () => void;\n+  return { database, listener, shutdown, exit };\n+}\n+\n+beforeEach(() => vi.resetAllMocks());\n+afterEach(() => {\n+  vi.useRealTimers();\n+  vi.restoreAllMocks();\n+  vi.unstubAllEnvs();\n+});\n+\n+describe('start', () => {\n+  it('disconnects and rethrows when connecting fails, without initializing or creating the app', async () => {\n+    const database = setup();\n+    database.$connect.mockRejectedValue(new Error('connect failed'));\n+    await expect(start()).rejects.toThrow('connect failed');\n+    expect(createDatabase).toHaveBeenCalledWith('postgresql://test:test@localhost:5432/test');\n+    expect(database.$disconnect).toHaveBeenCalledTimes(1);\n+    expect(initialize).not.toHaveBeenCalled();\n+    expect(createApp).not.toHaveBeenCalled();\n+  });\n+\n+  it('disconnects and rethrows when initialization fails, without creating the app', async () => {\n+    const database = setup();\n+    vi.mocked(initialize).mockRejectedValue(new Error('init failed'));\n+    await expect(start()).rejects.toThrow('init failed');\n+    expect(database.$connect).toHaveBeenCalledTimes(1);\n+    expect(initialize).toHaveBeenCalledWith(database);\n+    expect(database.$disconnect).toHaveBeenCalledTimes(1);\n+    expect(createApp).not.toHaveBeenCalled();\n+  });\n+\n+  it.each([\n+    ['9123', 9123],\n+    [undefined, 8000],\n+  ])('listens on API_PORT=%s (port %i) at 0.0.0.0, registers signal handlers and keeps the database connected', async (envPort, expectedPort) => {\n+    const database = setup();\n+    vi.stubEnv('API_PORT', envPort);\n+    const { listen, listener } = fakeApp('listening', expectedPort);\n+    const once = vi.spyOn(process, 'once').mockImplementation(() => process);\n+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});\n+\n+    const result = await start();\n+\n+    expect(createApp).toHaveBeenCalledWith(database);\n+    expect(listen).toHaveBeenCalledTimes(1);\n+    expect(listen).toHaveBeenCalledWith(expectedPort, '0.0.0.0', expect.any(Function));\n+    expect(result.server).toBe(listener);\n+    expect(result.database).toBe(database);\n+    expect(once).toHaveBeenCalledWith('SIGTERM', expect.any(Function));\n+    expect(once).toHaveBeenCalledWith('SIGINT', expect.any(Function));\n+    expect(log).toHaveBeenCalledWith(expect.stringContaining(String(expectedPort)));\n+    expect(database.$disconnect).not.toHaveBeenCalled();\n+  });\n+\n+  it('rejects, disconnects the database and registers no signal handlers when the listener errors', async () => {\n+    const database = setup();\n+    fakeApp('error');\n+    const once = vi.spyOn(process, 'once').mockImplementation(() => process);\n+\n+    await expect(start()).rejects.toThrow('EADDRINUSE');\n+\n+    expect(createApp).toHaveBeenCalledWith(database);\n+    expect(database.$disconnect).toHaveBeenCalledTimes(1);\n+    expect(once).not.toHaveBeenCalled();\n+  });\n+});\n+\n+describe('graceful shutdown', () => {\n+  it.each(['SIGTERM', 'SIGINT'] as const)('on %s closes the server, disconnects only after it closed and cancels the forced exit', async (signal) => {\n+    const { database, listener, shutdown, exit } = await startServing(signal);\n+    vi.useFakeTimers();\n+\n+    shutdown();\n+\n+    expect(listener.close).toHaveBeenCalledTimes(1);\n+    expect(database.$disconnect).not.toHaveBeenCalled();\n+\n+    const onClosed = listener.close.mock.calls[0][0] as () => Promise<void>;\n+    await onClosed();\n+\n+    expect(database.$disconnect).toHaveBeenCalledTimes(1);\n+    vi.advanceTimersByTime(10000);\n+    expect(exit).not.toHaveBeenCalled();\n+    expect(vi.getTimerCount()).toBe(0);\n+  });\n+\n+  it('logs a failed disconnect, sets a failing exit code and still cancels the forced exit', async () => {\n+    const { database, listener, shutdown, exit } = await startServing();\n+    const failure = new Error('disconnect failed');\n+    database.$disconnect.mockRejectedValue(failure);\n+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});\n+    const previousExitCode = process.exitCode;\n+    vi.useFakeTimers();\n+    try {\n+      shutdown();\n+      const onClosed = listener.close.mock.calls[0][0] as () => Promise<void>;\n+      await onClosed();\n+\n+      expect(database.$disconnect).toHaveBeenCalledTimes(1);\n+      expect(logged).toHaveBeenCalledWith(failure);\n+      expect(process.exitCode).toBe(1);\n+      vi.advanceTimersByTime(10000);\n+      expect(exit).not.toHaveBeenCalled();\n+    } finally {\n+      process.exitCode = previousExitCode;\n+    }\n+  });\n+\n+  it('does not set a failing exit code when the disconnect succeeds', async () => {\n+    const { listener, shutdown } = await startServing();\n+    const previousExitCode = process.exitCode;\n+    process.exitCode = undefined;\n+    vi.useFakeTimers();\n+    try {\n+      shutdown();\n+      await (listener.close.mock.calls[0][0] as () => Promise<void>)();\n+      expect(process.exitCode).toBeUndefined();\n+    } finally {\n+      process.exitCode = previousExitCode;\n+    }\n+  });\n+\n+  it('force-exits with code 1 after 10000 ms when the server never finishes closing', async () => {\n+    const { database, listener, shutdown, exit } = await startServing();\n+    vi.useFakeTimers();\n+\n+    shutdown();\n+    expect(listener.close).toHaveBeenCalledTimes(1);\n+\n+    vi.advanceTimersByTime(9999);\n+    expect(exit).not.toHaveBeenCalled();\n+    vi.advanceTimersByTime(1);\n+    expect(exit).toHaveBeenCalledTimes(1);\n+    expect(exit).toHaveBeenCalledWith(1);\n+    expect(database.$disconnect).not.toHaveBeenCalled();\n+  });\n+});\ndiff --git a/backend/tests/router.test.ts b/backend/tests/router.test.ts\nindex e1c46fc..4f3ada2 100644\n--- a/backend/tests/router.test.ts\n+++ b/backend/tests/router.test.ts\n@@ -32,3 +32,67 @@ it.each([{ title: '  ' }, { title: 'x'.repeat(121) }, { title: 'Task', priority:\n     expect(repository.create).not.toHaveBeenCalled();\n   },\n );\n+\n+it.each(['abc', '0', '-3', '9007199254740992'])('rejects invalid id %s on every id route before calling the repository', async (id) => {\n+  const { app, repository } = setup();\n+  const responses = [\n+    await request(app).get(`/api/todos/${id}`),\n+    await request(app).patch(`/api/todos/${id}`).send({ title: 'New' }),\n+    await request(app).delete(`/api/todos/${id}`),\n+  ];\n+  for (const response of responses) {\n+    expect(response.status).toBe(422);\n+    expect(Array.isArray(response.body.detail)).toBe(true);\n+    expect(response.body.detail.length).toBeGreaterThan(0);\n+  }\n+  expect(repository.get).not.toHaveBeenCalled();\n+  expect(repository.update).not.toHaveBeenCalled();\n+  expect(repository.delete).not.toHaveBeenCalled();\n+});\n+it('gets a task by numeric id and reports a missing task', async () => {\n+  const { app, repository } = setup();\n+  repository.get.mockResolvedValueOnce(todo).mockResolvedValueOnce(null);\n+  const found = await request(app).get('/api/todos/1');\n+  expect(found.status).toBe(200);\n+  expect(found.body).toEqual(todo);\n+  expect(repository.get).toHaveBeenCalledWith(1);\n+  const missing = await request(app).get('/api/todos/2');\n+  expect(missing.status).toBe(404);\n+  expect(missing.body).toEqual({ detail: 'Task not found.' });\n+  expect(repository.get).toHaveBeenLastCalledWith(2);\n+});\n+it('patches a task with the parsed payload', async () => {\n+  const { app, repository } = setup();\n+  repository.update.mockResolvedValue({ ...todo, title: 'New' });\n+  const response = await request(app).patch('/api/todos/1').send({ title: '  New  ' });\n+  expect(response.status).toBe(200);\n+  expect(response.body).toEqual({ ...todo, title: 'New' });\n+  expect(repository.update).toHaveBeenCalledWith(1, { title: 'New' });\n+});\n+it.each([{}, { id: 5 }, { title: 'New', id: 5 }, { title: '  ' }, { completed: null }])('rejects invalid patch body without updating: %j', async (payload) => {\n+  const { app, repository } = setup();\n+  const response = await request(app).patch('/api/todos/1').send(payload);\n+  expect(response.status).toBe(422);\n+  expect(response.body.detail.length).toBeGreaterThan(0);\n+  expect(repository.update).not.toHaveBeenCalled();\n+});\n+it('returns 404 when patching a missing task', async () => {\n+  const { app, repository } = setup();\n+  repository.update.mockResolvedValue(null);\n+  const response = await request(app).patch('/api/todos/9').send({ completed: true });\n+  expect(response.status).toBe(404);\n+  expect(response.body).toEqual({ detail: 'Task not found.' });\n+  expect(repository.update).toHaveBeenCalledWith(9, { completed: true });\n+});\n+it('deletes a task with an empty 204 and reports a missing task', async () => {\n+  const { app, repository } = setup();\n+  repository.delete.mockResolvedValueOnce(true).mockResolvedValueOnce(false);\n+  const deleted = await request(app).delete('/api/todos/1');\n+  expect(deleted.status).toBe(204);\n+  expect(deleted.text).toBe('');\n+  expect(repository.delete).toHaveBeenCalledWith(1);\n+  const missing = await request(app).delete('/api/todos/2');\n+  expect(missing.status).toBe(404);\n+  expect(missing.body).toEqual({ detail: 'Task not found.' });\n+  expect(repository.delete).toHaveBeenLastCalledWith(2);\n+});\ndiff --git a/frontend/src/features/todos/TodosPage.test.tsx b/frontend/src/features/todos/TodosPage.test.tsx\nindex 7870133..79d1f46 100644\n--- a/frontend/src/features/todos/TodosPage.test.tsx\n+++ b/frontend/src/features/todos/TodosPage.test.tsx\n@@ -1,12 +1,14 @@\n-import { render, screen, waitFor } from '@testing-library/react'\n+import { act, render, screen, waitFor } from '@testing-library/react'\n import userEvent from '@testing-library/user-event'\n import { expect, it, vi } from 'vitest'\n+import { todoFixture } from '../../test/todoFixture'\n import { useNotice } from '../../hooks/useNotice'\n import { useTodoFilters } from './hooks/useTodoFilters'\n import { useTodosBusy } from './hooks/useTodosBusy'\n import { useTodosQuery } from './hooks/useTodosQuery'\n import { useUpdateTodoMutation } from './hooks/useUpdateTodoMutation'\n import { TodosPage } from './TodosPage'\n+import type { Todo } from './types'\n \n vi.mock('../../design-system', () => import('../../design-system/mocks'))\n vi.mock('../../hooks/useNotice', () => ({ useNotice: vi.fn() }))\n@@ -17,13 +19,78 @@ vi.mock('./hooks/useUpdateTodoMutation', () => ({\n   useUpdateTodoMutation: vi.fn(),\n }))\n vi.mock('./components/TodosHeader', () => ({\n-  TodosHeader: () => <h1>Tasks</h1>,\n+  TodosHeader: ({ onCreate }: { onCreate: () => void }) => (\n+    <>\n+      <h1>Tasks</h1>\n+      <button onClick={onCreate}>Create task</button>\n+    </>\n+  ),\n }))\n vi.mock('./components/TodoFilters', () => ({ TodoFilters: () => null }))\n-vi.mock('./components/TodoList', () => ({ TodoList: () => <p>Task list</p> }))\n-vi.mock('./components/TodoEditor', () => ({ TodoEditor: () => null }))\n+vi.mock('./components/TodoList', () => ({\n+  TodoList: ({\n+    todos,\n+    onToggle,\n+    onEdit,\n+    onDelete,\n+  }: {\n+    todos: Todo[]\n+    onToggle: (todo: Todo) => void\n+    onEdit: (todo: Todo) => void\n+    onDelete: (todo: Todo) => void\n+  }) => (\n+    <>\n+      <p>Task list</p>\n+      {todos.map((todo) => (\n+        <div key={todo.id}>\n+          <button onClick={() => onToggle(todo)}>Toggle {todo.title}</button>\n+          <button onClick={() => onEdit(todo)}>Edit {todo.title}</button>\n+          <button onClick={() => onDelete(todo)}>Delete {todo.title}</button>\n+        </div>\n+      ))}\n+    </>\n+  ),\n+}))\n+vi.mock('./components/TodoEditor', () => ({\n+  TodoEditor: ({\n+    todo,\n+    onSaved,\n+    onClose,\n+  }: {\n+    todo: Todo | 'new'\n+    onSaved: (message: string) => void\n+    onClose: () => void\n+  }) => (\n+    <div>\n+      <p>Editor</p>\n+      <p>Editing: {todo === 'new' ? 'new' : todo.title}</p>\n+      <button\n+        onClick={() =>\n+          onSaved(todo === 'new' ? 'New task added.' : 'Changes saved.')\n+        }\n+      >\n+        Save editor\n+      </button>\n+      <button onClick={() => onClose()}>Cancel editor</button>\n+    </div>\n+  ),\n+}))\n vi.mock('./components/DeleteTodoDialog', () => ({\n-  DeleteTodoDialog: () => null,\n+  DeleteTodoDialog: ({\n+    todo,\n+    onDeleted,\n+    onClose,\n+  }: {\n+    todo: Todo\n+    onDeleted: () => void\n+    onClose: () => void\n+  }) => (\n+    <div>\n+      <p>Dialog: {todo.title}</p>\n+      <button onClick={() => onDeleted()}>Confirm delete</button>\n+      <button onClick={() => onClose()}>Cancel delete</button>\n+    </div>\n+  ),\n }))\n vi.mock('../../components/SuccessNotice', () => ({ SuccessNotice: () => null }))\n \n@@ -66,3 +133,185 @@ it('displays a query failure and resets mutation errors before retrying', async\n     refetch.mock.invocationCallOrder[0],\n   )\n })\n+\n+function mockPage(\n+  todo: Todo,\n+  mutateAsync: ReturnType<typeof vi.fn>,\n+  busy = false,\n+) {\n+  const notify = vi.fn()\n+  vi.mocked(useTodosQuery).mockReturnValue({\n+    data: [todo],\n+    isPending: false,\n+    isFetching: false,\n+    isError: false,\n+    error: null,\n+    refetch: vi.fn(),\n+  } as unknown as ReturnType<typeof useTodosQuery>)\n+  vi.mocked(useUpdateTodoMutation).mockReturnValue({\n+    error: null,\n+    reset: vi.fn(),\n+    mutateAsync,\n+  } as unknown as ReturnType<typeof useUpdateTodoMutation>)\n+  vi.mocked(useTodosBusy).mockReturnValue(busy)\n+  vi.mocked(useNotice).mockReturnValue({ message: '', notify })\n+  vi.mocked(useTodoFilters).mockReturnValue({\n+    filter: 'all',\n+    search: '',\n+    sort: 'newest',\n+    visible: [todo],\n+    setFilter: vi.fn(),\n+    setSearch: vi.fn(),\n+    setSort: vi.fn(),\n+  })\n+  return notify\n+}\n+\n+it.each([\n+  [false, true, 'Another task complete. Well done!'],\n+  [true, false, 'Task marked as active.'],\n+])(\n+  'toggles a task with completed=%s by sending the opposite state (saved: %s)',\n+  async (initial, savedCompleted, message) => {\n+    const user = userEvent.setup()\n+    const todo: Todo = { ...todoFixture, id: 12, completed: initial }\n+    const mutateAsync = vi\n+      .fn()\n+      .mockResolvedValue({ ...todo, completed: savedCompleted })\n+    const notify = mockPage(todo, mutateAsync)\n+    render(<TodosPage />)\n+    await user.click(screen.getByRole('button', { name: /^Toggle / }))\n+    await waitFor(() => expect(notify).toHaveBeenCalledWith(message))\n+    expect(mutateAsync).toHaveBeenCalledTimes(1)\n+    expect(mutateAsync).toHaveBeenCalledWith({\n+      id: 12,\n+      input: { completed: !initial },\n+    })\n+    expect(notify).toHaveBeenCalledTimes(1)\n+  },\n+)\n+\n+it('ignores toggle requests while the page is busy', async () => {\n+  const user = userEvent.setup()\n+  const mutateAsync = vi.fn().mockResolvedValue(todoFixture)\n+  const notify = mockPage(todoFixture, mutateAsync, true)\n+  render(<TodosPage />)\n+  await user.click(screen.getByRole('button', { name: /^Toggle / }))\n+  await act(async () => {\n+    await Promise.resolve()\n+  })\n+  expect(mutateAsync).not.toHaveBeenCalled()\n+  expect(notify).not.toHaveBeenCalled()\n+})\n+\n+it('shows no notice when a toggle fails', async () => {\n+  const user = userEvent.setup()\n+  const mutateAsync = vi.fn().mockRejectedValue(new Error('Server down'))\n+  const notify = mockPage(todoFixture, mutateAsync)\n+  render(<TodosPage />)\n+  await user.click(screen.getByRole('button', { name: /^Toggle / }))\n+  await waitFor(() =>\n+    expect(mutateAsync).toHaveBeenCalledWith({\n+      id: todoFixture.id,\n+      input: { completed: true },\n+    }),\n+  )\n+  await expect(mutateAsync.mock.results[0].value).rejects.toThrow('Server down')\n+  await act(async () => {\n+    await Promise.resolve()\n+  })\n+  expect(notify).not.toHaveBeenCalled()\n+})\n+\n+it('opens the editor on create and closes it with the notice when saved', async () => {\n+  const user = userEvent.setup()\n+  const notify = mockPage(todoFixture, vi.fn())\n+  render(<TodosPage />)\n+  expect(screen.queryByText('Editor')).not.toBeInTheDocument()\n+  await user.click(screen.getByRole('button', { name: 'Create task' }))\n+  expect(screen.getByText('Editor')).toBeVisible()\n+  expect(notify).not.toHaveBeenCalled()\n+  await user.click(screen.getByRole('button', { name: 'Save editor' }))\n+  expect(notify).toHaveBeenCalledTimes(1)\n+  expect(notify).toHaveBeenCalledWith('New task added.')\n+  expect(screen.queryByText('Editor')).not.toBeInTheDocument()\n+})\n+\n+it('opens the editor for the chosen task and closes it with the saved notice', async () => {\n+  const user = userEvent.setup()\n+  const first: Todo = { ...todoFixture, id: 1, title: 'First task' }\n+  const second: Todo = { ...todoFixture, id: 2, title: 'Second task' }\n+  const notify = mockPage(first, vi.fn())\n+  vi.mocked(useTodoFilters).mockReturnValue({\n+    filter: 'all',\n+    search: '',\n+    sort: 'newest',\n+    visible: [first, second],\n+    setFilter: vi.fn(),\n+    setSearch: vi.fn(),\n+    setSort: vi.fn(),\n+  })\n+  render(<TodosPage />)\n+  expect(screen.queryByText(/^Editing:/)).not.toBeInTheDocument()\n+  await user.click(screen.getByRole('button', { name: 'Edit Second task' }))\n+  expect(screen.getByText('Editing: Second task')).toBeVisible()\n+  expect(screen.queryByText('Editing: First task')).not.toBeInTheDocument()\n+  expect(screen.queryByText('Editing: new')).not.toBeInTheDocument()\n+  expect(notify).not.toHaveBeenCalled()\n+  await user.click(screen.getByRole('button', { name: 'Save editor' }))\n+  expect(notify).toHaveBeenCalledTimes(1)\n+  expect(notify).toHaveBeenCalledWith('Changes saved.')\n+  expect(screen.queryByText(/^Editing:/)).not.toBeInTheDocument()\n+})\n+\n+it('closes the editor without any notice when it is cancelled', async () => {\n+  const user = userEvent.setup()\n+  const notify = mockPage(todoFixture, vi.fn())\n+  render(<TodosPage />)\n+  await user.click(screen.getByRole('button', { name: 'Create task' }))\n+  expect(screen.getByText('Editor')).toBeVisible()\n+  await user.click(screen.getByRole('button', { name: 'Cancel editor' }))\n+  expect(screen.queryByText('Editor')).not.toBeInTheDocument()\n+  expect(notify).not.toHaveBeenCalled()\n+  await user.click(screen.getByRole('button', { name: 'Create task' }))\n+  expect(screen.getByText('Editor')).toBeVisible()\n+})\n+\n+it('opens the delete dialog for the chosen task and closes it with a notice once deleted', async () => {\n+  const user = userEvent.setup()\n+  const first: Todo = { ...todoFixture, id: 1, title: 'First task' }\n+  const second: Todo = { ...todoFixture, id: 2, title: 'Second task' }\n+  const notify = mockPage(first, vi.fn())\n+  vi.mocked(useTodoFilters).mockReturnValue({\n+    filter: 'all',\n+    search: '',\n+    sort: 'newest',\n+    visible: [first, second],\n+    setFilter: vi.fn(),\n+    setSearch: vi.fn(),\n+    setSort: vi.fn(),\n+  })\n+  render(<TodosPage />)\n+  expect(screen.queryByText(/^Dialog:/)).not.toBeInTheDocument()\n+  await user.click(screen.getByRole('button', { name: 'Delete Second task' }))\n+  expect(screen.getByText('Dialog: Second task')).toBeVisible()\n+  expect(screen.queryByText('Dialog: First task')).not.toBeInTheDocument()\n+  expect(notify).not.toHaveBeenCalled()\n+  await user.click(screen.getByRole('button', { name: 'Confirm delete' }))\n+  expect(notify).toHaveBeenCalledTimes(1)\n+  expect(notify).toHaveBeenCalledWith('Task deleted.')\n+  expect(screen.queryByText(/^Dialog:/)).not.toBeInTheDocument()\n+})\n+\n+it('closes the delete dialog without any notice when it is cancelled', async () => {\n+  const user = userEvent.setup()\n+  const notify = mockPage(todoFixture, vi.fn())\n+  render(<TodosPage />)\n+  await user.click(\n+    screen.getByRole('button', { name: `Delete ${todoFixture.title}` }),\n+  )\n+  expect(screen.getByText(`Dialog: ${todoFixture.title}`)).toBeVisible()\n+  await user.click(screen.getByRole('button', { name: 'Cancel delete' }))\n+  expect(screen.queryByText(/^Dialog:/)).not.toBeInTheDocument()\n+  expect(notify).not.toHaveBeenCalled()\n+})\ndiff --git a/frontend/src/features/todos/api/todos.test.ts b/frontend/src/features/todos/api/todos.test.ts\nindex db57522..c603c50 100644\n--- a/frontend/src/features/todos/api/todos.test.ts\n+++ b/frontend/src/features/todos/api/todos.test.ts\n@@ -27,3 +27,35 @@ it('sends only writable task fields on creation', async () => {\n     }),\n   })\n })\n+\n+it('patches only the provided fields', async () => {\n+  vi.mocked(request).mockResolvedValue(todoFixture)\n+  await expect(todosApi.update(7, { completed: true })).resolves.toEqual(\n+    todoFixture,\n+  )\n+  expect(request).toHaveBeenCalledWith('/todos/7', {\n+    method: 'PATCH',\n+    body: '{\"completed\":true}',\n+  })\n+})\n+\n+it('never sends read-only fields when updating', async () => {\n+  vi.mocked(request).mockResolvedValue(todoFixture)\n+  await todosApi.update(7, { ...todoFixture, completed: true })\n+  const [url, options] = vi.mocked(request).mock.calls[0]\n+  expect(url).toBe('/todos/7')\n+  expect(options?.method).toBe('PATCH')\n+  expect(JSON.parse(options?.body as string)).toEqual({\n+    title: todoFixture.title,\n+    description: '',\n+    priority: 'medium',\n+    due_date: null,\n+    completed: true,\n+  })\n+})\n+\n+it('deletes a task by id', async () => {\n+  vi.mocked(request).mockResolvedValue(undefined)\n+  await todosApi.remove(7)\n+  expect(request).toHaveBeenCalledWith('/todos/7', { method: 'DELETE' })\n+})\ndiff --git a/frontend/src/features/todos/components/DeleteTodoDialog.test.tsx b/frontend/src/features/todos/components/DeleteTodoDialog.test.tsx\nindex 05bd6a6..5384993 100644\n--- a/frontend/src/features/todos/components/DeleteTodoDialog.test.tsx\n+++ b/frontend/src/features/todos/components/DeleteTodoDialog.test.tsx\n@@ -1,4 +1,4 @@\n-import { render, screen } from '@testing-library/react'\n+import { act, render, screen, waitFor } from '@testing-library/react'\n import userEvent from '@testing-library/user-event'\n import { expect, it, vi } from 'vitest'\n import { todoFixture } from '../../../test/todoFixture'\n@@ -40,3 +40,85 @@ it('shows a deletion error and allows cancelling without deleting', async () =>\n   expect(mutateAsync).not.toHaveBeenCalled()\n   expect(onDeleted).not.toHaveBeenCalled()\n })\n+\n+function mockMutation(\n+  mutateAsync: ReturnType<typeof vi.fn>,\n+  isPending = false,\n+) {\n+  vi.mocked(useDeleteTodoMutation).mockReturnValue({\n+    isPending,\n+    error: null,\n+    mutateAsync,\n+  } as unknown as ReturnType<typeof useDeleteTodoMutation>)\n+}\n+\n+it('deletes the task by id and then reports success', async () => {\n+  const user = userEvent.setup()\n+  const mutateAsync = vi.fn().mockResolvedValue(undefined)\n+  mockMutation(mutateAsync)\n+  const onClose = vi.fn()\n+  const onDeleted = vi.fn()\n+  render(\n+    <DeleteTodoDialog\n+      todo={todoFixture}\n+      busy={false}\n+      onClose={onClose}\n+      onDeleted={onDeleted}\n+    />,\n+  )\n+  await user.click(screen.getByRole('button', { name: 'Delete task' }))\n+  await waitFor(() => expect(onDeleted).toHaveBeenCalledTimes(1))\n+  expect(mutateAsync).toHaveBeenCalledTimes(1)\n+  expect(mutateAsync).toHaveBeenCalledWith(todoFixture.id)\n+  expect(onClose).not.toHaveBeenCalled()\n+})\n+\n+it('keeps the dialog open and reports nothing when deletion fails', async () => {\n+  const user = userEvent.setup()\n+  const mutateAsync = vi.fn().mockRejectedValue(new Error('Server down'))\n+  mockMutation(mutateAsync)\n+  const onClose = vi.fn()\n+  const onDeleted = vi.fn()\n+  render(\n+    <DeleteTodoDialog\n+      todo={todoFixture}\n+      busy={false}\n+      onClose={onClose}\n+      onDeleted={onDeleted}\n+    />,\n+  )\n+  await user.click(screen.getByRole('button', { name: 'Delete task' }))\n+  await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(todoFixture.id))\n+  await expect(mutateAsync.mock.results[0].value).rejects.toThrow('Server down')\n+  await act(async () => {\n+    await Promise.resolve()\n+  })\n+  expect(onDeleted).not.toHaveBeenCalled()\n+  expect(onClose).not.toHaveBeenCalled()\n+  expect(screen.getByRole('dialog', { name: 'Delete task?' })).toBeVisible()\n+})\n+\n+it('disables both actions and ignores clicks while busy', async () => {\n+  const user = userEvent.setup()\n+  const mutateAsync = vi.fn().mockResolvedValue(undefined)\n+  mockMutation(mutateAsync)\n+  const onClose = vi.fn()\n+  const onDeleted = vi.fn()\n+  render(\n+    <DeleteTodoDialog\n+      todo={todoFixture}\n+      busy\n+      onClose={onClose}\n+      onDeleted={onDeleted}\n+    />,\n+  )\n+  const cancel = screen.getByRole('button', { name: 'Cancel' })\n+  const confirm = screen.getByRole('button', { name: 'Deleting…' })\n+  expect(cancel).toBeDisabled()\n+  expect(confirm).toBeDisabled()\n+  await user.click(cancel)\n+  await user.click(confirm)\n+  expect(mutateAsync).not.toHaveBeenCalled()\n+  expect(onClose).not.toHaveBeenCalled()\n+  expect(onDeleted).not.toHaveBeenCalled()\n+})\ndiff --git a/frontend/src/features/todos/components/TodoEditor.test.tsx b/frontend/src/features/todos/components/TodoEditor.test.tsx\nindex e6fcaea..25fec1f 100644\n--- a/frontend/src/features/todos/components/TodoEditor.test.tsx\n+++ b/frontend/src/features/todos/components/TodoEditor.test.tsx\n@@ -1,4 +1,4 @@\n-import { render, screen, waitFor } from '@testing-library/react'\n+import { act, render, screen, waitFor } from '@testing-library/react'\n import userEvent from '@testing-library/user-event'\n import { expect, it, vi } from 'vitest'\n import { todoFixture } from '../../../test/todoFixture'\n@@ -46,3 +46,66 @@ it('creates a new task and reports a successful save', async () => {\n   expect(create).toHaveBeenCalledWith(todoFixture)\n   expect(update).not.toHaveBeenCalled()\n })\n+\n+function mockMutations(create: ReturnType<typeof vi.fn>, update: ReturnType<typeof vi.fn>) {\n+  vi.mocked(useCreateTodoMutation).mockReturnValue({\n+    isPending: false,\n+    error: null,\n+    mutateAsync: create,\n+  } as unknown as ReturnType<typeof useCreateTodoMutation>)\n+  vi.mocked(useUpdateTodoMutation).mockReturnValue({\n+    isPending: false,\n+    error: null,\n+    mutateAsync: update,\n+  } as unknown as ReturnType<typeof useUpdateTodoMutation>)\n+}\n+\n+it('updates an existing task by its own id and reports the save', async () => {\n+  const user = userEvent.setup()\n+  const create = vi.fn()\n+  const update = vi.fn().mockResolvedValue(todoFixture)\n+  mockMutations(create, update)\n+  const onSaved = vi.fn()\n+  const onClose = vi.fn()\n+  render(\n+    <TodoEditor\n+      todo={{ ...todoFixture, id: 9 }}\n+      busy={false}\n+      onClose={onClose}\n+      onSaved={onSaved}\n+    />,\n+  )\n+  expect(screen.getByRole('dialog', { name: 'Edit task' })).toBeVisible()\n+  await user.click(screen.getByRole('button', { name: 'Submit form' }))\n+  await waitFor(() => expect(onSaved).toHaveBeenCalledWith('Changes saved.'))\n+  expect(onSaved).toHaveBeenCalledTimes(1)\n+  expect(update).toHaveBeenCalledWith({ id: 9, input: todoFixture })\n+  expect(create).not.toHaveBeenCalled()\n+  expect(onClose).not.toHaveBeenCalled()\n+})\n+\n+it.each([\n+  ['new' as const, 'create'],\n+  [{ ...todoFixture, id: 9 }, 'update'],\n+])('does not report a save or close when the %j save is rejected (%s)', async (todo, which) => {\n+  const user = userEvent.setup()\n+  const failing = vi.fn().mockRejectedValue(new Error('Server rejected'))\n+  const other = vi.fn()\n+  if (which === 'create') mockMutations(failing, other)\n+  else mockMutations(other, failing)\n+  const onSaved = vi.fn()\n+  const onClose = vi.fn()\n+  render(\n+    <TodoEditor todo={todo} busy={false} onClose={onClose} onSaved={onSaved} />,\n+  )\n+  await user.click(screen.getByRole('button', { name: 'Submit form' }))\n+  await waitFor(() => expect(failing).toHaveBeenCalledTimes(1))\n+  await expect(failing.mock.results[0].value).rejects.toThrow('Server rejected')\n+  await act(async () => {\n+    await Promise.resolve()\n+  })\n+  expect(onSaved).not.toHaveBeenCalled()\n+  expect(onClose).not.toHaveBeenCalled()\n+  expect(other).not.toHaveBeenCalled()\n+  expect(screen.getByRole('dialog')).toBeVisible()\n+})\ndiff --git a/frontend/src/features/todos/components/TodoEmptyState.test.tsx b/frontend/src/features/todos/components/TodoEmptyState.test.tsx\nnew file mode 100644\nindex 0000000..5becd45\n--- /dev/null\n+++ b/frontend/src/features/todos/components/TodoEmptyState.test.tsx\n@@ -0,0 +1,40 @@\n+import { render, screen } from '@testing-library/react'\n+import userEvent from '@testing-library/user-event'\n+import { expect, it, vi } from 'vitest'\n+import { TodoEmptyState } from './TodoEmptyState'\n+\n+vi.mock('../../../design-system', () => import('../../../design-system/mocks'))\n+\n+it('invites creating the first task and calls onCreate when enabled', async () => {\n+  const user = userEvent.setup()\n+  const onCreate = vi.fn()\n+  render(<TodoEmptyState hasTodos={false} disabled={false} onCreate={onCreate} />)\n+  expect(\n+    screen.getByRole('heading', { name: 'Add your first task' }),\n+  ).toBeVisible()\n+  expect(\n+    screen.getByText('Write down what you need to do and get started.'),\n+  ).toBeVisible()\n+  await user.click(screen.getByRole('button', { name: 'Add your first task' }))\n+  expect(onCreate).toHaveBeenCalledTimes(1)\n+})\n+\n+it('disables the create button and ignores clicks when disabled', async () => {\n+  const user = userEvent.setup()\n+  const onCreate = vi.fn()\n+  render(<TodoEmptyState hasTodos={false} disabled onCreate={onCreate} />)\n+  const button = screen.getByRole('button', { name: 'Add your first task' })\n+  expect(button).toBeDisabled()\n+  await user.click(button)\n+  expect(onCreate).not.toHaveBeenCalled()\n+})\n+\n+it('shows filter guidance and no create button when tasks exist but none match', () => {\n+  render(<TodoEmptyState hasTodos disabled={false} onCreate={vi.fn()} />)\n+  expect(screen.getByRole('heading', { name: 'No matching tasks' })).toBeVisible()\n+  expect(\n+    screen.getByText('Change the status filter or search to find your tasks.'),\n+  ).toBeVisible()\n+  expect(screen.queryByRole('button')).not.toBeInTheDocument()\n+  expect(screen.queryByText('Add your first task')).not.toBeInTheDocument()\n+})\ndiff --git a/frontend/src/features/todos/components/TodoForm.test.tsx b/frontend/src/features/todos/components/TodoForm.test.tsx\nindex 856d97b..d17c806 100644\n--- a/frontend/src/features/todos/components/TodoForm.test.tsx\n+++ b/frontend/src/features/todos/components/TodoForm.test.tsx\n@@ -1,4 +1,4 @@\n-import { render, screen } from '@testing-library/react'\n+import { fireEvent, render, screen } from '@testing-library/react'\n import userEvent from '@testing-library/user-event'\n import { describe, expect, it, vi } from 'vitest'\n import { TodoForm } from './TodoForm'\n@@ -45,4 +45,100 @@ describe('TodoForm', () => {\n       completed: false,\n     })\n   })\n+\n+  it('submits a trimmed description and the chosen due date', async () => {\n+    const onSubmit = vi.fn().mockResolvedValue(undefined)\n+    const user = userEvent.setup()\n+    render(\n+      <TodoForm\n+        onSubmit={onSubmit}\n+        onCancel={vi.fn()}\n+        busy={false}\n+        error={null}\n+      />,\n+    )\n+    await user.type(screen.getByLabelText(/Task title/), 'T')\n+    await user.type(screen.getByLabelText(/Description/), '  notes  ')\n+    fireEvent.change(screen.getByLabelText(/Due date/), {\n+      target: { value: '2026-10-15' },\n+    })\n+    await user.click(screen.getByRole('button', { name: 'Save task' }))\n+    expect(onSubmit).toHaveBeenCalledTimes(1)\n+    expect(onSubmit).toHaveBeenCalledWith({\n+      title: 'T',\n+      description: 'notes',\n+      priority: 'medium',\n+      due_date: '2026-10-15',\n+      completed: false,\n+    })\n+  })\n+\n+  it('submits null rather than an empty string after the due date is cleared', async () => {\n+    const onSubmit = vi.fn().mockResolvedValue(undefined)\n+    const user = userEvent.setup()\n+    render(\n+      <TodoForm\n+        onSubmit={onSubmit}\n+        onCancel={vi.fn()}\n+        busy={false}\n+        error={null}\n+      />,\n+    )\n+    await user.type(screen.getByLabelText(/Task title/), 'T')\n+    const due = screen.getByLabelText(/Due date/)\n+    fireEvent.change(due, { target: { value: '2026-10-15' } })\n+    expect(due).toHaveValue('2026-10-15')\n+    fireEvent.change(due, { target: { value: '' } })\n+    await user.click(screen.getByRole('button', { name: 'Save task' }))\n+    expect(onSubmit).toHaveBeenCalledTimes(1)\n+    expect(onSubmit.mock.calls[0][0].due_date).toBeNull()\n+  })\n+\n+  it('shows an external error and calls onCancel without submitting', async () => {\n+    const onSubmit = vi.fn()\n+    const onCancel = vi.fn()\n+    const user = userEvent.setup()\n+    render(\n+      <TodoForm\n+        onSubmit={onSubmit}\n+        onCancel={onCancel}\n+        busy={false}\n+        error=\"Server rejected\"\n+      />,\n+    )\n+    expect(screen.getByTestId('alert')).toHaveTextContent('Server rejected')\n+    await user.click(screen.getByRole('button', { name: 'Cancel' }))\n+    expect(onCancel).toHaveBeenCalledTimes(1)\n+    expect(onSubmit).not.toHaveBeenCalled()\n+  })\n+\n+  it('shows no alert without an error', () => {\n+    render(\n+      <TodoForm\n+        onSubmit={vi.fn()}\n+        onCancel={vi.fn()}\n+        busy={false}\n+        error={null}\n+      />,\n+    )\n+    expect(screen.queryByTestId('alert')).not.toBeInTheDocument()\n+  })\n+\n+  it('disables the controls and ignores Cancel while busy', async () => {\n+    const onSubmit = vi.fn()\n+    const onCancel = vi.fn()\n+    const user = userEvent.setup()\n+    render(\n+      <TodoForm onSubmit={onSubmit} onCancel={onCancel} busy error={null} />,\n+    )\n+    const save = screen.getByRole('button', { name: 'Saving…' })\n+    const cancel = screen.getByRole('button', { name: 'Cancel' })\n+    expect(save).toBeDisabled()\n+    expect(cancel).toBeDisabled()\n+    expect(screen.getByLabelText(/Task title/)).toBeDisabled()\n+    await user.click(cancel)\n+    await user.click(save)\n+    expect(onCancel).not.toHaveBeenCalled()\n+    expect(onSubmit).not.toHaveBeenCalled()\n+  })\n })\ndiff --git a/frontend/src/features/todos/components/TodoItem.test.tsx b/frontend/src/features/todos/components/TodoItem.test.tsx\nindex 5c0a006..55622d4 100644\n--- a/frontend/src/features/todos/components/TodoItem.test.tsx\n+++ b/frontend/src/features/todos/components/TodoItem.test.tsx\n@@ -31,3 +31,56 @@ it('shows an active task and forwards edit requests', async () => {\n   expect(onToggle).not.toHaveBeenCalled()\n   expect(onDelete).not.toHaveBeenCalled()\n })\n+\n+function renderItem(override: Partial<typeof todoFixture>) {\n+  const callbacks = { onEdit: vi.fn(), onToggle: vi.fn(), onDelete: vi.fn() }\n+  render(\n+    <TodoItem\n+      todo={{ ...todoFixture, ...override }}\n+      busy={false}\n+      {...callbacks}\n+    />,\n+  )\n+  return callbacks\n+}\n+\n+it('shows a completed task with its description, no overdue marker, and forwards toggle and delete', async () => {\n+  const user = userEvent.setup()\n+  const { onEdit, onToggle, onDelete } = renderItem({\n+    completed: true,\n+    description: 'Notes',\n+    due_date: '2000-01-05',\n+  })\n+  expect(screen.getByText('Completed')).toBeVisible()\n+  expect(screen.queryByText('To do')).not.toBeInTheDocument()\n+  expect(screen.getByText('Notes')).toBeVisible()\n+  const checkbox = screen.getByRole('checkbox', {\n+    name: `Mark as active: ${todoFixture.title}`,\n+  })\n+  expect(checkbox).toBeChecked()\n+  expect(screen.getByText(/5 Jan 2000/)).toBeVisible()\n+  expect(screen.queryByText(/overdue/)).not.toBeInTheDocument()\n+  await user.click(checkbox)\n+  expect(onToggle).toHaveBeenCalledTimes(1)\n+  expect(onDelete).not.toHaveBeenCalled()\n+  await user.click(\n+    screen.getByRole('button', { name: `Delete: ${todoFixture.title}` }),\n+  )\n+  expect(onDelete).toHaveBeenCalledTimes(1)\n+  expect(onToggle).toHaveBeenCalledTimes(1)\n+  expect(onEdit).not.toHaveBeenCalled()\n+})\n+\n+it('marks an active task with a past due date as overdue', () => {\n+  renderItem({ completed: false, due_date: '2000-01-05' })\n+  expect(screen.getByText(/5 Jan 2000 · overdue/)).toBeVisible()\n+  expect(\n+    screen.getByRole('checkbox', { name: `Complete: ${todoFixture.title}` }),\n+  ).not.toBeChecked()\n+})\n+\n+it('shows a future due date without the overdue marker', () => {\n+  renderItem({ completed: false, due_date: '2999-01-05' })\n+  expect(screen.getByText(/5 Jan 2999/)).toBeVisible()\n+  expect(screen.queryByText(/overdue/)).not.toBeInTheDocument()\n+})\ndiff --git a/frontend/src/features/todos/components/TodoList.test.tsx b/frontend/src/features/todos/components/TodoList.test.tsx\nindex 51595d0..9e2fe01 100644\n--- a/frontend/src/features/todos/components/TodoList.test.tsx\n+++ b/frontend/src/features/todos/components/TodoList.test.tsx\n@@ -1,12 +1,49 @@\n import { render, screen } from '@testing-library/react'\n+import userEvent from '@testing-library/user-event'\n import { expect, it, vi } from 'vitest'\n+import { todoFixture } from '../../../test/todoFixture'\n+import type { Todo } from '../types'\n import { TodoList } from './TodoList'\n \n vi.mock('../../../design-system', () => import('../../../design-system/mocks'))\n vi.mock('./TodoEmptyState', () => ({\n   TodoEmptyState: () => <p>Empty task list</p>,\n }))\n-vi.mock('./TodoItem', () => ({ TodoItem: () => <li>Task</li> }))\n+vi.mock('./TodoItem', () => ({\n+  TodoItem: ({\n+    todo,\n+    busy,\n+    onToggle,\n+    onEdit,\n+    onDelete,\n+  }: {\n+    todo: Todo\n+    busy: boolean\n+    onToggle: () => void\n+    onEdit: () => void\n+    onDelete: () => void\n+  }) => (\n+    <li>\n+      <span>\n+        Task {todo.title} busy: {String(busy)}\n+      </span>\n+      <button onClick={() => onToggle()}>Toggle {todo.title}</button>\n+      <button onClick={() => onEdit()}>Edit {todo.title}</button>\n+      <button onClick={() => onDelete()}>Delete {todo.title}</button>\n+    </li>\n+  ),\n+}))\n+\n+const baseProps = {\n+  todos: [],\n+  hasTodos: false,\n+  failed: false,\n+  busy: false,\n+  onCreate: vi.fn(),\n+  onToggle: vi.fn(),\n+  onEdit: vi.fn(),\n+  onDelete: vi.fn(),\n+}\n \n it('shows loading feedback before showing an empty list', () => {\n   const props = {\n@@ -26,3 +63,62 @@ it('shows loading feedback before showing an empty list', () => {\n   expect(screen.queryByRole('status')).not.toBeInTheDocument()\n   expect(screen.getByText('Empty task list')).toBeVisible()\n })\n+\n+it('shows the unavailable message instead of the empty state when loading failed with no known tasks', () => {\n+  render(<TodoList {...baseProps} loading={false} failed hasTodos={false} />)\n+  expect(\n+    screen.getByRole('heading', {\n+      name: 'The task list is temporarily unavailable',\n+    }),\n+  ).toBeVisible()\n+  expect(screen.getByText('Try again to load your tasks.')).toBeVisible()\n+  expect(screen.queryByText('Empty task list')).not.toBeInTheDocument()\n+})\n+\n+it('keeps the empty state when a failure happens while known tasks are filtered out', () => {\n+  render(<TodoList {...baseProps} loading={false} failed hasTodos />)\n+  expect(screen.getByText('Empty task list')).toBeVisible()\n+  expect(\n+    screen.queryByRole('heading', {\n+      name: 'The task list is temporarily unavailable',\n+    }),\n+  ).not.toBeInTheDocument()\n+})\n+\n+it('binds each row callback to its own task and passes busy through', async () => {\n+  const user = userEvent.setup()\n+  const first: Todo = { ...todoFixture, id: 1, title: 'First task' }\n+  const second: Todo = { ...todoFixture, id: 2, title: 'Second task' }\n+  const onToggle = vi.fn()\n+  const onEdit = vi.fn()\n+  const onDelete = vi.fn()\n+  render(\n+    <TodoList\n+      {...baseProps}\n+      todos={[first, second]}\n+      hasTodos\n+      loading={false}\n+      busy\n+      onToggle={onToggle}\n+      onEdit={onEdit}\n+      onDelete={onDelete}\n+    />,\n+  )\n+  expect(screen.getAllByRole('listitem')).toHaveLength(2)\n+  expect(screen.queryByText('Empty task list')).not.toBeInTheDocument()\n+  expect(screen.getAllByText(/busy: true/)).toHaveLength(2)\n+\n+  await user.click(screen.getByRole('button', { name: 'Toggle Second task' }))\n+  await user.click(screen.getByRole('button', { name: 'Edit Second task' }))\n+  await user.click(screen.getByRole('button', { name: 'Delete Second task' }))\n+\n+  expect(onToggle).toHaveBeenCalledTimes(1)\n+  expect(onToggle).toHaveBeenCalledWith(second)\n+  expect(onToggle).not.toHaveBeenCalledWith(first)\n+  expect(onEdit).toHaveBeenCalledTimes(1)\n+  expect(onEdit).toHaveBeenCalledWith(second)\n+  expect(onEdit).not.toHaveBeenCalledWith(first)\n+  expect(onDelete).toHaveBeenCalledTimes(1)\n+  expect(onDelete).toHaveBeenCalledWith(second)\n+  expect(onDelete).not.toHaveBeenCalledWith(first)\n+})\ndiff --git a/frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx b/frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx\nnew file mode 100644\nindex 0000000..eee3bbc\n--- /dev/null\n+++ b/frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx\n@@ -0,0 +1,79 @@\n+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n+import { renderHook } from '@testing-library/react'\n+import type { ReactNode } from 'react'\n+import { beforeEach, expect, it, vi } from 'vitest'\n+import { todoFixture } from '../../../test/todoFixture'\n+import { todoKeys } from '../api/queryKeys'\n+import { todosApi } from '../api/todos'\n+import type { Todo, TodoInput } from '../types'\n+import { useCreateTodoMutation } from './useCreateTodoMutation'\n+\n+vi.mock('../api/todos', () => ({\n+  todosApi: { create: vi.fn() },\n+}))\n+beforeEach(() => vi.clearAllMocks())\n+\n+function setup() {\n+  const queryClient = new QueryClient({\n+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },\n+  })\n+  const wrapper = ({ children }: { children: ReactNode }) => (\n+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>\n+  )\n+  const { result } = renderHook(() => useCreateTodoMutation(), { wrapper })\n+  return { queryClient, result }\n+}\n+\n+const older: Todo = { ...todoFixture, id: 3, title: 'Older task' }\n+const saved: Todo = { ...todoFixture, id: 7, title: 'Saved from server' }\n+const input: TodoInput = {\n+  title: saved.title,\n+  description: '',\n+  priority: 'medium',\n+  due_date: null,\n+  completed: false,\n+}\n+\n+it('sends the input and puts the saved task first without duplicating its id', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older, todoFixture])\n+  vi.mocked(todosApi.create).mockResolvedValue(saved)\n+  await expect(result.current.mutateAsync(input)).resolves.toEqual(saved)\n+  expect(todosApi.create).toHaveBeenCalledWith(input)\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([saved, older])\n+})\n+\n+it('creates the list cache when none exists', async () => {\n+  const { queryClient, result } = setup()\n+  vi.mocked(todosApi.create).mockResolvedValue(saved)\n+  await result.current.mutateAsync(input)\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([saved])\n+})\n+\n+it('cancels an in-flight list fetch so it cannot overwrite the saved task', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older])\n+  let signal: AbortSignal | undefined\n+  let resolveFetch: (value: Todo[]) => void = () => {}\n+  const pending = new Promise<Todo[]>((resolve) => {\n+    resolveFetch = resolve\n+  })\n+  const fetching = queryClient\n+    .fetchQuery({\n+      queryKey: todoKeys.list,\n+      queryFn: (context) => {\n+        signal = context.signal\n+        return pending\n+      },\n+      staleTime: 0,\n+    })\n+    .catch(() => undefined)\n+  expect(signal).toBeDefined()\n+  expect(signal?.aborted).toBe(false)\n+  vi.mocked(todosApi.create).mockResolvedValue(saved)\n+  await result.current.mutateAsync(input)\n+  expect(signal?.aborted).toBe(true)\n+  resolveFetch([older, { ...saved, title: 'Stale server copy' }])\n+  await fetching\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([saved, older])\n+})\ndiff --git a/frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx b/frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx\nnew file mode 100644\nindex 0000000..6e7124d\n--- /dev/null\n+++ b/frontend/src/features/todos/hooks/useDeleteTodoMutation.test.tsx\n@@ -0,0 +1,81 @@\n+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n+import { renderHook } from '@testing-library/react'\n+import type { ReactNode } from 'react'\n+import { beforeEach, expect, it, vi } from 'vitest'\n+import { todoFixture } from '../../../test/todoFixture'\n+import { todoKeys } from '../api/queryKeys'\n+import { todosApi } from '../api/todos'\n+import type { Todo } from '../types'\n+import { useDeleteTodoMutation } from './useDeleteTodoMutation'\n+\n+vi.mock('../api/todos', () => ({\n+  todosApi: { remove: vi.fn() },\n+}))\n+beforeEach(() => vi.clearAllMocks())\n+\n+function setup() {\n+  const queryClient = new QueryClient({\n+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },\n+  })\n+  const wrapper = ({ children }: { children: ReactNode }) => (\n+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>\n+  )\n+  const { result } = renderHook(() => useDeleteTodoMutation(), { wrapper })\n+  return { queryClient, result }\n+}\n+\n+const older: Todo = { ...todoFixture, id: 3, title: 'Older task' }\n+const newer: Todo = { ...todoFixture, id: 9, title: 'Newer task' }\n+\n+it('removes the task by id and keeps the others in order', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older, todoFixture, newer])\n+  vi.mocked(todosApi.remove).mockResolvedValue(undefined)\n+  await result.current.mutateAsync(7)\n+  expect(todosApi.remove).toHaveBeenCalledWith(7)\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([older, newer])\n+})\n+\n+it('does not create a list cache when none exists', async () => {\n+  const { queryClient, result } = setup()\n+  vi.mocked(todosApi.remove).mockResolvedValue(undefined)\n+  await result.current.mutateAsync(7)\n+  expect(todosApi.remove).toHaveBeenCalledWith(7)\n+  expect(queryClient.getQueryData(todoKeys.list)).toBeUndefined()\n+})\n+\n+it('leaves the cache untouched when the delete fails', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older, todoFixture])\n+  vi.mocked(todosApi.remove).mockRejectedValue(new Error('Server down'))\n+  await expect(result.current.mutateAsync(7)).rejects.toThrow('Server down')\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([older, todoFixture])\n+})\n+\n+it('cancels an in-flight list fetch so a stale list cannot resurrect the deleted task', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older, todoFixture])\n+  let signal: AbortSignal | undefined\n+  let resolveFetch: (value: Todo[]) => void = () => {}\n+  const pending = new Promise<Todo[]>((resolve) => {\n+    resolveFetch = resolve\n+  })\n+  const fetching = queryClient\n+    .fetchQuery({\n+      queryKey: todoKeys.list,\n+      queryFn: (context) => {\n+        signal = context.signal\n+        return pending\n+      },\n+      staleTime: 0,\n+    })\n+    .catch(() => undefined)\n+  expect(signal).toBeDefined()\n+  expect(signal?.aborted).toBe(false)\n+  vi.mocked(todosApi.remove).mockResolvedValue(undefined)\n+  await result.current.mutateAsync(7)\n+  expect(signal?.aborted).toBe(true)\n+  resolveFetch([older, todoFixture])\n+  await fetching\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([older])\n+})\ndiff --git a/frontend/src/features/todos/hooks/useTodoFilters.test.ts b/frontend/src/features/todos/hooks/useTodoFilters.test.ts\nnew file mode 100644\nindex 0000000..ed882d8\n--- /dev/null\n+++ b/frontend/src/features/todos/hooks/useTodoFilters.test.ts\n@@ -0,0 +1,57 @@\n+import { act, renderHook } from '@testing-library/react'\n+import { expect, it } from 'vitest'\n+import { todoFixture } from '../../../test/todoFixture'\n+import type { Todo } from '../types'\n+import { useTodoFilters } from './useTodoFilters'\n+\n+const alpha: Todo = {\n+  ...todoFixture,\n+  id: 1,\n+  title: 'Alpha',\n+  completed: true,\n+  priority: 'low',\n+  created_at: '2026-10-01T12:00:00Z',\n+}\n+const beta: Todo = {\n+  ...todoFixture,\n+  id: 2,\n+  title: 'Beta',\n+  completed: false,\n+  priority: 'high',\n+  created_at: '2026-10-02T12:00:00Z',\n+}\n+const todos = [alpha, beta]\n+const ids = (list: Todo[]) => list.map((todo) => todo.id)\n+\n+it('starts with all statuses, empty search and newest-first order', () => {\n+  const { result } = renderHook(() => useTodoFilters(todos))\n+  expect(result.current.filter).toBe('all')\n+  expect(result.current.search).toBe('')\n+  expect(result.current.sort).toBe('newest')\n+  expect(ids(result.current.visible)).toEqual([2, 1])\n+})\n+\n+it('recomputes visible tasks from the filter and search setters', () => {\n+  const { result } = renderHook(() => useTodoFilters(todos))\n+  act(() => result.current.setFilter('completed'))\n+  expect(result.current.filter).toBe('completed')\n+  expect(ids(result.current.visible)).toEqual([1])\n+  act(() => result.current.setFilter('all'))\n+  act(() => result.current.setSearch('alp'))\n+  expect(result.current.search).toBe('alp')\n+  expect(ids(result.current.visible)).toEqual([1])\n+  act(() => result.current.setFilter('completed'))\n+  act(() => result.current.setSearch('beta'))\n+  expect(result.current.visible).toEqual([])\n+})\n+\n+it('recomputes visible tasks from the sort setter', () => {\n+  const { result } = renderHook(() => useTodoFilters(todos))\n+  act(() => result.current.setSort('priority'))\n+  expect(result.current.sort).toBe('priority')\n+  expect(ids(result.current.visible)).toEqual([2, 1])\n+  act(() => result.current.setSort('due'))\n+  expect(result.current.sort).toBe('due')\n+  // Neither task has a due date, so ties fall back to the newest id first.\n+  expect(ids(result.current.visible)).toEqual([2, 1])\n+})\ndiff --git a/frontend/src/features/todos/hooks/useTodosBusy.test.tsx b/frontend/src/features/todos/hooks/useTodosBusy.test.tsx\nnew file mode 100644\nindex 0000000..098689a\n--- /dev/null\n+++ b/frontend/src/features/todos/hooks/useTodosBusy.test.tsx\n@@ -0,0 +1,62 @@\n+import { QueryClient, QueryClientProvider, useMutation } from '@tanstack/react-query'\n+import { act, renderHook, waitFor } from '@testing-library/react'\n+import type { ReactNode } from 'react'\n+import { expect, it } from 'vitest'\n+import { todoKeys } from '../api/queryKeys'\n+import { useTodosBusy } from './useTodosBusy'\n+\n+function setup() {\n+  const queryClient = new QueryClient({\n+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },\n+  })\n+  const wrapper = ({ children }: { children: ReactNode }) => (\n+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>\n+  )\n+  let resolve: () => void = () => {}\n+  const deferred = new Promise<void>((r) => {\n+    resolve = r\n+  })\n+  const { result } = renderHook(\n+    () => ({\n+      busy: useTodosBusy(),\n+      todos: useMutation({\n+        mutationKey: todoKeys.update,\n+        mutationFn: () => deferred,\n+      }),\n+      other: useMutation({\n+        mutationKey: ['other'],\n+        mutationFn: () => deferred,\n+      }),\n+    }),\n+    { wrapper },\n+  )\n+  return { result, resolve: () => act(async () => resolve()) }\n+}\n+\n+it('is false when no mutation is running', () => {\n+  const { result } = setup()\n+  expect(result.current.busy).toBe(false)\n+})\n+\n+it('is true while a todos-keyed mutation is pending and false once it settles', async () => {\n+  const { result, resolve } = setup()\n+  act(() => {\n+    result.current.todos.mutate()\n+  })\n+  await waitFor(() => expect(result.current.busy).toBe(true))\n+  await resolve()\n+  await waitFor(() => expect(result.current.todos.isSuccess).toBe(true))\n+  expect(result.current.busy).toBe(false)\n+})\n+\n+it('ignores a pending mutation with an unrelated key', async () => {\n+  const { result, resolve } = setup()\n+  act(() => {\n+    result.current.other.mutate()\n+  })\n+  await waitFor(() => expect(result.current.other.isPending).toBe(true))\n+  expect(result.current.busy).toBe(false)\n+  await resolve()\n+  await waitFor(() => expect(result.current.other.isSuccess).toBe(true))\n+  expect(result.current.busy).toBe(false)\n+})\ndiff --git a/frontend/src/features/todos/hooks/useTodosQuery.test.tsx b/frontend/src/features/todos/hooks/useTodosQuery.test.tsx\nnew file mode 100644\nindex 0000000..6cfc049\n--- /dev/null\n+++ b/frontend/src/features/todos/hooks/useTodosQuery.test.tsx\n@@ -0,0 +1,41 @@\n+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n+import { renderHook, waitFor } from '@testing-library/react'\n+import type { ReactNode } from 'react'\n+import { beforeEach, expect, it, vi } from 'vitest'\n+import { todoFixture } from '../../../test/todoFixture'\n+import { todoKeys } from '../api/queryKeys'\n+import { todosApi } from '../api/todos'\n+import { useTodosQuery } from './useTodosQuery'\n+\n+vi.mock('../api/todos', () => ({\n+  todosApi: { list: vi.fn() },\n+}))\n+beforeEach(() => vi.clearAllMocks())\n+\n+function setup() {\n+  const queryClient = new QueryClient({\n+    defaultOptions: { queries: { retry: false } },\n+  })\n+  const wrapper = ({ children }: { children: ReactNode }) => (\n+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>\n+  )\n+  const { result } = renderHook(() => useTodosQuery(), { wrapper })\n+  return { queryClient, result }\n+}\n+\n+it('loads tasks through the api with an abort signal and caches them under the list key', async () => {\n+  vi.mocked(todosApi.list).mockResolvedValue([todoFixture])\n+  const { queryClient, result } = setup()\n+  await waitFor(() => expect(result.current.data).toEqual([todoFixture]))\n+  expect(todosApi.list).toHaveBeenCalledTimes(1)\n+  expect(vi.mocked(todosApi.list).mock.calls[0][0]).toBeInstanceOf(AbortSignal)\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([todoFixture])\n+})\n+\n+it('exposes the api failure as the query error', async () => {\n+  vi.mocked(todosApi.list).mockRejectedValue(new Error('The server is unavailable.'))\n+  const { result } = setup()\n+  await waitFor(() => expect(result.current.isError).toBe(true))\n+  expect(result.current.error?.message).toBe('The server is unavailable.')\n+  expect(result.current.data).toBeUndefined()\n+})\ndiff --git a/frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx b/frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx\nnew file mode 100644\nindex 0000000..45b6d65\n--- /dev/null\n+++ b/frontend/src/features/todos/hooks/useUpdateTodoMutation.test.tsx\n@@ -0,0 +1,76 @@\n+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n+import { renderHook } from '@testing-library/react'\n+import type { ReactNode } from 'react'\n+import { beforeEach, expect, it, vi } from 'vitest'\n+import { todoFixture } from '../../../test/todoFixture'\n+import { todoKeys } from '../api/queryKeys'\n+import { todosApi } from '../api/todos'\n+import type { Todo } from '../types'\n+import { useUpdateTodoMutation } from './useUpdateTodoMutation'\n+\n+vi.mock('../api/todos', () => ({\n+  todosApi: { update: vi.fn() },\n+}))\n+beforeEach(() => vi.clearAllMocks())\n+\n+function setup() {\n+  const queryClient = new QueryClient({\n+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },\n+  })\n+  const wrapper = ({ children }: { children: ReactNode }) => (\n+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>\n+  )\n+  const { result } = renderHook(() => useUpdateTodoMutation(), { wrapper })\n+  return { queryClient, result }\n+}\n+\n+const older: Todo = { ...todoFixture, id: 3, title: 'Older task' }\n+const newer: Todo = { ...todoFixture, id: 9, title: 'Newer task' }\n+const saved: Todo = { ...todoFixture, completed: true }\n+\n+it('sends the id and partial input and replaces only the matching task in place', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older, todoFixture, newer])\n+  vi.mocked(todosApi.update).mockResolvedValue(saved)\n+  await expect(\n+    result.current.mutateAsync({ id: 7, input: { completed: true } }),\n+  ).resolves.toEqual(saved)\n+  expect(todosApi.update).toHaveBeenCalledWith(7, { completed: true })\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([older, saved, newer])\n+})\n+\n+it('does not create a list cache when none exists', async () => {\n+  const { queryClient, result } = setup()\n+  vi.mocked(todosApi.update).mockResolvedValue(saved)\n+  await result.current.mutateAsync({ id: 7, input: { completed: true } })\n+  expect(todosApi.update).toHaveBeenCalledWith(7, { completed: true })\n+  expect(queryClient.getQueryData(todoKeys.list)).toBeUndefined()\n+})\n+\n+it('cancels an in-flight list fetch so a stale copy cannot overwrite the saved task', async () => {\n+  const { queryClient, result } = setup()\n+  queryClient.setQueryData<Todo[]>(todoKeys.list, [older, todoFixture])\n+  let signal: AbortSignal | undefined\n+  let resolveFetch: (value: Todo[]) => void = () => {}\n+  const pending = new Promise<Todo[]>((resolve) => {\n+    resolveFetch = resolve\n+  })\n+  const fetching = queryClient\n+    .fetchQuery({\n+      queryKey: todoKeys.list,\n+      queryFn: (context) => {\n+        signal = context.signal\n+        return pending\n+      },\n+      staleTime: 0,\n+    })\n+    .catch(() => undefined)\n+  expect(signal).toBeDefined()\n+  expect(signal?.aborted).toBe(false)\n+  vi.mocked(todosApi.update).mockResolvedValue(saved)\n+  await result.current.mutateAsync({ id: 7, input: { completed: true } })\n+  expect(signal?.aborted).toBe(true)\n+  resolveFetch([older, { ...todoFixture, completed: false }])\n+  await fetching\n+  expect(queryClient.getQueryData(todoKeys.list)).toEqual([older, saved])\n+})\ndiff --git a/frontend/src/features/todos/utils/todos.test.ts b/frontend/src/features/todos/utils/todos.test.ts\nindex f38c073..501551a 100644\n--- a/frontend/src/features/todos/utils/todos.test.ts\n+++ b/frontend/src/features/todos/utils/todos.test.ts\n@@ -1,6 +1,6 @@\n-import { describe, expect, it } from 'vitest'\n-import { selectTodos } from './todos'\n-import type { Todo } from '../types'\n+import { afterEach, describe, expect, it, vi } from 'vitest'\n+import { isOverdue, selectTodos, validateTodo } from './todos'\n+import type { Todo, TodoInput } from '../types'\n \n const base: Todo = {\n   id: 1,\n@@ -30,4 +30,108 @@ describe('selectTodos', () => {\n     expect(selectTodos(todos, 'all', '', 'priority')).toEqual([high, base])\n     expect(todos).toEqual([base, high])\n   })\n+\n+  it('sorts by due date with undated tasks last and newest id first on ties', () => {\n+    const todos: Todo[] = [\n+      { ...base, id: 1, due_date: '2026-11-01' },\n+      { ...base, id: 2, due_date: null },\n+      { ...base, id: 3, due_date: '2026-10-05' },\n+      { ...base, id: 4, due_date: '2026-11-01' },\n+      { ...base, id: 5, due_date: null },\n+    ]\n+    expect(selectTodos(todos, 'all', '', 'due').map((t) => t.id)).toEqual([\n+      3, 4, 1, 5, 2,\n+    ])\n+  })\n+\n+  it('sorts newest by created_at descending with ties broken by id descending', () => {\n+    const todos: Todo[] = [\n+      { ...base, id: 1, created_at: '2026-10-01T12:00:00Z' },\n+      { ...base, id: 2, created_at: '2026-10-03T12:00:00Z' },\n+      { ...base, id: 3, created_at: '2026-10-03T12:00:00Z' },\n+      { ...base, id: 4, created_at: '2026-10-02T12:00:00Z' },\n+    ]\n+    expect(selectTodos(todos, 'all', '', 'newest').map((t) => t.id)).toEqual([\n+      3, 2, 4, 1,\n+    ])\n+  })\n+})\n+\n+describe('isOverdue', () => {\n+  afterEach(() => vi.useRealTimers())\n+\n+  it.each([\n+    ['yesterday, active', '2026-10-15', false, true],\n+    ['today, active', '2026-10-16', false, false],\n+    ['tomorrow, active', '2026-10-17', false, false],\n+    ['yesterday, completed', '2026-10-15', true, false],\n+    ['no due date, active', null, false, false],\n+  ])('at midday: %s', (_name, due_date, completed, expected) => {\n+    vi.useFakeTimers()\n+    vi.setSystemTime(new Date(2026, 9, 16, 12, 0, 0))\n+    expect(isOverdue({ ...base, due_date, completed })).toBe(expected)\n+  })\n+\n+  it.each([\n+    ['2026-10-15', true],\n+    ['2026-10-16', false],\n+  ])('uses the local calendar date shortly after midnight (due %s)', (due_date, expected) => {\n+    vi.useFakeTimers()\n+    vi.setSystemTime(new Date(2026, 9, 16, 0, 30, 0))\n+    expect(isOverdue({ ...base, due_date })).toBe(expected)\n+  })\n+})\n+\n+describe('validateTodo', () => {\n+  const input: TodoInput = {\n+    title: 'Task',\n+    description: '',\n+    priority: 'medium',\n+    due_date: null,\n+    completed: false,\n+  }\n+\n+  it.each([\n+    ['an empty title', { title: '' }, { title: 'Enter a task title.' }],\n+    ['a whitespace-only title', { title: '   ' }, { title: 'Enter a task title.' }],\n+    ['a 120-character title', { title: 'x'.repeat(120) }, {}],\n+    ['a 120-character title padded with spaces', { title: `  ${'x'.repeat(120)}  ` }, {}],\n+    [\n+      'a 121-character title',\n+      { title: 'x'.repeat(121) },\n+      { title: 'The title must be at most 120 characters.' },\n+    ],\n+    ['a 2000-character description', { description: 'x'.repeat(2000) }, {}],\n+    [\n+      'a 2001-character description',\n+      { description: 'x'.repeat(2001) },\n+      { description: 'The description must be at most 2000 characters.' },\n+    ],\n+    ['a leap day', { due_date: '2024-02-29' }, {}],\n+    ['no due date', { due_date: null }, {}],\n+    ['an empty due date', { due_date: '' }, {}],\n+    ['a rolled-over date', { due_date: '2026-02-30' }, { due_date: 'Enter a valid date.' }],\n+    ['a non-leap Feb 29', { due_date: '2025-02-29' }, { due_date: 'Enter a valid date.' }],\n+    ['an unpadded date', { due_date: '2026-1-5' }, { due_date: 'Enter a valid date.' }],\n+  ] as [string, Partial<TodoInput>, Record<string, string>][])(\n+    'validates %s',\n+    (_name, override, expected) => {\n+      expect(validateTodo({ ...input, ...override })).toEqual(expected)\n+    },\n+  )\n+\n+  it('reports every invalid field together', () => {\n+    expect(\n+      validateTodo({\n+        ...input,\n+        title: '',\n+        description: 'x'.repeat(2001),\n+        due_date: '2026-02-30',\n+      }),\n+    ).toEqual({\n+      title: 'Enter a task title.',\n+      description: 'The description must be at most 2000 characters.',\n+      due_date: 'Enter a valid date.',\n+    })\n+  })\n })\ndiff --git a/frontend/src/hooks/useNotice.test.ts b/frontend/src/hooks/useNotice.test.ts\nindex 37d9bdd..c012f7d 100644\n--- a/frontend/src/hooks/useNotice.test.ts\n+++ b/frontend/src/hooks/useNotice.test.ts\n@@ -1,9 +1,52 @@\n-import { renderHook } from '@testing-library/react'\n-import { expect, it } from 'vitest'\n+import { act, renderHook } from '@testing-library/react'\n+import { afterEach, expect, it, vi } from 'vitest'\n import { useNotice } from './useNotice'\n \n+afterEach(() => vi.useRealTimers())\n+\n it('starts without a notice and exposes a notification callback', () => {\n   const { result } = renderHook(() => useNotice())\n   expect(result.current.message).toBe('')\n   expect(result.current.notify).toEqual(expect.any(Function))\n })\n+\n+it('shows a notice until 4000 ms have passed and then clears it', () => {\n+  vi.useFakeTimers()\n+  const { result } = renderHook(() => useNotice())\n+  act(() => result.current.notify('Saved'))\n+  expect(result.current.message).toBe('Saved')\n+  act(() => {\n+    vi.advanceTimersByTime(3999)\n+  })\n+  expect(result.current.message).toBe('Saved')\n+  act(() => {\n+    vi.advanceTimersByTime(1)\n+  })\n+  expect(result.current.message).toBe('')\n+})\n+\n+it('restarts the timer for a newer notice so the older timer cannot clear it', () => {\n+  vi.useFakeTimers()\n+  const { result } = renderHook(() => useNotice())\n+  act(() => result.current.notify('A'))\n+  act(() => {\n+    vi.advanceTimersByTime(3000)\n+  })\n+  act(() => result.current.notify('B'))\n+  expect(result.current.message).toBe('B')\n+  act(() => {\n+    vi.advanceTimersByTime(3000)\n+  })\n+  expect(result.current.message).toBe('B')\n+  act(() => {\n+    vi.advanceTimersByTime(1000)\n+  })\n+  expect(result.current.message).toBe('')\n+})\n+\n+it('keeps a stable notify callback across notices', () => {\n+  const { result } = renderHook(() => useNotice())\n+  const first = result.current.notify\n+  act(() => result.current.notify('Hello'))\n+  expect(result.current.notify).toBe(first)\n+})\ndiff --git a/frontend/src/lib/http.test.ts b/frontend/src/lib/http.test.ts\nnew file mode 100644\nindex 0000000..56d6adc\n--- /dev/null\n+++ b/frontend/src/lib/http.test.ts\n@@ -0,0 +1,108 @@\n+import { afterEach, describe, expect, it, vi } from 'vitest'\n+import { request } from './http'\n+\n+function stubFetch(impl: (...args: unknown[]) => unknown) {\n+  const fetchMock = vi.fn(impl)\n+  vi.stubGlobal('fetch', fetchMock)\n+  return fetchMock\n+}\n+\n+function response(status: number, json: () => Promise<unknown>) {\n+  return { ok: status >= 200 && status < 300, status, json: vi.fn(json) }\n+}\n+\n+afterEach(() => vi.unstubAllGlobals())\n+\n+describe('request', () => {\n+  it('prefixes the path with /api and sends JSON headers merged with caller headers', async () => {\n+    const fetchMock = stubFetch(async () =>\n+      response(200, async () => ({ ok: true })),\n+    )\n+    await request('/todos', { method: 'POST', headers: { 'X-Test': '1' } })\n+    expect(fetchMock).toHaveBeenCalledTimes(1)\n+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]\n+    expect(url).toBe('/api/todos')\n+    expect(init.method).toBe('POST')\n+    expect(init.headers).toEqual({\n+      'Content-Type': 'application/json',\n+      'X-Test': '1',\n+    })\n+  })\n+\n+  it('resolves the parsed body of a successful response', async () => {\n+    stubFetch(async () => response(200, async () => [{ id: 1 }]))\n+    await expect(request('/todos')).resolves.toEqual([{ id: 1 }])\n+  })\n+\n+  it('resolves undefined for 204 without reading a body', async () => {\n+    const res = response(204, async () => {\n+      throw new Error('no body')\n+    })\n+    stubFetch(async () => res)\n+    await expect(request('/todos/1', { method: 'DELETE' })).resolves.toBeUndefined()\n+    expect(res.json).not.toHaveBeenCalled()\n+  })\n+\n+  it('reports a connection problem when the network fails', async () => {\n+    stubFetch(async () => {\n+      throw new TypeError('Failed to fetch')\n+    })\n+    await expect(request('/todos')).rejects.toThrow(\n+      'Cannot connect to the server. Please try again.',\n+    )\n+  })\n+\n+  it('reports a connection problem when a non-aborted signal was supplied', async () => {\n+    const controller = new AbortController()\n+    stubFetch(async () => {\n+      throw new TypeError('Failed to fetch')\n+    })\n+    await expect(\n+      request('/todos', { signal: controller.signal }),\n+    ).rejects.toThrow('Cannot connect to the server. Please try again.')\n+  })\n+\n+  it('rethrows the original error when the caller aborted', async () => {\n+    const controller = new AbortController()\n+    controller.abort()\n+    const abortError = new DOMException('Aborted', 'AbortError')\n+    stubFetch(async () => {\n+      throw abortError\n+    })\n+    const error = await request('/todos', { signal: controller.signal }).catch(\n+      (e: unknown) => e,\n+    )\n+    expect(error).toBe(abortError)\n+  })\n+\n+  it('explains validation limits for a 422 even when the body has a detail', async () => {\n+    stubFetch(async () => response(422, async () => ({ detail: 'raw detail' })))\n+    const error = await request('/todos').catch((e: unknown) => e as Error)\n+    expect((error as Error).message).toBe(\n+      'Check the task details: title up to 120 characters, description up to 2000 characters, and a valid due date.',\n+    )\n+  })\n+\n+  it('uses the server detail string for other failures', async () => {\n+    stubFetch(async () => response(500, async () => ({ detail: 'Boom' })))\n+    await expect(request('/todos')).rejects.toThrow('Boom')\n+  })\n+\n+  it('falls back to a generic message when the error body is not JSON', async () => {\n+    stubFetch(async () =>\n+      response(500, async () => {\n+        throw new SyntaxError('Unexpected token <')\n+      }),\n+    )\n+    await expect(request('/todos')).rejects.toThrow(\n+      'The operation failed. Please try again.',\n+    )\n+  })\n+\n+  it('falls back to a generic message when detail is not a string', async () => {\n+    stubFetch(async () => response(404, async () => ({ detail: [{ msg: 'x' }] })))\n+    await expect(request('/todos')).rejects.toThrow(\n+      'The operation failed. Please try again.',\n+    )\n+  })\n+})\n"
+}
