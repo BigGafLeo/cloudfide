@@ -247,3 +247,5 @@ If the author temporarily enables personal authentication to record the demonstr
 A read-only repository link and historical PR evidence let reviewers inspect the solution. Running a fresh model session uses credentials and allowances owned by the person performing that run.
 
 See [SOLUTION.md](SOLUTION.md) for installation, native probes, verification evidence and the remaining recruitment demonstration work. Follow [the first GitHub run guide](docs/github-first-run.md) for bootstrap, authentication and the initial coverage-gap PR.
+
+The corrected [original-baseline run](docs/baseline-value-run.md#second-attempt-configured-target-reached) reached the configured 80% line/branch target: 133 passing tests, backend 84.40% lines/93.75% branches and frontend 86.75%/90.51%, with unchanged coverage scope. Nine final application checks and required Opus review passed; seven Claude subscription calls were used. The exact proposal and known assertion gaps are retained for human review; generated application changes were not applied.

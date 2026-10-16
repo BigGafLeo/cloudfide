@@ -1,0 +1,1755 @@
+{
+  "schemaVersion": 1,
+  "description": "Derived public evidence; raw authoritative payloads/logs are in the linked Actions run. No authentication or raw native session records are included.",
+  "runUrl": "https://github.com/BigGafLeo/cloudfide/actions/runs/38825695235",
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 5,
+    "executionRunId": "38825695235",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "dispatch"
+    },
+    "baseSha": "02c70037444df82f34d283183bdbbc604be74bbd",
+    "headSha": "6ac67eb6ea965bc92c7e1afdee75f8868180eb48",
+    "controlSha": "094fcaca317b67c08fbb6d112f32197ef5159f4d",
+    "task": "coverage-gap",
+    "deadline": "2026-10-16T03:47:44.000Z"
+  },
+  "originalApplication": {
+    "commit": "22be6e3bcf54fd012104fe233ef6652dd01941ff",
+    "backendTree": "c69fd15edee7f660fdceea69ef3ab6237057b625",
+    "frontendTree": "468746e70c42fd9d67a9f3a64cb838e59d491f44"
+  },
+  "pipelineDecision": "accepted",
+  "coverageRun": {
+    "stopReason": "target-reached",
+    "rounds": [
+      {
+        "round": 1,
+        "status": "accepted",
+        "reason": "verified coverage increased",
+        "units": [
+          "backend/src/features/todos/router.ts",
+          "backend/src/core/lifespan.ts",
+          "backend/src/main.ts",
+          "backend/src/factory.ts",
+          "frontend/src/features/todos/hooks/useCreateTodoMutation.ts",
+          "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts",
+          "frontend/src/features/todos/hooks/useTodoFilters.ts",
+          "frontend/src/features/todos/hooks/useTodosBusy.ts"
+        ],
+        "tests": {
+          "backend": {
+            "total": 62,
+            "failed": 0,
+            "failures": []
+          },
+          "frontend": {
+            "total": 35,
+            "failed": 0,
+            "failures": []
+          }
+        },
+        "coverage": {
+          "backend": {
+            "lines": {
+              "covered": 63,
+              "total": 109,
+              "pct": 57.79
+            },
+            "branches": {
+              "covered": 32,
+              "total": 48,
+              "pct": 66.66
+            },
+            "statements": {
+              "covered": 73,
+              "total": 129,
+              "pct": 56.58
+            },
+            "functions": {
+              "covered": 18,
+              "total": 32,
+              "pct": 56.25
+            }
+          },
+          "frontend": {
+            "lines": {
+              "covered": 102,
+              "total": 151,
+              "pct": 67.54
+            },
+            "branches": {
+              "covered": 81,
+              "total": 137,
+              "pct": 59.12
+            },
+            "statements": {
+              "covered": 114,
+              "total": 168,
+              "pct": 67.85
+            },
+            "functions": {
+              "covered": 51,
+              "total": 77,
+              "pct": 66.23
+            }
+          }
+        }
+      },
+      {
+        "round": 2,
+        "status": "accepted",
+        "reason": "verified coverage increased",
+        "units": [
+          "backend/src/api/health.ts",
+          "backend/src/core/database.ts",
+          "backend/src/core/lifespan.ts",
+          "backend/src/main.ts",
+          "frontend/src/features/todos/hooks/useTodosQuery.ts",
+          "frontend/src/features/todos/components/DeleteTodoDialog.tsx",
+          "frontend/src/features/todos/components/TodoForm.tsx",
+          "frontend/src/lib/http.ts"
+        ],
+        "tests": {
+          "backend": {
+            "total": 65,
+            "failed": 0,
+            "failures": []
+          },
+          "frontend": {
+            "total": 51,
+            "failed": 0,
+            "failures": []
+          }
+        },
+        "coverage": {
+          "backend": {
+            "lines": {
+              "covered": 69,
+              "total": 109,
+              "pct": 63.3
+            },
+            "branches": {
+              "covered": 32,
+              "total": 48,
+              "pct": 66.66
+            },
+            "statements": {
+              "covered": 79,
+              "total": 129,
+              "pct": 61.24
+            },
+            "functions": {
+              "covered": 21,
+              "total": 32,
+              "pct": 65.62
+            }
+          },
+          "frontend": {
+            "lines": {
+              "covered": 125,
+              "total": 151,
+              "pct": 82.78
+            },
+            "branches": {
+              "covered": 102,
+              "total": 137,
+              "pct": 74.45
+            },
+            "statements": {
+              "covered": 140,
+              "total": 168,
+              "pct": 83.33
+            },
+            "functions": {
+              "covered": 59,
+              "total": 77,
+              "pct": 76.62
+            }
+          }
+        }
+      },
+      {
+        "round": 3,
+        "status": "accepted",
+        "reason": "verified coverage increased",
+        "units": [
+          "backend/src/factory.ts",
+          "backend/src/core/lifespan.ts",
+          "backend/src/main.ts",
+          "frontend/src/app/AppProviders.tsx",
+          "frontend/src/features/todos/components/TodoEditor.tsx",
+          "frontend/src/features/todos/components/TodoEmptyState.tsx",
+          "frontend/src/features/todos/components/TodoItem.tsx"
+        ],
+        "tests": {
+          "backend": {
+            "total": 70,
+            "failed": 0,
+            "failures": []
+          },
+          "frontend": {
+            "total": 63,
+            "failed": 0,
+            "failures": []
+          }
+        },
+        "coverage": {
+          "backend": {
+            "lines": {
+              "covered": 92,
+              "total": 109,
+              "pct": 84.4
+            },
+            "branches": {
+              "covered": 45,
+              "total": 48,
+              "pct": 93.75
+            },
+            "statements": {
+              "covered": 106,
+              "total": 129,
+              "pct": 82.17
+            },
+            "functions": {
+              "covered": 26,
+              "total": 32,
+              "pct": 81.25
+            }
+          },
+          "frontend": {
+            "lines": {
+              "covered": 131,
+              "total": 151,
+              "pct": 86.75
+            },
+            "branches": {
+              "covered": 124,
+              "total": 137,
+              "pct": 90.51
+            },
+            "statements": {
+              "covered": 147,
+              "total": 168,
+              "pct": 87.5
+            },
+            "functions": {
+              "covered": 63,
+              "total": 77,
+              "pct": 81.81
+            }
+          }
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "id": "backend:install",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/install.log"
+    },
+    {
+      "id": "backend:generate",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run db:generate",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/generate.log"
+    },
+    {
+      "id": "backend:typecheck",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/typecheck.log"
+    },
+    {
+      "id": "backend:unit",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/unit.log"
+    },
+    {
+      "id": "backend:coverage",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/coverage.log"
+    },
+    {
+      "id": "frontend:install",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/install.log"
+    },
+    {
+      "id": "frontend:typecheck",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/typecheck.log"
+    },
+    {
+      "id": "frontend:unit",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/unit.log"
+    },
+    {
+      "id": "frontend:coverage",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/coverage.log"
+    }
+  ],
+  "tests": {
+    "original": {
+      "backend": {
+        "total": 48,
+        "failed": 0,
+        "failures": []
+      },
+      "frontend": {
+        "total": 18,
+        "failed": 0,
+        "failures": []
+      }
+    },
+    "candidate": {
+      "backend": {
+        "total": 70,
+        "failed": 0,
+        "failures": []
+      },
+      "frontend": {
+        "total": 63,
+        "failed": 0,
+        "failures": []
+      }
+    }
+  },
+  "coverage": {
+    "original": {
+      "backend": {
+        "lines": {
+          "covered": 36,
+          "total": 109,
+          "pct": 33.02
+        },
+        "branches": {
+          "covered": 16,
+          "total": 48,
+          "pct": 33.33
+        },
+        "statements": {
+          "covered": 39,
+          "total": 129,
+          "pct": 30.23
+        },
+        "functions": {
+          "covered": 13,
+          "total": 32,
+          "pct": 40.62
+        }
+      },
+      "frontend": {
+        "lines": {
+          "covered": 72,
+          "total": 151,
+          "pct": 47.68
+        },
+        "branches": {
+          "covered": 60,
+          "total": 137,
+          "pct": 43.79
+        },
+        "statements": {
+          "covered": 78,
+          "total": 168,
+          "pct": 46.42
+        },
+        "functions": {
+          "covered": 31,
+          "total": 77,
+          "pct": 40.25
+        }
+      }
+    },
+    "candidate": {
+      "backend": {
+        "lines": {
+          "covered": 92,
+          "total": 109,
+          "pct": 84.4
+        },
+        "branches": {
+          "covered": 45,
+          "total": 48,
+          "pct": 93.75
+        },
+        "statements": {
+          "covered": 106,
+          "total": 129,
+          "pct": 82.17
+        },
+        "functions": {
+          "covered": 26,
+          "total": 32,
+          "pct": 81.25
+        }
+      },
+      "frontend": {
+        "lines": {
+          "covered": 131,
+          "total": 151,
+          "pct": 86.75
+        },
+        "branches": {
+          "covered": 124,
+          "total": 137,
+          "pct": 90.51
+        },
+        "statements": {
+          "covered": 147,
+          "total": 168,
+          "pct": 87.5
+        },
+        "functions": {
+          "covered": 63,
+          "total": 77,
+          "pct": 81.81
+        }
+      }
+    },
+    "comparison": {
+      "status": "comparable",
+      "reason": "same head/config/runtime",
+      "deltas": {
+        "frontend": {
+          "lines": {
+            "covered": 59,
+            "total": 0,
+            "pctPoints": 39.07
+          },
+          "branches": {
+            "covered": 64,
+            "total": 0,
+            "pctPoints": 46.72
+          },
+          "statements": {
+            "covered": 69,
+            "total": 0,
+            "pctPoints": 41.08
+          },
+          "functions": {
+            "covered": 32,
+            "total": 0,
+            "pctPoints": 41.56
+          }
+        },
+        "backend": {
+          "lines": {
+            "covered": 56,
+            "total": 0,
+            "pctPoints": 51.38
+          },
+          "branches": {
+            "covered": 29,
+            "total": 0,
+            "pctPoints": 60.42
+          },
+          "statements": {
+            "covered": 67,
+            "total": 0,
+            "pctPoints": 51.94
+          },
+          "functions": {
+            "covered": 13,
+            "total": 0,
+            "pctPoints": 40.63
+          }
+        }
+      },
+      "objectiveMet": false
+    }
+  },
+  "proposal": {
+    "files": [
+      "backend/tests/router.test.ts",
+      "backend/tests/config.test.ts",
+      "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+      "frontend/src/features/todos/hooks/useTodoMutations.test.tsx",
+      "frontend/src/features/todos/api/todos.test.ts",
+      "frontend/src/hooks/useNotice.test.ts",
+      "frontend/src/features/todos/utils/todos.test.ts",
+      "frontend/src/lib/http.test.ts",
+      "backend/tests/health.test.ts",
+      "backend/tests/database.test.ts",
+      "frontend/src/features/todos/TodosPage.test.tsx",
+      "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+      "frontend/src/features/todos/components/TodoEditor.test.tsx",
+      "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+      "backend/tests/factory.test.ts",
+      "backend/tests/lifespan.test.ts",
+      "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+      "frontend/src/features/todos/components/TodoItem.test.tsx",
+      "frontend/src/features/todos/components/TodoList.test.tsx"
+    ],
+    "newFiles": 10,
+    "modifiedFiles": 9,
+    "patch": {
+      "name": "candidate.patch",
+      "sha256": "b78c270debb860c0214ea697844741a0f1243b72ce5b50bd0a6e5761433fadf8",
+      "bytes": 50215
+    },
+    "plan": {
+      "decision": "write",
+      "reason": "Verified cumulative coverage batches",
+      "cases": [
+        {
+          "id": "round-1:router-id-param",
+          "sourceLocation": "backend/src/features/todos/router.ts:8",
+          "behavior": "Invalid :id values are rejected with 422 before any repository call; valid ids reach GET as numbers; missing tasks return 404.",
+          "requirementSource": "idSchema in backend/src/features/todos/validators.ts (positive safe integer) and the TodoStore null contract in types.ts; status codes characterized from router.ts",
+          "inputs": "GET /api/todos/abc, /0, /-1; GET /api/todos/5 with repository.get resolving todo, then null",
+          "expected": "422 with a detail array and no repository.get call for invalid ids; 200 with the todo and get called with numeric 5; 404 with {detail:'Task not found.'} when null",
+          "assertion": "expect status and body; expect(repository.get).not.toHaveBeenCalled() for invalid ids; expect(repository.get).toHaveBeenCalledWith(5)",
+          "mockBoundary": "TodoStore repository is a vi.fn() object; Express app and supertest are real",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/router.test.ts",
+            "existingTests": [
+              {
+                "path": "backend/tests/router.test.ts",
+                "name": "lists tasks from the repository"
+              },
+              {
+                "path": "backend/tests/router.test.ts",
+                "name": "creates tasks with trimmed input and defaults"
+              }
+            ],
+            "regression": "Removing the id param guard would pass NaN or 0 to the repository, and passing the string id instead of Number would break lookups.",
+            "rationale": "The existing tests only cover list and create. The param handler and GET-by-id lines are uncovered. The setup is a few lines using the existing setup() helper."
+          }
+        },
+        {
+          "id": "round-1:router-patch",
+          "sourceLocation": "backend/src/features/todos/router.ts:25",
+          "behavior": "PATCH validates the body, passes the parsed (trimmed) payload and numeric id to update, and maps null to 404.",
+          "requirementSource": "updateSchema (non-empty strict partial with trimming) in validators.ts; TodoStore.update returning null for missing tasks",
+          "inputs": "PATCH /api/todos/3 with {title:'  New  '}; PATCH with {}; PATCH with {id:1}; update resolving null",
+          "expected": "200 and update called with (3,{title:'New'}); 422 and no update call for the empty and extra-field bodies; 404 when update resolves null",
+          "assertion": "toHaveBeenCalledWith(3,{title:'New'}); not.toHaveBeenCalled for invalid bodies; status 404 body detail 'Task not found.'",
+          "mockBoundary": "Repository mocked; the real router, schema and express.json are used",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/router.test.ts",
+            "existingTests": [
+              {
+                "path": "backend/tests/router.test.ts",
+                "name": "creates tasks with trimmed input and defaults"
+              }
+            ],
+            "regression": "Forwarding req.body instead of the parsed result would skip trimming, or an empty patch would reach the repository.",
+            "rationale": "Create is tested and PATCH is not. The 422 and 404 branches are uncovered, and the schema-level tests do not prove the router uses the parsed data."
+          }
+        },
+        {
+          "id": "round-1:router-delete",
+          "sourceLocation": "backend/src/features/todos/router.ts:32",
+          "behavior": "DELETE returns 204 with an empty body when the task was deleted and 404 otherwise.",
+          "requirementSource": "TodoStore.delete returns boolean; status codes characterized from router.ts",
+          "inputs": "DELETE /api/todos/4 with delete resolving true, then false",
+          "expected": "204 with an empty body and delete called with 4; 404 with {detail:'Task not found.'}",
+          "assertion": "status, response.text === '' for 204, toHaveBeenCalledWith(4), body for 404",
+          "mockBoundary": "Repository mocked",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/router.test.ts",
+            "existingTests": [
+              {
+                "path": "backend/tests/router.test.ts",
+                "name": "lists tasks from the repository"
+              }
+            ],
+            "regression": "Returning 200 with JSON on delete, or 204 for a missing task.",
+            "rationale": "The delete lines are uncovered and the check is cheap."
+          }
+        },
+        {
+          "id": "round-1:config-resolve-url",
+          "sourceLocation": "backend/src/core/config.ts:7",
+          "behavior": "resolveDatabaseUrl uses this precedence: override, then DATABASE_URL, then components. It rewrites the postgresql+psycopg scheme, percent-encodes credentials, and names the missing variable.",
+          "requirementSource": "Characterization of resolveDatabaseUrl; the SQLAlchemy-style scheme compatibility is stated in the database.ts comment",
+          "inputs": "vi.stubEnv for DATABASE_URL='postgresql+psycopg://u:p@h:5432/d' with and without override; components with password 'p@ss/word' and db 'my db'; POSTGRES_HOST set to '' with the others set",
+          "expected": "override wins; scheme becomes postgresql://; the component URL parses back to the original username, password and database name; error 'Missing environment variable: POSTGRES_HOST'",
+          "assertion": "toBe on strings; new URL(result) fields via decodeURIComponent; toThrow with the exact message",
+          "mockBoundary": "process.env via vi.stubEnv/unstubAllEnvs; no network",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/config.test.ts",
+            "existingTests": [],
+            "regression": "Dropping the scheme rewrite, building the URL without encoding special characters, or letting DATABASE_URL beat an explicit override.",
+            "rationale": "No config test was supplied (an existing test file for this unit is not among the supplied files). Config lines 7-19 are uncovered and configuration errors are high-impact."
+          }
+        },
+        {
+          "id": "round-1:create-hook-cache",
+          "sourceLocation": "frontend/src/features/todos/hooks/useCreateTodoMutation.ts:10",
+          "behavior": "After creation, the saved todo is placed first in the cached list, and any stale entry with the same id is removed.",
+          "requirementSource": "Source comment: the confirmed server response must not be overwritten by an older refetch; observable cache contract",
+          "inputs": "QueryClient seeded with [other, staleSameId]; todosApi.create mocked to resolve saved (same id as the stale one); mutateAsync via renderHook with QueryClientProvider",
+          "expected": "cache equals [saved, other]; an unseeded cache becomes [saved]",
+          "assertion": "expect(queryClient.getQueryData(todoKeys.list)).toEqual([...]); expect(todosApi.create).toHaveBeenCalledWith(input)",
+          "mockBoundary": "todosApi mocked; real QueryClient",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+            "existingTests": [],
+            "regression": "Appending instead of prepending, or leaving duplicates, would show stale data after save.",
+            "rationale": "TodoEditor.test mocks this hook entirely, so no supplied test exercises it. All of its lines are uncovered."
+          }
+        },
+        {
+          "id": "round-1:update-delete-hooks-cache",
+          "sourceLocation": "frontend/src/features/todos/hooks/useDeleteTodoMutation.ts:10",
+          "behavior": "Update replaces only the matching todo in the cache. Delete removes only the matching id. Neither creates a cache entry when none was loaded.",
+          "requirementSource": "Hook onSuccess logic; observable final cache state",
+          "inputs": "Cache [a(id1), b(id2)]; update resolves b' (id2) and delete(1) resolves; separate case with empty cache",
+          "expected": "after update, cache [a, b']; after delete(1), cache [b']; with no cache, getQueryData stays undefined",
+          "assertion": "toEqual on getQueryData(todoKeys.list); toBeUndefined for the unloaded case",
+          "mockBoundary": "todosApi mocked; real QueryClient",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/hooks/useTodoMutations.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+                "name": "shows a deletion error and allows cancelling without deleting"
+              }
+            ],
+            "regression": "Removing the wrong id, replacing every todo, or fabricating a list when none is loaded.",
+            "rationale": "The dialog test mocks the delete hook, so the cache updates are untested. The wrapper setup is shared by both hooks."
+          }
+        },
+        {
+          "id": "round-1:api-update-remove",
+          "sourceLocation": "frontend/src/features/todos/api/todos.ts:21",
+          "behavior": "update sends a PATCH containing only the provided fields. remove sends DELETE to the id URL.",
+          "requirementSource": "Partial<TodoInput> signature; JSON.stringify drops undefined values",
+          "inputs": "todosApi.update(7,{completed:true}); todosApi.remove(7)",
+          "expected": "request('/todos/7',{method:'PATCH',body:'{\"completed\":true}'}); request('/todos/7',{method:'DELETE'})",
+          "assertion": "toHaveBeenCalledWith exact args",
+          "mockBoundary": "lib/http request mocked",
+          "confidence": "contract-backed",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/api/todos.test.ts",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/api/todos.test.ts",
+                "name": "sends only writable task fields on creation"
+              },
+              {
+                "path": "frontend/src/features/todos/api/todos.test.ts",
+                "name": "passes the abort signal when fetching tasks"
+              }
+            ],
+            "regression": "Sending a full default object on a toggle would overwrite unrelated fields such as the title or due date.",
+            "rationale": "Only list and create are tested. The completed-toggle payload is the real behavior of the toggle."
+          }
+        },
+        {
+          "id": "round-1:notice-expiry",
+          "sourceLocation": "frontend/src/hooks/useNotice.ts:7",
+          "behavior": "A notice is exposed after notify and cleared after 4000 ms. A new notify restarts the timer.",
+          "requirementSource": "Characterization of useNotice timing",
+          "inputs": "vi.useFakeTimers; notify('A'); advance 3999 ms; then notify('B') and advance 3999 ms; advance 1 ms more",
+          "expected": "message 'A' at 3999 ms; after notify('B') the message is 'B' and still present 3999 ms later; '' after the full 4000 ms",
+          "assertion": "result.current.message at each step inside act",
+          "mockBoundary": "Fake timers only",
+          "confidence": "characterization",
+          "value": {
+            "action": "strengthen",
+            "testPath": "frontend/src/hooks/useNotice.test.ts",
+            "existingTests": [
+              {
+                "path": "frontend/src/hooks/useNotice.test.ts",
+                "name": "starts without a notice and exposes a notification callback"
+              }
+            ],
+            "regression": "A notice that never disappears, or one that is cut short by an earlier timer.",
+            "rationale": "The existing test checks only the initial state. The effect and its cleanup are uncovered."
+          }
+        },
+        {
+          "id": "round-1:validate-todo",
+          "sourceLocation": "frontend/src/features/todos/utils/todos.ts:8",
+          "behavior": "validateTodo reports title, description and due_date errors, trimming before measuring length and rejecting impossible calendar dates.",
+          "requirementSource": "Backend limits in validators.ts (title 1-120, description at most 2000, ISO date), mirrored by the messages in the source",
+          "inputs": "title '   '; title 'x'*121; title ' '+'x'*120+' '; description 'x'*2001; due_date '2026-02-30', '2026-2-3', '2024-02-29'",
+          "expected": "errors.title 'Enter a task title.'; the 121-char title gets the 'at most 120' message; the trimmed 120-char title gets none; the description gets its message; the first two dates get 'Enter a valid date.'; the leap day passes",
+          "assertion": "toEqual on the error record per input",
+          "mockBoundary": "None; pure function",
+          "confidence": "contract-backed",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/utils/todos.test.ts",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/utils/todos.test.ts",
+                "name": "combines status with a case-insensitive search in the description"
+              }
+            ],
+            "regression": "Not trimming before measuring, or accepting rolled-over dates like Feb 30, would let forms send data the API rejects.",
+            "rationale": "validateTodo has no tests, only selectTodos does. The checks are pure and cheap."
+          }
+        },
+        {
+          "id": "round-1:select-due-sort",
+          "sourceLocation": "frontend/src/features/todos/utils/todos.ts:46",
+          "behavior": "Due sort orders by date ascending with undated tasks last and ties by id descending. The completed filter keeps only completed tasks.",
+          "requirementSource": "Sort type 'due' and Filter type 'completed'; source ordering rules (characterized)",
+          "inputs": "todos: due '2026-10-20' id1, null id2, '2026-10-10' id3, '2026-10-10' id4 (id4 completed)",
+          "expected": "sort due gives ids [4,3,1,2]; filter completed gives only id4",
+          "assertion": "map ids toEqual",
+          "mockBoundary": "None",
+          "confidence": "characterization",
+          "value": {
+            "action": "strengthen",
+            "testPath": "frontend/src/features/todos/utils/todos.test.ts",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/utils/todos.test.ts",
+                "name": "sorts by priority without changing the source array"
+              },
+              {
+                "path": "frontend/src/features/todos/utils/todos.test.ts",
+                "name": "combines status with a case-insensitive search in the description"
+              }
+            ],
+            "regression": "Undated tasks sorted first, or the completed filter inverted.",
+            "rationale": "Existing tests cover the priority sort and the active filter only; the due-sort and completed branches are uncovered."
+          }
+        },
+        {
+          "id": "round-2:http-errors",
+          "sourceLocation": "frontend/src/lib/http.ts:3",
+          "behavior": "request maps failures to user-facing errors: network failure becomes a connect message, an aborted request rethrows the original error, 422 gives the validation message, and a string detail is surfaced.",
+          "requirementSource": "Explicit error-message branches in request(); characterization of current messages.",
+          "inputs": "Stubbed global fetch: (a) rejects with TypeError while signal not aborted; (b) rejects after the AbortController is aborted; (c) 422 JSON; (d) 400 {detail:'Nope'}; (e) 500 with non-JSON body.",
+          "expected": "(a) rejects 'Cannot connect to the server. Please try again.'; (b) rejects with the original error; (c) rejects with the 'Check the task details' message; (d) 'Nope'; (e) 'The operation failed. Please try again.'",
+          "assertion": "await expect(request(...)).rejects.toThrow(message) / toBe(originalError) per input.",
+          "mockBoundary": "vi.stubGlobal('fetch'); no network.",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/lib/http.test.ts",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/api/todos.test.ts",
+                "name": "passes the abort signal when fetching tasks"
+              }
+            ],
+            "regression": "Abort is reported as a connection error, or a server detail or 422 message is swallowed or replaced.",
+            "rationale": "Existing tests mock request entirely, so lib/http.ts has zero coverage and no assertion on error mapping. A cheap fetch stub protects all user-visible failure text."
+          }
+        },
+        {
+          "id": "round-2:http-success",
+          "sourceLocation": "frontend/src/lib/http.ts:24",
+          "behavior": "request prefixes /api, merges the JSON Content-Type with caller headers, returns undefined for 204 and parsed JSON otherwise.",
+          "requirementSource": "request() implementation; characterization.",
+          "inputs": "fetch stub returning 204, then 200 {a:1}; init headers {X-Test:'1'}.",
+          "expected": "fetch called with '/api/path' and headers containing both Content-Type application/json and X-Test; 204 resolves undefined; 200 resolves {a:1}.",
+          "assertion": "expect(fetch).toHaveBeenCalledWith('/api/path', expect.objectContaining({headers:{...}})); resolves.toBeUndefined(); resolves.toEqual({a:1}).",
+          "mockBoundary": "vi.stubGlobal('fetch').",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/lib/http.test.ts",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/api/todos.test.ts",
+                "name": "deletes a task by its id URL"
+              }
+            ],
+            "regression": "A DELETE 204 response triggers a JSON parse error, or the Content-Type header is dropped when custom headers are given.",
+            "rationale": "The API-layer tests assert only the arguments passed to a mocked request, never the real fetch call or 204 handling."
+          }
+        },
+        {
+          "id": "round-2:health-ok",
+          "sourceLocation": "backend/src/api/health.ts:5",
+          "behavior": "GET /health probes the database and returns {status:'ok'}; a database failure is not reported as ok.",
+          "requirementSource": "createHealthRouter implementation; characterization.",
+          "inputs": "Express app mounting the router at /api with a database whose todo.findFirst resolves, then rejects.",
+          "expected": "Success: 200 {status:'ok'} and findFirst called with {select:{id:true}}. Failure: status is not 200 and body is not {status:'ok'}.",
+          "assertion": "supertest status/body equality plus toHaveBeenCalledWith on findFirst.",
+          "mockBoundary": "Fake database object with a vi.fn todo.findFirst; no Prisma or PostgreSQL.",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/health.test.ts",
+            "existingTests": [
+              {
+                "path": "backend/tests/router.test.ts",
+                "name": "lists tasks from the repository"
+              },
+              {
+                "path": "backend/tests/repository.test.ts",
+                "name": "propagates database errors"
+              }
+            ],
+            "regression": "The health route returns ok without touching the database, so an outage is hidden from probes.",
+            "rationale": "The route has no tests; the setup is a few lines using the existing supertest pattern."
+          }
+        },
+        {
+          "id": "round-2:initialize-ddl",
+          "sourceLocation": "backend/src/core/database.ts:12",
+          "behavior": "initialize issues one CREATE TABLE IF NOT EXISTS statement for todos keeping the columns and constraints compatible with the existing SQLAlchemy table.",
+          "requirementSource": "Source comment 'Compatible with the existing SQLAlchemy table and sequence'; schema constraint names in DDL.",
+          "inputs": "A fake database with $executeRaw = vi.fn(); call initialize(fake).",
+          "expected": "Called once; the joined strings contain 'CREATE TABLE IF NOT EXISTS todos', each column (id, title, description, priority, due_date, completed, created_at, updated_at), and constraints todo_title_not_empty and todo_priority with 'low', 'medium' and 'high'.",
+          "assertion": "Join the tagged-template strings array and assert with toContain / toMatch on tokens only, ignoring whitespace.",
+          "mockBoundary": "Fake $executeRaw; no real DDL, so idempotency is not claimed.",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/database.test.ts",
+            "existingTests": [
+              {
+                "path": "backend/tests/repository.test.ts",
+                "name": "propagates database errors"
+              }
+            ],
+            "regression": "A column, the priority CHECK or the non-empty title constraint is dropped, breaking compatibility with the existing table.",
+            "rationale": "No test covers initialize. Token-level assertions avoid pinning whitespace while guarding the contractual schema parts."
+          }
+        },
+        {
+          "id": "round-2:toggle-completed",
+          "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:28",
+          "behavior": "Toggling a completed task sends completed:false and, once saved as active, shows 'Task marked as active.'.",
+          "requirementSource": "toggle() implementation; characterization.",
+          "inputs": "Mock TodoList to render a button calling onToggle(todos[0]); visible=[{...todoFixture, completed:true}]; mutateAsync resolves {...todoFixture, completed:false}; useNotice notify mock.",
+          "expected": "mutateAsync called with {id:7, input:{completed:false}}; notify called with 'Task marked as active.'. With busy=true no mutation happens.",
+          "assertion": "toHaveBeenCalledWith on mutateAsync and notify; second render with busy true asserts mutateAsync not called.",
+          "mockBoundary": "Existing mocked hooks and child components; TodoList mock extended to expose onToggle.",
+          "confidence": "characterization",
+          "value": {
+            "action": "strengthen",
+            "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/TodosPage.test.tsx",
+                "name": "displays a query failure and resets mutation errors before retrying"
+              }
+            ],
+            "regression": "The payload is not inverted (always sends true), or the toggle runs while another mutation is in flight.",
+            "rationale": "The existing test covers only the error and retry path. A mocked saved result could make the notice right while the input is wrong, so the opposite-state completed task discriminates."
+          }
+        },
+        {
+          "id": "round-2:delete-confirm",
+          "sourceLocation": "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+          "behavior": "Confirming deletion calls mutateAsync with the todo id then onDeleted; a rejection keeps the dialog open without onDeleted; pending disables the buttons and shows 'Deleting…'.",
+          "requirementSource": "remove() and comments in DeleteTodoDialog; characterization.",
+          "inputs": "(a) mutateAsync resolves, click 'Delete task'; (b) mutateAsync rejects; (c) isPending true.",
+          "expected": "(a) called with 7, onDeleted once. (b) onDeleted not called, no unhandled rejection. (c) 'Deleting…' button is disabled and Cancel is disabled.",
+          "assertion": "toHaveBeenCalledWith(7), toHaveBeenCalledTimes, toBeDisabled.",
+          "mockBoundary": "Existing useDeleteTodoMutation mock and design-system mocks.",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+                "name": "shows a deletion error and allows cancelling without deleting"
+              },
+              {
+                "path": "frontend/src/features/todos/hooks/useTodoMutations.test.tsx",
+                "name": "removes only the deleted task from the cache"
+              }
+            ],
+            "regression": "The wrong id is deleted, onDeleted fires after a failed delete, or the confirm button stays active during a pending delete.",
+            "rationale": "The existing test only cancels, so the confirm path is untested at the component level."
+          }
+        },
+        {
+          "id": "round-2:editor-update",
+          "sourceLocation": "frontend/src/features/todos/components/TodoEditor.tsx:26",
+          "behavior": "Editing an existing task calls the update mutation with {id, input}, not create, and reports 'Changes saved.'.",
+          "requirementSource": "save() implementation; characterization.",
+          "inputs": "todo=todoFixture (id 7); update resolves; click mocked 'Submit form'.",
+          "expected": "update called with {id:7, input:todoFixture}; create not called; onSaved called with 'Changes saved.'; dialog named 'Edit task'.",
+          "assertion": "toHaveBeenCalledWith and not.toHaveBeenCalled; getByRole('dialog',{name:'Edit task'}).",
+          "mockBoundary": "Existing hook mocks and TodoForm mock.",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+                "name": "creates a new task and reports a successful save"
+              }
+            ],
+            "regression": "An edit creates a duplicate task or is sent without the id.",
+            "rationale": "Only the create branch is tested; the edit branch has a different mutation, payload and message."
+          }
+        },
+        {
+          "id": "round-2:query-signal",
+          "sourceLocation": "frontend/src/features/todos/hooks/useTodosQuery.ts:6",
+          "behavior": "useTodosQuery fetches through todosApi.list with the query's AbortSignal and exposes the data.",
+          "requirementSource": "useTodosQuery implementation; todosApi.list(signal) API.",
+          "inputs": "Mock todosApi.list to resolve [todoFixture]; renderHook with QueryClientProvider (retry false).",
+          "expected": "list called with an AbortSignal; result.data eventually equals [todoFixture].",
+          "assertion": "waitFor(() => expect(result.current.data).toEqual([todoFixture])); expect(list).toHaveBeenCalledWith(expect.any(AbortSignal)).",
+          "mockBoundary": "vi.mock of ../api/todos; real QueryClient.",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/api/todos.test.ts",
+                "name": "passes the abort signal when fetching tasks"
+              },
+              {
+                "path": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+                "name": "creates a list containing the saved task when none was cached"
+              }
+            ],
+            "regression": "The signal is not forwarded, so cancelQueries cannot abort the in-flight list request and a stale response can overwrite a mutation's cache update.",
+            "rationale": "The API test checks only that list passes a signal; nothing verifies the hook supplies one, and the hook has no coverage."
+          }
+        },
+        {
+          "id": "round-3:be-factory-errors",
+          "sourceLocation": "backend/src/factory.ts:10",
+          "behavior": "createApp returns JSON 404 for unknown routes, 422 for malformed JSON, 413 for oversized bodies, hides x-powered-by",
+          "requirementSource": "characterization of createApp error handler (detail messages 'Not Found', 'Invalid JSON.', 'Request body too large.')",
+          "inputs": "createApp with stub database {todo:{findFirst,findMany,create}}; node:fs readFileSync partially mocked to return a minimal OpenAPI JSON; GET /nope; POST /api/todos with body '{bad' and application/json; POST a body over 100kb",
+          "expected": "404 {detail:'Not Found'}; 422 {detail:'Invalid JSON.'}; 413 {detail:'Request body too large.'}; no x-powered-by header",
+          "assertion": "status and toEqual body for each response; header undefined",
+          "mockBoundary": "stub Prisma database object and node:fs read of openapi.json; supertest in-process",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/factory.test.ts",
+            "existingTests": [],
+            "regression": "Malformed JSON surfaces as 500 or HTML, or oversized bodies return 500 instead of 413",
+            "rationale": "No supplied test covers createApp; the file is wholly uncovered and the error mapping is client-visible. The supplied context contains no relevant existing test for factory.ts."
+          }
+        },
+        {
+          "id": "round-3:be-factory-500",
+          "sourceLocation": "backend/src/factory.ts:19",
+          "behavior": "Unexpected repository errors return generic 500 without leaking the message",
+          "requirementSource": "characterization of createApp handleError fallback",
+          "inputs": "database.todo.findMany rejects Error('secret'); console.error spied silent; GET /api/todos; also GET /openapi.json",
+          "expected": "500 {detail:'Internal Server Error'}; body lacks 'secret'; console.error called with the error; /openapi.json returns the stubbed spec",
+          "assertion": "toEqual body, not.toContain secret, spy called, spec toEqual",
+          "mockBoundary": "stub database, mocked fs spec, console.error spy",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/factory.test.ts",
+            "existingTests": [],
+            "regression": "Internal error messages leak to clients or the spec route returns empty content",
+            "rationale": "Covers the fallback branch and the spec endpoint; no existing test exercises either (none supplied for factory.ts)."
+          }
+        },
+        {
+          "id": "round-3:be-lifespan-cleanup",
+          "sourceLocation": "backend/src/core/lifespan.ts:8",
+          "behavior": "start disconnects the database and rethrows when connect or initialize fails, without building the app",
+          "requirementSource": "characterization of start try/catch cleanup",
+          "inputs": "vi.mock database.js, config.js, factory.js; $connect rejects Error('down') in one case, initialize rejects in another",
+          "expected": "start rejects with the same error; $disconnect called once; createApp not called",
+          "assertion": "rejects.toThrow, toHaveBeenCalledTimes(1), not.toHaveBeenCalled",
+          "mockBoundary": "createDatabase, initialize, resolveDatabaseUrl, createApp mocked",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "backend/tests/lifespan.test.ts",
+            "existingTests": [],
+            "regression": "A failed startup leaks the open connection pool or swallows the error",
+            "rationale": "lifespan.ts is entirely uncovered and startup failure cleanup is a resource-safety behavior; no relevant existing test supplied."
+          }
+        },
+        {
+          "id": "round-3:fe-empty-state",
+          "sourceLocation": "frontend/src/features/todos/components/TodoEmptyState.tsx:13",
+          "behavior": "Empty state differs between no tasks at all and no filter matches; create action only offered when no tasks exist",
+          "requirementSource": "characterization of component copy and conditional button",
+          "inputs": "hasTodos false/disabled false; hasTodos false/disabled true; hasTodos true",
+          "expected": "first: heading 'Add your first task' and enabled button calling onCreate once; second: button disabled and click does not call onCreate; third: heading 'No matching tasks', no button",
+          "assertion": "role queries, toBeDisabled, call counts, queryByRole null",
+          "mockBoundary": "design-system mocks",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/TodoList.test.tsx",
+                "name": "shows loading feedback before showing an empty list"
+              }
+            ],
+            "regression": "Filtered-empty state offers a create button, or the disabled flag is ignored during a mutation",
+            "rationale": "TodoList test mocks TodoEmptyState away, so its branches are untested; cheap RTL test."
+          }
+        },
+        {
+          "id": "round-3:fe-item-overdue",
+          "sourceLocation": "frontend/src/features/todos/components/TodoItem.tsx:41",
+          "behavior": "Past due date shows overdue only for active tasks; completed state label and toggle/delete forwarding",
+          "requirementSource": "characterization of isOverdue and TodoItem rendering",
+          "inputs": "active todo due_date '2000-01-01'; same completed:true; description 'Line 1\\nLine 2'",
+          "expected": "active: '· overdue' text, 'To do'; completed: no overdue text, 'Completed', checkbox checked with label 'Mark as active: <title>'; description visible; checkbox click calls onToggle, delete button calls onDelete",
+          "assertion": "getByText/queryByText, toBeChecked, call counts",
+          "mockBoundary": "design-system mocks; fixed far-past date avoids clock mocking",
+          "confidence": "characterization",
+          "value": {
+            "action": "strengthen",
+            "testPath": "frontend/src/features/todos/components/TodoItem.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/TodoItem.test.tsx",
+                "name": "shows an active task and forwards edit requests"
+              }
+            ],
+            "regression": "Completed tasks flagged overdue, or toggle/delete wired to the wrong callback",
+            "rationale": "Existing test covers only an active undated task and edit; completion, overdue and delete/toggle paths are unasserted."
+          }
+        },
+        {
+          "id": "round-3:fe-list-failed",
+          "sourceLocation": "frontend/src/features/todos/components/TodoList.tsx:35",
+          "behavior": "Failed load with no tasks shows unavailable message; failed with cached tasks still shows the list",
+          "requirementSource": "characterization of TodoList state branches",
+          "inputs": "loading false, failed true, hasTodos false, todos []; then failed true, hasTodos true, todos [fixture]",
+          "expected": "first: heading 'The task list is temporarily unavailable', no empty-state; second: list item rendered, no unavailable heading",
+          "assertion": "getByRole heading, queryByText, getAllByRole('listitem')",
+          "mockBoundary": "TodoItem and TodoEmptyState mocked as in existing file",
+          "confidence": "characterization",
+          "value": {
+            "action": "strengthen",
+            "testPath": "frontend/src/features/todos/components/TodoList.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/TodoList.test.tsx",
+                "name": "shows loading feedback before showing an empty list"
+              }
+            ],
+            "regression": "A background refetch failure hides cached tasks, or a failed load shows the misleading add-first-task empty state",
+            "rationale": "Existing test only covers loading vs empty; failure and populated branches are unasserted."
+          }
+        },
+        {
+          "id": "round-3:fe-editor-busy",
+          "sourceLocation": "frontend/src/features/todos/components/TodoEditor.tsx:24",
+          "behavior": "Submitting while another mutation is busy does not call create or update, and a mutation error is passed to the form",
+          "requirementSource": "characterization of save guard `if (pending) return`",
+          "inputs": "todo 'new', busy true; click Submit form; second case mutation error Error('Boom') with busy false",
+          "expected": "create/update not called, onSaved not called; with busy false failing create rejection leaves onSaved uncalled",
+          "assertion": "not.toHaveBeenCalled for create, update, onSaved",
+          "mockBoundary": "create/update mutation hooks mocked, TodoForm mocked",
+          "confidence": "characterization",
+          "value": {
+            "action": "add",
+            "testPath": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+                "name": "creates a new task and reports a successful save"
+              },
+              {
+                "path": "frontend/src/features/todos/components/TodoEditor.test.tsx",
+                "name": "updates an existing task by its own id and reports the saved changes"
+              }
+            ],
+            "regression": "Double submission during an in-flight mutation, or a failed save reporting success",
+            "rationale": "Existing tests cover only happy paths; guard line is uncovered and duplicate writes are a real risk."
+          }
+        },
+        {
+          "id": "round-3:fe-page-toggle-error",
+          "sourceLocation": "frontend/src/features/todos/TodosPage.tsx:30",
+          "behavior": "Failed toggle shows no success notice and the mutation error is shown in the alert in preference to the query error",
+          "requirementSource": "characterization of toggle catch and `toggleTodo.error ?? todosQuery.error`",
+          "inputs": "visible [fixture]; mutateAsync rejects Error('Save failed'); separately useUpdateTodoMutation returns error Error('Save failed') while query error is Error('Query failed')",
+          "expected": "notify not called after click; alert text is 'Save failed' not 'Query failed'",
+          "assertion": "notify not.toHaveBeenCalled after mutateAsync awaited; alert toHaveTextContent",
+          "mockBoundary": "hooks mocked via existing arrange helper",
+          "confidence": "characterization",
+          "value": {
+            "action": "strengthen",
+            "testPath": "frontend/src/features/todos/TodosPage.test.tsx",
+            "existingTests": [
+              {
+                "path": "frontend/src/features/todos/TodosPage.test.tsx",
+                "name": "completes an active task by sending completed true"
+              },
+              {
+                "path": "frontend/src/features/todos/TodosPage.test.tsx",
+                "name": "displays a query failure and resets mutation errors before retrying"
+              }
+            ],
+            "regression": "A rejected toggle announces success, or the query error masks the more recent save failure",
+            "rationale": "Existing tests cover only resolved toggles and the query error; the catch branch and error precedence are unasserted."
+          }
+        }
+      ],
+      "paths": [
+        "backend/tests/router.test.ts",
+        "backend/tests/config.test.ts",
+        "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx",
+        "frontend/src/features/todos/hooks/useTodoMutations.test.tsx",
+        "frontend/src/features/todos/api/todos.test.ts",
+        "frontend/src/hooks/useNotice.test.ts",
+        "frontend/src/features/todos/utils/todos.test.ts",
+        "frontend/src/lib/http.test.ts",
+        "backend/tests/health.test.ts",
+        "backend/tests/database.test.ts",
+        "frontend/src/features/todos/TodosPage.test.tsx",
+        "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx",
+        "frontend/src/features/todos/components/TodoEditor.test.tsx",
+        "frontend/src/features/todos/hooks/useTodosQuery.test.tsx",
+        "backend/tests/factory.test.ts",
+        "backend/tests/lifespan.test.ts",
+        "frontend/src/features/todos/components/TodoEmptyState.test.tsx",
+        "frontend/src/features/todos/components/TodoItem.test.tsx",
+        "frontend/src/features/todos/components/TodoList.test.tsx"
+      ],
+      "remainingGaps": [
+        "backend/src/main.ts: top-level start().catch side effect; needs module-import test, low value",
+        "backend/src/core/lifespan.ts: successful listen, signal handlers and shutdown timer paths need process/signal stubbing; not proposed",
+        "frontend/src/features/todos/TodosPage.tsx lines 81-106: editor/delete dialog open-close and notice wiring are mocked to null in the existing file; would need interactive mocks",
+        "frontend/src/app/AppProviders.tsx: provider composition; design-system is excluded from coverage and GlobalStyles needs the real theme",
+        "frontend/src/features/todos/hooks/useTodoFilters.ts and useTodosBusy.ts: no supplied tests; hook cases not included in this batch",
+        "backend/openapi.json was not supplied, so factory tests mock the spec read and make no claims about its content"
+      ]
+    }
+  },
+  "nativeCalls": [
+    {
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 44706,
+      "usage": {
+        "inputTokens": 43926,
+        "cachedInputTokens": 2709,
+        "outputTokens": 6446,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "writer",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 51531,
+      "usage": {
+        "inputTokens": 48324,
+        "cachedInputTokens": 2039,
+        "outputTokens": 9918,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 46507,
+      "usage": {
+        "inputTokens": 51028,
+        "cachedInputTokens": 2709,
+        "outputTokens": 6530,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "writer",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 63403,
+      "usage": {
+        "inputTokens": 54866,
+        "cachedInputTokens": 2039,
+        "outputTokens": 12016,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 38911,
+      "usage": {
+        "inputTokens": 58542,
+        "cachedInputTokens": 2709,
+        "outputTokens": 5497,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "writer",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 70559,
+      "usage": {
+        "inputTokens": 61757,
+        "cachedInputTokens": 2039,
+        "outputTokens": 13691,
+        "estimatedUsd": null
+      }
+    },
+    {
+      "role": "reviewer",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "status": "completed",
+      "elapsedMs": 69426,
+      "usage": {
+        "inputTokens": 76109,
+        "cachedInputTokens": 2205,
+        "outputTokens": 6784,
+        "estimatedUsd": null
+      }
+    }
+  ],
+  "nativeReview": {
+    "result": {
+      "status": "passed",
+      "reason": "I traced every planned case through the source in the supplied files. All the units under test run for real, and every mock sits at the dependency boundary. Each planned regression is caught by a concrete assertion. Examples:\n- PATCH must receive the parsed, trimmed payload.\n- The toggle payload is checked in both directions: a completed task sends false and an active task sends true.\n- The notice timer restarts on a new notify, otherwise the old timer would clear 'B' after 3999 ms.\n- For HTTP 204, a json spy on a real request() call proves the body is never parsed.\n- An aborted request rethrows the original error.\n- Lifespan disconnects without building the app.\n- Config builds the URL from component variables, and a password containing '@' and '/' only parses back correctly because it is encoded.\n- The update and delete hooks change the cache without fabricating a list.\n\nThe existing assertions are kept, including in the refactored TodosPage arrange helper. All required install, typecheck, unit and coverage checks passed with exit code 0. I found only minor gaps: some regressions named in the plan would still pass, and one helper is duplicated. None undermines the independent value of a case.",
+      "findings": [
+        {
+          "id": "config-dbname-encoding-not-discriminating",
+          "severity": "minor",
+          "location": "backend/tests/config.test.ts:28-37",
+          "claim": "The database-name part of the encoding claim does not discriminate. If encodeURIComponent is removed from the pathname, the test still passes.",
+          "evidence": "config.ts:18 assigns url.pathname = `/${encodeURIComponent(db)}`. If that becomes url.pathname = `/${db}`, the WHATWG pathname setter still turns the space in 'my db' into %20, so decodeURIComponent(url.pathname) still equals '/my db'. Only the password assertion ('p@ss/word') catches missing encoding. A database name containing '?' or '#' would discriminate, because the pathname setter leaves those for the query and fragment.",
+          "kind": "oracle-counterexample",
+          "factId": null
+        },
+        {
+          "id": "ddl-defaults-unasserted",
+          "severity": "minor",
+          "location": "backend/tests/database.test.ts:14-24",
+          "claim": "The behavior claims the DDL stays compatible with the existing SQLAlchemy table. If the column DEFAULTs were removed, every assertion would still pass.",
+          "evidence": "Suppose database.ts dropped `DEFAULT ''` on description, `DEFAULT 'medium'` on priority and `DEFAULT FALSE` on completed. Every regex would still match: they cover only the `<col> <TYPE> NOT NULL` prefix and the two CHECK constraints. Rows written without those columns by another writer would then fail. Assertions on the whitespace-normalized tokens are otherwise stable. Because $executeRaw is a fake, the test proves only what SQL is emitted, not that the database enforces it, and the plan correctly makes no idempotency claim.",
+          "kind": "oracle-counterexample",
+          "factId": null
+        },
+        {
+          "id": "create-hook-cancel-unobserved",
+          "severity": "minor",
+          "location": "frontend/src/features/todos/hooks/useCreateTodoMutation.test.tsx:32-55",
+          "claim": "The requirementSource cites the comment about cancelling a stale refetch, but the tests would still pass if cancelQueries were removed.",
+          "evidence": "useCreateTodoMutation.ts:13 calls `await queryClient.cancelQueries(...)`. No query is in flight in the tests, so deleting that line leaves both getQueryData toEqual assertions green. The same applies to the update and delete hooks. The stated behavior, the final cache ordering, is protected, but the comment-backed guarantee against a stale refetch is not. It belongs in remainingGaps rather than being implied.",
+          "kind": "other",
+          "factId": null
+        },
+        {
+          "id": "editor-update-duplicated-mock-setup",
+          "severity": "minor",
+          "location": "frontend/src/features/todos/components/TodoEditor.test.tsx:80-93",
+          "claim": "The new update test repeats inline the hook setup that the mockHooks helper added in the same patch already provides.",
+          "evidence": "The 'updates an existing task by its own id' test calls vi.mocked(useCreateTodoMutation)/useUpdateTodoMutation.mockReturnValue({isPending:false,error:null,...}) inline. That is equivalent to mockHooks({ create, update }), which the busy, failure and error-mode tests use. Using the id 9 instead of the fixture's 7 is good: it shows the edited todo's own id is sent. The duplication is only a maintenance cost.",
+          "kind": "other",
+          "factId": null
+        }
+      ]
+    },
+    "confirmations": []
+  },
+  "localSensitivity": {
+    "note": "Selected disposable Docker diagnostics after the workflow; not workflow mutations, a representative score or automatic verifier facts.",
+    "results": [
+      {
+        "id": "api-create-return-corruption",
+        "app": "frontend",
+        "path": "src/features/todos/api/todos.ts",
+        "test": "frontend/src/features/todos/api/todos.test.ts",
+        "kind": "original protection preservation",
+        "files": ["src/features/todos/api/todos.test.ts"],
+        "restoredSha256": "9fe2337a0fa70a6b990c0d3cd97c829fe8169e68aab6c40e69dcf79a827d2077",
+        "control": {
+          "exitCode": 0,
+          "total": 4,
+          "passed": 4,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 4,
+          "passed": 3,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": ["sends only writable task fields on creation"]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 4,
+          "passed": 4,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "filter-ignores-status-while-searching",
+        "app": "frontend",
+        "path": "src/features/todos/utils/todos.ts",
+        "test": "frontend/src/features/todos/utils/todos.test.ts",
+        "kind": "original protection preservation",
+        "files": ["src/features/todos/utils/todos.test.ts"],
+        "restoredSha256": "620984d5b881f1e2587e0d080eec1e9759c24f1c05d3bb4ec3391ba1dee55731",
+        "control": {
+          "exitCode": 0,
+          "total": 10,
+          "passed": 10,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 10,
+          "passed": 9,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": [
+            "selectTodos combines status with a case-insensitive search in the description"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 10,
+          "passed": 10,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "sql-weakens-title-check",
+        "app": "backend",
+        "path": "src/core/database.ts",
+        "kind": "emitted constraint predicate; no real database executed",
+        "files": ["tests/database.test.ts"],
+        "restoredSha256": "923c608fbed3f512210a4f318af1b9b5010f3783fae0ebc172f7d26ee2abf7a8",
+        "control": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 1,
+          "passed": 0,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": [
+            "issues one CREATE TABLE IF NOT EXISTS statement with the todo schema obligations"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "negative-id-abs-coercion",
+        "app": "backend",
+        "path": "src/features/todos/router.ts",
+        "kind": "behavior regression",
+        "files": ["tests/router.test.ts"],
+        "restoredSha256": "9f0a2d752c40a077e0e0fd12d33be7f6169bbaab55ea184cd410800d94b9ec49",
+        "control": {
+          "exitCode": 0,
+          "total": 16,
+          "passed": 16,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 16,
+          "passed": 15,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": [
+            "rejects invalid id -1 before reaching the repository"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 16,
+          "passed": 16,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "toggle-always-completes",
+        "app": "frontend",
+        "path": "src/features/todos/TodosPage.tsx",
+        "kind": "behavior regression",
+        "files": ["src/features/todos/TodosPage.test.tsx"],
+        "restoredSha256": "45aa1f7a5b5be2ca9aba63a4d50073cf7bf7d236b72e51bea4d0ef692b5a1d8f",
+        "control": {
+          "exitCode": 0,
+          "total": 6,
+          "passed": 6,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 6,
+          "passed": 5,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": [
+            "reactivates a completed task by sending the opposite state"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 6,
+          "passed": 6,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "create-no-query-cancellation",
+        "app": "frontend",
+        "path": "src/features/todos/hooks/useCreateTodoMutation.ts",
+        "kind": "cancellation obligation probe; no independent race guarantee",
+        "files": ["src/features/todos/hooks/useCreateTodoMutation.test.tsx"],
+        "restoredSha256": "c7c3071944a0a1eca6c56ba64d435f50777a5179a944af5f40fd359b49e23513",
+        "control": {
+          "exitCode": 0,
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 0,
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "openapi-empty-document",
+        "app": "backend",
+        "path": "src/factory.ts",
+        "kind": "behavior regression",
+        "files": ["tests/factory.test.ts"],
+        "restoredSha256": "efc004b95dda2772989c5d08d09f148ab253dc5e853f2b76f46690b822f3ccdb",
+        "control": {
+          "exitCode": 0,
+          "total": 3,
+          "passed": 3,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 3,
+          "passed": 2,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": [
+            "createApp error handling serves the loaded OpenAPI specification"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 3,
+          "passed": 3,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "sql-whitespace-only",
+        "app": "backend",
+        "path": "src/core/database.ts",
+        "kind": "format-only control; no database parser executed",
+        "files": ["tests/database.test.ts"],
+        "restoredSha256": "923c608fbed3f512210a4f318af1b9b5010f3783fae0ebc172f7d26ee2abf7a8",
+        "control": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      },
+      {
+        "id": "sql-loses-title-check",
+        "app": "backend",
+        "path": "src/core/database.ts",
+        "kind": "emitted-DDL obligation probe; no real PostgreSQL executed",
+        "files": ["tests/database.test.ts"],
+        "restoredSha256": "923c608fbed3f512210a4f318af1b9b5010f3783fae0ebc172f7d26ee2abf7a8",
+        "control": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        },
+        "changed": {
+          "exitCode": 1,
+          "total": 1,
+          "passed": 0,
+          "failed": 1,
+          "pending": 0,
+          "failedTests": [
+            "issues one CREATE TABLE IF NOT EXISTS statement with the todo schema obligations"
+          ]
+        },
+        "restored": {
+          "exitCode": 0,
+          "total": 1,
+          "passed": 1,
+          "failed": 0,
+          "pending": 0,
+          "failedTests": []
+        }
+      }
+    ],
+    "restoration": {
+      "beforeSourceDigest": "019dc20f7aa5ad88df6d27e812fbe09ca0e111dc73c7053bdf44d05b75960ebc",
+      "afterSourceDigest": "019dc20f7aa5ad88df6d27e812fbe09ca0e111dc73c7053bdf44d05b75960ebc",
+      "files": 160,
+      "restored": true
+    },
+    "additional": {
+      "restored": true,
+      "results": [
+        {
+          "id": "delete-error-calls-onClose",
+          "app": "frontend",
+          "path": "src/features/todos/components/DeleteTodoDialog.tsx",
+          "test": "src/features/todos/components/DeleteTodoDialog.test.tsx",
+          "kind": "behavior regression; keep-open callback gap",
+          "control": {
+            "exitCode": 0,
+            "total": 4,
+            "passed": 4,
+            "failed": 0,
+            "failedTests": []
+          },
+          "changed": {
+            "exitCode": 0,
+            "total": 4,
+            "passed": 4,
+            "failed": 0,
+            "failedTests": []
+          },
+          "restored": {
+            "exitCode": 0,
+            "total": 4,
+            "passed": 4,
+            "failed": 0,
+            "failedTests": []
+          }
+        },
+        {
+          "id": "sql-parenthesis-spacing",
+          "app": "backend",
+          "path": "src/core/database.ts",
+          "test": "tests/database.test.ts",
+          "kind": "harmless SQL formatting; no PostgreSQL execution",
+          "control": {
+            "exitCode": 0,
+            "total": 1,
+            "passed": 1,
+            "failed": 0,
+            "failedTests": []
+          },
+          "changed": {
+            "exitCode": 1,
+            "total": 1,
+            "passed": 0,
+            "failed": 1,
+            "failedTests": [
+              "issues one CREATE TABLE IF NOT EXISTS statement with the todo schema obligations"
+            ]
+          },
+          "restored": {
+            "exitCode": 0,
+            "total": 1,
+            "passed": 1,
+            "failed": 0,
+            "failedTests": []
+          }
+        }
+      ]
+    },
+    "encodingDiagnostic": {
+      "note": "Native reviewer ?/# suggestion is incorrect for URL.pathname setter. Its current-input nondiscrimination observation is valid; literal percent inputs discriminate.",
+      "rows": [
+        {
+          "input": "my db",
+          "pathname": "/my%20db",
+          "decoded": "/my db"
+        },
+        {
+          "input": "my?db",
+          "pathname": "/my%3Fdb",
+          "decoded": "/my?db"
+        },
+        {
+          "input": "my#db",
+          "pathname": "/my%23db",
+          "decoded": "/my#db"
+        },
+        {
+          "input": "my/db",
+          "pathname": "/my/db",
+          "decoded": "/my/db"
+        },
+        {
+          "input": "my%db",
+          "pathname": "/my%db",
+          "decoded": "URIError"
+        },
+        {
+          "input": "my%2Fdb",
+          "pathname": "/my%2Fdb",
+          "decoded": "/my/db"
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "The configured80% lines/branches run target is reached; the100% objective is not.",
+    "Native findings are unconfirmed claims; local diagnostics are recorded separately and do not alter the sealed workflow decision.",
+    "No claim that every regression is caught or the suite globally minimal.",
+    "Proposal is preserved for human review; application changes are not automatically applied.",
+    "Subscription authentication only; estimatedUsd null, reservations are not invoice or quota data.",
+    "Human review should address the known onClose assertion gap before applying this proposal; automated accepted does not remove that follow-up."
+  ],
+  "independentReview": {
+    "mode": "read-only source review by separate Codex agent; selected counterexamples subsequently executed by coordinator",
+    "originalAssertionsPreserved": true,
+    "excessiveDuplicationFound": false,
+    "findings": [
+      {
+        "severity": "P2",
+        "location": "frontend/src/features/todos/components/DeleteTodoDialog.test.tsx:77-95",
+        "claim": "The rejected-delete case claims to keep the dialog open but does not assert onClose was not called.",
+        "localProbe": "delete-error-calls-onClose",
+        "outcome": "survived"
+      },
+      {
+        "severity": "P3",
+        "location": "backend/tests/database.test.ts:12-24",
+        "claim": "Regexes still fail on harmless spacing inside a SQL expression.",
+        "localProbe": "sql-parenthesis-spacing",
+        "outcome": "false alarm"
+      }
+    ],
+    "limits": [
+      "No representative mutation score or globally minimal-suite proof.",
+      "Any AbortSignal assertion does not establish query-signal identity or cancellation propagation."
+    ]
+  }
+}
