@@ -32,6 +32,7 @@ import { runAgent } from "./orchestrator.js";
 import type { CollectedEvidence } from "./precollect.js";
 import { decide } from "./report.js";
 import { verifyCandidate } from "./verify.js";
+import { sourcePath } from "./value-plan.js";
 
 export interface CoverageRoundsOptions {
   context: RunContext;
@@ -163,7 +164,11 @@ export async function runCoverageRounds(
       stopReason = "incomplete";
       break;
     }
-    if (coverageGoalMet(current.coverage, settings.target)) {
+    const coverageTargetReached = coverageGoalMet(
+      current.coverage,
+      settings.target,
+    );
+    if (settings.stopAtTarget && coverageTargetReached) {
       stopReason = "target-reached";
       break;
     }
@@ -173,16 +178,27 @@ export async function runCoverageRounds(
     }
     const allFiles = new Map(source.files.map((f) => [f.path, f]));
     for (const [path, file] of contents) allFiles.set(path, file);
+    // Selection hints revisit known units; reported coverage gaps remain measured facts.
+    const selectionHints =
+      !settings.stopAtTarget && coverageTargetReached
+        ? [
+            ...new Set([
+              ...current.coverage.gaps,
+              ...attempted,
+              ...aggregate.cases.map((c) => sourcePath(c.sourceLocation)),
+            ]),
+          ]
+        : current.coverage.gaps;
     const units = selectCoverageUnits(
       [...allFiles.values()],
-      current.coverage.gaps,
+      selectionHints,
       attempted,
     );
     attempted.push(...units);
     const selected = selectContextFiles(
       [...allFiles.values()],
       [],
-      current.coverage.gaps,
+      selectionHints,
       "coverage-gap",
       attempted.slice(0, -units.length),
     );
@@ -214,6 +230,8 @@ export async function runCoverageRounds(
         }),
       ),
       target: settings.target,
+      coverageTargetReached,
+      stopAtTarget: settings.stopAtTarget,
     };
     if (Buffer.byteLength(JSON.stringify(bundle)) > limits.bundle)
       bundle.missingCritical.push("complete bundle bounds");
@@ -343,7 +361,7 @@ export async function runCoverageRounds(
           }) !== "accepted"
         )
           throw new Error("required candidate checks did not pass");
-        progressed = coverageIncreased(
+        const increased = coverageIncreased(
           current.coverage,
           verification.candidateCoverage,
         );
@@ -358,6 +376,10 @@ export async function runCoverageRounds(
             "trial payload exceeds reserved artifact capacity",
           );
         accepted = trial;
+        progressed =
+          increased ||
+          (!settings.stopAtTarget &&
+            coverageGoalMet(verification.candidateCoverage, settings.target));
         contents.clear();
         for (const [path, file] of trialContents) contents.set(path, file);
         aggregate = trialPlan;
@@ -371,9 +393,9 @@ export async function runCoverageRounds(
             : {}),
         };
         record.status = "accepted";
-        record.reason = progressed
+        record.reason = increased
           ? "verified coverage increased"
-          : "verified assertions retained; no coverage increase";
+          : "distinct batch passed mechanical checks; no coverage increase";
       } catch (error) {
         if (
           (error instanceof HostStopError && error.code === "payload-limit") ||
@@ -408,7 +430,10 @@ export async function runCoverageRounds(
       break;
     }
 
-    if (coverageGoalMet(current.coverage, settings.target)) {
+    if (
+      settings.stopAtTarget &&
+      coverageGoalMet(current.coverage, settings.target)
+    ) {
       stopReason = "target-reached";
       break;
     }

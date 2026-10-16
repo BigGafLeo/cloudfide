@@ -649,3 +649,159 @@ it("requires same-file evidence before adding to an accepted prior-round test", 
   expect(out.manifest.coverageRun?.rounds[1]?.status).toBe("inconclusive");
   expect(out.manifest.coverageRun?.rounds[1]?.callIds).toHaveLength(1);
 });
+
+function continueAfterTarget(
+  f: Awaited<ReturnType<typeof fixture>>,
+  maxRounds = 3,
+) {
+  f.options.policy.coverage = {
+    target: { lines: 80, branches: 80 },
+    maxRounds,
+    noProgressRounds: 2,
+    stopAtTarget: false,
+  };
+}
+
+it("continues from an eighty-five-percent milestone to a later ninety-percent batch", async () => {
+  const f = await fixture([85, 90]);
+  continueAfterTarget(f, 2);
+  const out = await runCoverageRounds(f.options);
+  expect(out.manifest.coverageRun?.rounds).toHaveLength(2);
+  expect(
+    out.manifest.coverageRun?.rounds[1]?.coverage?.frontend.lines.pct,
+  ).toBe(90);
+  expect(out.manifest.coverageRun?.stopReason).toBe("round-limit");
+  expect(
+    f.bundles.map((bundle) => (bundle.evidence as any).coverageTargetReached),
+  ).toEqual([false, true]);
+  expect(
+    f.bundles.map((bundle) => (bundle.evidence as any).stopAtTarget),
+  ).toEqual([false, false]);
+});
+
+it("analyzes an initially reached threshold when continuation is requested", async () => {
+  const f = await fixture([90]);
+  continueAfterTarget(f, 1);
+  f.options.evidence.head.coverage = coverage(85);
+  const out = await runCoverageRounds(f.options);
+  expect(f.calls).toBe(2);
+  expect(out.manifest.status).toBe("candidate");
+  expect((f.bundles[0]!.evidence as any).coverageTargetReached).toBe(true);
+});
+
+it.each(["failed", "missing"])(
+  "keeps initially reached but %s required evidence fail-closed in continuation mode",
+  async (failure) => {
+    const f = await fixture([90]);
+    continueAfterTarget(f);
+    f.options.evidence.head.coverage = coverage(85);
+    if (failure === "failed")
+      f.options.evidence.head.checks[0]!.status = "failed";
+    else f.options.evidence.head.checks.pop();
+    const out = await runCoverageRounds(f.options);
+    expect(f.calls).toBe(0);
+    expect(out.manifest.coverageRun?.stopReason).toBe("incomplete");
+  },
+);
+
+it("revisits selected and validated source units after measured gaps empty without inventing reported gaps", async () => {
+  const f = await fixture([85, 90]);
+  continueAfterTarget(f, 2);
+  f.options.evidence.head.coverage.gaps = ["frontend/src/router.ts:1"];
+  f.options.source.files.find(
+    (file) => file.path === "frontend/src/router.ts",
+  )!.content = "import { value } from './utils/u5'; export { value };";
+  const adapter = f.options.adapters.get("fixture")!,
+    run = adapter.run;
+  let analysts = 0;
+  adapter.run = async (request, signal) => {
+    const native = await run(request, signal);
+    if (request.role === "analyst" && ++analysts === 1) {
+      const plan = native.result as ReturnType<typeof makePlan>;
+      plan.cases[0]!.sourceLocation = "frontend/src/utils/u5.ts:1";
+    }
+    return native;
+  };
+  const verify = f.options.verify;
+  f.options.verify = async (...args) => {
+    const result = await verify(...args);
+    result.candidateCoverage.gaps = [];
+    return result;
+  };
+  const out = await runCoverageRounds(f.options);
+  expect(out.manifest.coverageRun?.rounds[1]?.units).toEqual([
+    "frontend/src/utils/u5.ts",
+    "frontend/src/router.ts",
+  ]);
+  const next = f.bundles[1]!;
+  expect((next.evidence as any).head.coverage.gaps).toEqual([]);
+  expect(next.files.map((file) => file.path)).toContain(
+    "frontend/src/router.ts",
+  );
+  expect(next.files.map((file) => file.path)).toContain(
+    "frontend/src/utils/u5.ts",
+  );
+  expect(next.files.map((file) => file.path)).not.toContain(
+    "frontend/src/utils/u4.ts",
+  );
+});
+
+it("retains distinct accepted assertion batches past the no-progress threshold without coverage growth", async () => {
+  const f = await fixture([85]);
+  continueAfterTarget(f, 4);
+  f.options.evidence.head.coverage = coverage(85);
+  const out = await runCoverageRounds(f.options);
+  expect(out.manifest.coverageRun?.rounds).toHaveLength(4);
+  expect(
+    out.manifest.coverageRun?.rounds.every(
+      (round) => round.status === "accepted",
+    ),
+  ).toBe(true);
+  expect(out.manifest.coverageRun?.stopReason).toBe("round-limit");
+  expect(out.manifest.calls).toHaveLength(8);
+  expect(out.patchText).toContain("assertion round 4");
+});
+
+it.each(["rejected", "inconclusive", "no-change"] as const)(
+  "still bounds consecutive %s batches after the threshold",
+  async (status) => {
+    const f = await fixture([90]);
+    continueAfterTarget(f, 8);
+    f.options.evidence.head.coverage = coverage(85);
+    if (status === "rejected") {
+      const verify = f.options.verify;
+      f.options.verify = async (...args) => {
+        const result = await verify(...args);
+        result.checks[0]!.status = "failed";
+        return result;
+      };
+    } else {
+      const adapter = f.options.adapters.get("fixture")!,
+        run = adapter.run;
+      adapter.run = async (request, signal) => {
+        const native = await run(request, signal);
+        return request.role === "analyst"
+          ? {
+              ...native,
+              result: {
+                decision: status,
+                reason: "No admitted useful case",
+                cases: [],
+                paths: [],
+                remainingGaps: [],
+              },
+            }
+          : native;
+      };
+    }
+    const out = await runCoverageRounds(f.options);
+    expect(out.manifest.coverageRun?.rounds).toHaveLength(2);
+    expect(
+      out.manifest.coverageRun?.rounds.every(
+        (round) => round.status === status,
+      ),
+    ).toBe(true);
+    expect(out.manifest.coverageRun?.stopReason).toBe("no-progress");
+    expect(out.patchText).toBeNull();
+  },
+);

@@ -92,7 +92,10 @@ export function decide(
       if (
         !r ||
         r.result.status !== "passed" ||
-        r.result.findings.some((f) => f.severity === "material")
+        r.result.findings.some(
+          (f) =>
+            f.severity === "material" || f.kind === "oracle-counterexample",
+        )
       )
         return "inconclusive";
     }
@@ -126,9 +129,10 @@ export function renderReport(input: {
     "/actions/runs/" +
     c.context.executionRunId;
   if (input.runUrl !== url) throw new Error("untrusted run URL");
-  const target = input.policy
-    ? coveragePolicy(input.policy).target
-    : defaultCoveragePolicy.target;
+  const coverage = input.policy
+    ? coveragePolicy(input.policy)
+    : defaultCoveragePolicy;
+  const target = coverage.target;
   const reached = Boolean(
     v &&
     input.policy &&
@@ -180,13 +184,16 @@ export function renderReport(input: {
   if (c.context.task === "coverage-gap") {
     rows.push(
       "",
-      "Global coverage run goal: " +
+      "Coverage milestone: " +
         (reached ? "reached" : "partial") +
         ". Each app requires lines >= " +
         target.lines +
         "% and branches >= " +
         target.branches +
-        "%; only the final verifier establishes completion.",
+        "%; only the final verifier establishes measured attainment.",
+      coverage.stopAtTarget
+        ? "Coverage stopping policy: stop at the coverage milestone."
+        : "Coverage stopping policy: bounded continuation after the coverage milestone; useful justified tests may continue within round, no-progress, call, budget and deadline limits.",
     );
     if (c.coverageRun) {
       rows.push(
@@ -296,6 +303,16 @@ export function renderReport(input: {
     "",
     "Review: " + (r ? r.result.status : "skipped/disabled or unavailable"),
   );
+  if (
+    input.policy?.review.enabled &&
+    input.policy.review.gate === "required" &&
+    r?.result.findings.some(
+      (finding) => finding.kind === "oracle-counterexample",
+    )
+  )
+    rows.push(
+      "Required review gate: oracle-counterexample findings block acceptance regardless of severity; unconfirmed reviewer claims require resolution.",
+    );
   if (r)
     for (const f of r.result.findings)
       rows.push(
