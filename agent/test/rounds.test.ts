@@ -1,4 +1,5 @@
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
+import * as reviewModule from "../src/review.js";
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -803,5 +804,62 @@ it.each(["rejected", "inconclusive", "no-change"] as const)(
     ).toBe(true);
     expect(out.manifest.coverageRun?.stopReason).toBe("no-progress");
     expect(out.patchText).toBeNull();
+  },
+);
+
+it("retains the last reviewable candidate and stops when a new batch exceeds required review capacity", async () => {
+  const f = await fixture([65, 82]);
+  f.options.policy.review = { enabled: true, gate: "required" };
+  const prepare = reviewModule.buildReviewInput;
+  let attempts = 0;
+  const guard = vi
+    .spyOn(reviewModule, "buildReviewInput")
+    .mockImplementation((...args) => {
+      if (++attempts === 2)
+        throw new reviewModule.ReviewContextLimitError(524289);
+      return prepare(...args);
+    });
+  try {
+    const out = await runCoverageRounds(f.options);
+    expect(guard).toHaveBeenCalledTimes(2);
+    expect(guard.mock.calls[1]![2].patch).toContain("assertion round 2");
+    expect(guard.mock.calls[1]![0].plan!.cases.map((c) => c.id)).toEqual([
+      "round-1:case-1",
+      "round-2:case-1",
+    ]);
+    expect(guard.mock.calls[1]![1].candidateCoverage.frontend.lines.pct).toBe(
+      82,
+    );
+    expect(out.manifest.coverageRun?.stopReason).toBe("context-limit");
+    expect(out.manifest.reason).toContain("review context bounds");
+    expect(out.manifest.calls).toHaveLength(4);
+    expect(out.manifest.coverageRun?.rounds.map((r) => r.status)).toEqual([
+      "accepted",
+      "rejected",
+    ]);
+    expect(out.manifest.coverageRun?.rounds[1]?.reason).toContain(
+      "524289 bytes exceeds 524288 bytes",
+    );
+    expect(out.manifest.files).toEqual(["frontend/src/router1.test.ts"]);
+    expect(out.patchText).toContain("assertion round 1");
+    expect(out.patchText).not.toContain("assertion round 2");
+  } finally {
+    guard.mockRestore();
+  }
+});
+
+it.each([false, true])(
+  "does not make advisory or disabled review a required admission gate (enabled: %s)",
+  async (enabled) => {
+    const f = await fixture();
+    f.options.policy.review = { enabled, gate: "advisory" };
+    const guard = vi.spyOn(reviewModule, "buildReviewInput");
+    try {
+      const out = await runCoverageRounds(f.options);
+      expect(out.manifest.coverageRun?.stopReason).toBe("target-reached");
+      expect(guard).not.toHaveBeenCalled();
+    } finally {
+      guard.mockRestore();
+    }
   },
 );

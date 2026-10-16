@@ -1,0 +1,20 @@
+{
+  "sourceRunId": "38832961036",
+  "sourceControlSha": "1dc3bb796225d9ae22a3b54cafd0593254d8d81a",
+  "inputBytes": 219683,
+  "oldLimitBytes": 204800,
+  "newReviewLimitBytes": 524288,
+  "completeInputUnchanged": true,
+  "inputSha256": "c07924dcb7a2bd9eb35aebea4a7ca0960510274c6da54dbc2c0af7f8c703015a",
+  "expectedInputSha256": "c07924dcb7a2bd9eb35aebea4a7ca0960510274c6da54dbc2c0af7f8c703015a",
+  "originalFiles": 57,
+  "planCases": 40,
+  "patchBytes": 72078,
+  "mockReviewerDispatches": 1,
+  "requestedModel": "claude-opus-5-5",
+  "originalCalls": 16,
+  "reviewerAdmissionReserved": true,
+  "realNativeCalls": 0,
+  "additionalProviderTokens": 0,
+  "scope": "Offline adapter/sizing replay only. Historical failed run remains unchanged; no live Opus review or quality acceptance is claimed."
+}

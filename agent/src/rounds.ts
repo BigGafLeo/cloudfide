@@ -33,6 +33,11 @@ import type { CollectedEvidence } from "./precollect.js";
 import { decide } from "./report.js";
 import { verifyCandidate } from "./verify.js";
 import { sourcePath } from "./value-plan.js";
+import {
+  buildReviewInput,
+  ReviewContextLimitError,
+  selectReviewFiles,
+} from "./review.js";
 
 export interface CoverageRoundsOptions {
   context: RunContext;
@@ -375,6 +380,14 @@ export async function runCoverageRounds(
             "payload-limit",
             "trial payload exceeds reserved artifact capacity",
           );
+        if (policy.review.enabled && policy.review.gate === "required") {
+          buildReviewInput(manifest, verification, {
+            patch: patchText,
+            files: selectReviewFiles(source.files, trialPlan, [
+              ...trialContents.values(),
+            ]),
+          });
+        }
         accepted = trial;
         progressed =
           increased ||
@@ -397,6 +410,10 @@ export async function runCoverageRounds(
           ? "verified coverage increased"
           : "distinct batch passed mechanical checks; no coverage increase";
       } catch (error) {
+        if (error instanceof ReviewContextLimitError) {
+          batchStop = "context-limit";
+          hostFailureReason = error.message.slice(0, 1024);
+        }
         if (
           (error instanceof HostStopError && error.code === "payload-limit") ||
           payloadBytes(snapshot()) > limits.payload - limits.output
@@ -421,7 +438,7 @@ export async function runCoverageRounds(
     noProgress = progressed ? 0 : noProgress + 1;
     if (result.hostStop || batchStop) {
       stopReason = result.hostStop ?? batchStop!;
-      hostFailureReason = result.hostStop ? result.reason.slice(0, 1024) : "";
+      if (result.hostStop) hostFailureReason = result.reason.slice(0, 1024);
       break;
     }
     const interruptedAfter = await interruption();

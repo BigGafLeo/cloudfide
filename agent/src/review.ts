@@ -15,6 +15,50 @@ import {
   type TestPlan,
 } from "./contracts.js";
 import type { Policy } from "./config.js";
+export class ReviewContextLimitError extends Error {
+  constructor(bytes: number) {
+    super(
+      "review context bounds: " +
+        bytes +
+        " bytes exceeds " +
+        limits.reviewBundle +
+        " bytes",
+    );
+  }
+}
+
+/** Preserve complete review evidence and share the byte guard with round admission. */
+export function buildReviewInput(
+  candidate: CandidateManifest,
+  verification: VerificationManifest,
+  source: { patch: string; files: FileData[] },
+) {
+  const input = {
+    context: candidate.context,
+    plan: candidate.plan,
+    patch: source.patch,
+    files: source.files,
+    checks: verification.checks,
+    coverage: verification.candidateCoverage,
+    facts: verification.facts,
+    comparedTestOrigins: [
+      ...new Set(
+        candidate.plan!.cases.flatMap((c) =>
+          c.value.existingTests.map((t) => t.path),
+        ),
+      ),
+    ].map((path) => ({
+      path,
+      origin: source.files.some((f) => f.path === path)
+        ? "original snapshot"
+        : "candidate patch; absent from original snapshot",
+    })),
+  };
+  const bytes = Buffer.byteLength(JSON.stringify(input));
+  if (bytes > limits.reviewBundle) throw new ReviewContextLimitError(bytes);
+  return input;
+}
+
 export async function runReview(
   candidate: CandidateManifest,
   verification: VerificationManifest,
@@ -48,29 +92,7 @@ export async function runReview(
     )
   )
     return null;
-  const input = {
-    context: candidate.context,
-    plan: candidate.plan,
-    patch: source.patch,
-    files: source.files,
-    checks: verification.checks,
-    coverage: verification.candidateCoverage,
-    facts: verification.facts,
-    comparedTestOrigins: [
-      ...new Set(
-        candidate.plan!.cases.flatMap((c) =>
-          c.value.existingTests.map((t) => t.path),
-        ),
-      ),
-    ].map((path) => ({
-      path,
-      origin: source.files.some((f) => f.path === path)
-        ? "original snapshot"
-        : "candidate patch; absent from original snapshot",
-    })),
-  };
-  if (Buffer.byteLength(JSON.stringify(input)) > limits.bundle)
-    throw new Error("review context bounds");
+  const input = buildReviewInput(candidate, verification, source);
   const budget = new Budget(
     policy,
     Date.parse(candidate.context.deadline),

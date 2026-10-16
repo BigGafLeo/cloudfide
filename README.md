@@ -143,6 +143,8 @@ Each planned case must explain its additional protection: add or strengthen, tar
 
 A fresh required reviewer compares original source/tests with the exact cumulative patch and execution evidence. Missing assertions, duplicate protection, implementation-shaped oracles and unjustified setup can block acceptance even at high coverage. Useful work may finish with an explicit partial result. Review failures remain inconclusive. Required review also blocks any oracle-counterexample finding labelled minor: a claimed regression still passing cannot be waived by its severity label. Unclaimed optional gaps and ordinary minor setup issues remain distinct. There is no automatic review-repair loop. See [test-value policy](docs/test-value-policy.md).
 
+Final reviewer input has a separate 512 KiB serialized-evidence limit; individual analysis bundles remain capped at 200 KiB. It retains the complete cumulative plan, exact patch, original tests and selected source. When review is required, each mechanically passing coverage batch must also fit this review package before promotion. An oversized batch stops with context-limit and preserves the previous reviewable candidate and all call records. These are host byte limits, not provider token windows or subscription-spend caps.
+
 ### Where a normal PR runs
 
 After deployment to the default branch, an opened or updated PR runs the ordinary CI workflow. Its completion triggers the Unit-test agent workflow through workflow_run. An operator can also select an open PR through workflow_dispatch for coverage-gap analysis.

@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
-import { runReview } from "../src/review.js";
+import { runReview, buildReviewInput } from "../src/review.js";
+import { limits } from "../src/contracts.js";
 import {
   makeCandidate,
   makeVerification,
@@ -248,4 +249,100 @@ it("keeps helper evidence imported only by an original test as well as new impor
       "frontend/src/test/newAssert.ts",
     ]),
   );
+});
+
+it("reviews a cumulative package above the per-round bundle limit without removing evidence", async () => {
+  const c = makeCandidate(),
+    v = makeVerification(c),
+    p = activePolicy();
+  p.review = { enabled: true, gate: "required" };
+  const source = {
+    patch: "exact cumulative patch\n" + "x".repeat(220 * 1024),
+    files: [
+      {
+        path: c.files[0]!,
+        content: "original test with its original assertions",
+      },
+    ],
+  };
+  let captured: any;
+  const adapter = {
+    id: "fixture",
+    assertCapabilities: async () => {},
+    run: async (request: any) => {
+      captured = JSON.parse(
+        request.prompt.slice(request.prompt.lastIndexOf("\n") + 1),
+      );
+      return {
+        ...completedNative(),
+        result: { status: "passed", reason: "fixture review", findings: [] },
+      };
+    },
+  };
+  const reviewed = await runReview(
+    c,
+    v,
+    p,
+    new Map([["fixture", adapter]]),
+    async () => true,
+    new AbortController().signal,
+    source,
+  );
+  expect(Buffer.byteLength(JSON.stringify(captured))).toBeGreaterThan(
+    limits.bundle,
+  );
+  expect(captured.patch).toBe(source.patch);
+  expect(captured.files).toEqual(source.files);
+  expect(captured.plan).toEqual(c.plan);
+  expect(captured.checks).toEqual(v.checks);
+  expect(reviewed?.call.status).toBe("completed");
+  expect(reviewed?.result.status).toBe("passed");
+});
+
+it("counts UTF-8 bytes and refuses an oversized review before any provider access", async () => {
+  const c = makeCandidate(),
+    v = makeVerification(c),
+    p = activePolicy();
+  p.review = { enabled: true, gate: "required" };
+  const patch = "ż".repeat(300 * 1024);
+  let capabilities = 0,
+    calls = 0;
+  const adapter = {
+    id: "fixture",
+    assertCapabilities: async () => {
+      capabilities++;
+    },
+    run: async () => {
+      calls++;
+      return completedNative();
+    },
+  };
+  expect(patch.length).toBeLessThan(limits.reviewBundle);
+  await expect(
+    runReview(
+      c,
+      v,
+      p,
+      new Map([["fixture", adapter]]),
+      async () => true,
+      new AbortController().signal,
+      { patch, files: [] },
+    ),
+  ).rejects.toThrow(/review context bounds:.*bytes.*524288/);
+  expect(capabilities).toBe(0);
+  expect(calls).toBe(0);
+});
+
+it("accepts the exact review byte limit and rejects one additional byte", () => {
+  const c = makeCandidate(),
+    v = makeVerification(c);
+  const base = buildReviewInput(c, v, { patch: "", files: [] });
+  const patch = "x".repeat(
+    limits.reviewBundle - Buffer.byteLength(JSON.stringify(base)),
+  );
+  const atLimit = buildReviewInput(c, v, { patch, files: [] });
+  expect(Buffer.byteLength(JSON.stringify(atLimit))).toBe(limits.reviewBundle);
+  expect(() =>
+    buildReviewInput(c, v, { patch: patch + "x", files: [] }),
+  ).toThrow(/review context bounds/);
 });
