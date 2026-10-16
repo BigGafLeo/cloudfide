@@ -8,6 +8,10 @@ const fields = {
   completed: z.boolean(),
 };
 
+export const listQuerySchema = z.object({
+  priority: fields.priority.optional(),
+});
+
 export const createSchema = z.strictObject({
   ...fields,
   description: fields.description.default(''),
