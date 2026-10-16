@@ -1,5 +1,5 @@
 {
-  "trustedAuthors": ["BigGafLeo"],
+  "trustedAuthors": [],
   "roles": {
     "analyst": {
       "provider": "claude",

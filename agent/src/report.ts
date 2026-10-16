@@ -161,6 +161,7 @@ export function renderReport(input: {
     "Control revision: " + c.context.controlSha,
     "[Run and artifacts](" + url + ")",
     "",
+    "Proposal notes (before host verification):",
     plain(
       c.reason ??
         c.plan?.reason ??
@@ -296,7 +297,7 @@ export function renderReport(input: {
         v.coverageComparison.status +
         " — " +
         plain(v.coverageComparison.reason),
-      "100% objective met: " +
+      "All measured metrics at 100%: " +
         v.coverageComparison.objectiveMet +
         ". This is measured coverage, not proof of semantic completeness.",
     );

@@ -1,0 +1,150 @@
+{
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 11,
+    "executionRunId": "38898669374",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "workflow-run",
+      "workflowId": 385500607,
+      "runId": "38893471385",
+      "attempt": 3
+    },
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "headSha": "d2c986c147c6093fe01924c9ac9c6c3e3ac01043",
+    "controlSha": "590ee046935727ed9bbd7a520caf85c641f2b875",
+    "task": "pr-change",
+    "deadline": "2026-10-16T16:10:19.000Z"
+  },
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "0c417fa0deb22dc164658a8d9b30be384c2f9194e0eafc908efc6f297d173a61",
+    "bytes": 3122
+  },
+  "files": [
+    "backend/tests/repository.test.ts",
+    "backend/tests/router.test.ts"
+  ],
+  "plan": {
+    "decision": "write",
+    "reason": "The PR adds a priority filter to the list endpoint. The repository `where` branch (repository.ts:9) and the router 422 branch (router.ts:15) are uncovered, and no test checks that a parsed priority reaches the repository or that an invalid one is rejected. Backend-only cases are planned; the remaining gaps are listed separately.",
+    "cases": [
+      {
+        "id": "repo-list-priority-where",
+        "sourceLocation": "backend/src/features/todos/repository.ts:9",
+        "behavior": "list({priority}) restricts the Prisma query to that priority and keeps newest-first ordering; list() and list({}) add no where clause.",
+        "requirementSource": "openapi.json GET /api/todos 'priority' query parameter ('Filter tasks by priority.'); TodoStore.list(query?: TodoListQuery) in types.ts",
+        "inputs": "repository.list({ priority: 'low' }) with findMany mocked to return [record]; then repository.list({}) in the same test.",
+        "expected": "First findMany call receives { where: { priority: 'low' }, orderBy: [{ created_at: 'desc' }, { id: 'desc' }] }. Second call has no 'where' key. Result is mapped via fromModel.",
+        "assertion": "expect(findMany).toHaveBeenNthCalledWith(1, { where: { priority: 'low' }, orderBy: [...] }); expect(findMany.mock.calls[1][0]).not.toHaveProperty('where'); expect(result).toEqual([todo]).",
+        "mockBoundary": "vi.spyOn on the real Prisma delegate's findMany, as in the existing tests; no database.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/repository.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/repository.test.ts",
+              "name": "lists tasks in newest-first order and maps database rows"
+            }
+          ],
+          "regression": "The filter is dropped, so every task is returned. Or the filter is applied to the wrong column. Or the empty query adds where: { priority: undefined } instead of omitting it.",
+          "rationale": "The existing test calls list() only, so the new where branch is untested. The filter is the PR's main behavior and needs one cheap spy-based case."
+        }
+      },
+      {
+        "id": "router-list-forwards-priority",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "GET /api/todos?priority=high parses the query and passes { priority: 'high' } to repository.list.",
+        "requirementSource": "openapi.json GET /api/todos 'priority' query parameter with enum low|medium|high",
+        "inputs": "GET /api/todos?priority=high",
+        "expected": "Status 200, body [todo], repository.list called once with { priority: 'high' }.",
+        "assertion": "expect(response.status).toBe(200); expect(repository.list).toHaveBeenCalledWith({ priority: 'high' }); expect(response.body).toEqual([todo]).",
+        "mockBoundary": "Fake TodoStore passed to createTodosRouter; supertest over an in-memory express app.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "The router ignores req.query and calls repository.list() with no filter, so clients always get every task.",
+          "rationale": "The existing test only checks list was called once and cannot tell whether a priority was forwarded. The case reuses the existing setup."
+        }
+      },
+      {
+        "id": "router-list-rejects-invalid-priority",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "An out-of-enum priority query returns 422 with validation issues and never reaches the repository.",
+        "requirementSource": "openapi.json GET /api/todos response '422' (Invalid input) and the priority enum",
+        "inputs": "GET /api/todos?priority=urgent",
+        "expected": "Status 422; body.detail is a non-empty array; repository.list is not called.",
+        "assertion": "expect(response.status).toBe(422); expect(Array.isArray(response.body.detail)).toBe(true); expect(response.body.detail.length).toBeGreaterThan(0); expect(repository.list).not.toHaveBeenCalled().",
+        "mockBoundary": "Fake TodoStore and supertest, as in the existing router tests.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "rejects invalid patch body without updating: %j"
+            }
+          ],
+          "regression": "An invalid priority is silently ignored or passed through to the repository, giving a 200 or a Prisma error instead of the documented 422.",
+          "rationale": "router.ts:15 is an uncovered branch and the documented 422 response is new in this PR. The test follows the existing invalid-input pattern at low cost."
+        }
+      },
+      {
+        "id": "router-list-no-query-forwards-empty",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "With no priority, and with unrelated query keys, the router passes an object with no priority key to repository.list.",
+        "requirementSource": "listQuerySchema in validators.ts makes priority optional; z.object strips unknown keys (characterization of the zod default, not a documented guarantee)",
+        "inputs": "GET /api/todos?unrelated=1",
+        "expected": "Status 200; repository.list called with {}.",
+        "assertion": "expect(repository.list).toHaveBeenCalledWith({}) — a priority key with value undefined is not distinguishable by toHaveBeenCalledWith, so the case also checks Object.keys(repository.list.mock.calls[0][0]) is empty.",
+        "mockBoundary": "Fake TodoStore and supertest.",
+        "confidence": "characterization",
+        "value": {
+          "action": "strengthen",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "Raw req.query is forwarded, so unrelated parameters leak to the repository. Or an unfiltered request becomes a filter with an invalid value.",
+          "rationale": "The existing assertion, calledOnce, ignores the argument. Adding the argument check to the existing scenario costs one line."
+        }
+      }
+    ],
+    "paths": [
+      "backend/tests/repository.test.ts",
+      "backend/tests/router.test.ts"
+    ],
+    "remainingGaps": [
+      "No test checks the openapi.json priority parameter or 422 response. factory.test.ts stubs the spec, so asserting document content there would need a real-file read and is not planned.",
+      "Repeated priority parameters (?priority=a&priority=b) produce an array under Express query parsing; the intended behavior is not specified, so no case is planned.",
+      "Frontend does not use the priority filter yet; no frontend cases are justified by this PR.",
+      "Pre-existing uncovered locations outside this PR (backend/src/main.ts, factory.ts:20, frontend AppProviders and others) were not analyzed."
+    ]
+  },
+  "skillsUsed": [
+    "analyze-unit-gaps",
+    "analyze-unit-gaps/references/backend.md",
+    "analyze-unit-gaps/references/frontend.md",
+    "write-unit-tests",
+    "write-unit-tests/references/backend.md",
+    "write-unit-tests/references/frontend.md"
+  ],
+  "patchText": "diff --git a/backend/tests/repository.test.ts b/backend/tests/repository.test.ts\nindex 362f57f..e3b818f 100644\n--- a/backend/tests/repository.test.ts\n+++ b/backend/tests/repository.test.ts\n@@ -17,6 +17,18 @@ it('lists tasks in newest-first order and maps database rows', async () => {\n   expect(await repository.list()).toEqual([todo]);\n   expect(findMany).toHaveBeenCalledWith({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] });\n });\n+it('filters by priority while keeping newest-first order, and adds no filter without a priority', async () => {\n+  const { database, repository } = setup();\n+  const findMany = vi.spyOn(database.todo, 'findMany').mockResolvedValue([record]);\n+  expect(await repository.list({ priority: 'low' })).toEqual([todo]);\n+  expect(findMany).toHaveBeenNthCalledWith(1, {\n+    where: { priority: 'low' },\n+    orderBy: [{ created_at: 'desc' }, { id: 'desc' }],\n+  });\n+  expect(await repository.list({})).toEqual([todo]);\n+  expect(findMany.mock.calls[1][0]).not.toHaveProperty('where');\n+  expect(findMany.mock.calls[1][0]).toEqual({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] });\n+});\n it('gets a task by ID and handles missing tasks', async () => {\n   const { database, repository } = setup();\n   const findUnique = vi.spyOn(database.todo, 'findUnique').mockResolvedValueOnce(record).mockResolvedValueOnce(null);\ndiff --git a/backend/tests/router.test.ts b/backend/tests/router.test.ts\nindex 4f3ada2..b62d174 100644\n--- a/backend/tests/router.test.ts\n+++ b/backend/tests/router.test.ts\n@@ -17,6 +17,31 @@ it('lists tasks from the repository', async () => {\n   expect(response.status).toBe(200);\n   expect(response.body).toEqual([todo]);\n   expect(repository.list).toHaveBeenCalledOnce();\n+  expect(repository.list).toHaveBeenCalledWith({});\n+  expect(Object.keys(repository.list.mock.calls[0][0])).toEqual([]);\n+});\n+it('does not forward unrelated query parameters to the repository', async () => {\n+  const { app, repository } = setup();\n+  const response = await request(app).get('/api/todos?unrelated=1');\n+  expect(response.status).toBe(200);\n+  expect(repository.list).toHaveBeenCalledOnce();\n+  expect(Object.keys(repository.list.mock.calls[0][0])).toEqual([]);\n+});\n+it('forwards a valid priority query to the repository', async () => {\n+  const { app, repository } = setup();\n+  const response = await request(app).get('/api/todos?priority=high');\n+  expect(response.status).toBe(200);\n+  expect(response.body).toEqual([todo]);\n+  expect(repository.list).toHaveBeenCalledOnce();\n+  expect(repository.list).toHaveBeenCalledWith({ priority: 'high' });\n+});\n+it('rejects an invalid priority query without calling the repository', async () => {\n+  const { app, repository } = setup();\n+  const response = await request(app).get('/api/todos?priority=urgent');\n+  expect(response.status).toBe(422);\n+  expect(Array.isArray(response.body.detail)).toBe(true);\n+  expect(response.body.detail.length).toBeGreaterThan(0);\n+  expect(repository.list).not.toHaveBeenCalled();\n });\n it('creates tasks with trimmed input and defaults', async () => {\n   const { app, repository } = setup();\n"
+}

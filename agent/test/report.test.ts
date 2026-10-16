@@ -70,7 +70,10 @@ it("rejects stale review and escapes untrusted report instructions/images", () =
   });
   expect(report).not.toContain("<img");
   expect(report).not.toContain("@everyone");
-  expect(report).toContain("objective");
+  expect(report).toContain("All measured metrics at 100%:");
+  expect(report).toContain(
+    "Proposal notes (before host verification):\n&lt;img",
+  );
   expect(report).toContain(c.context.headSha);
 });
 
@@ -299,7 +302,7 @@ it.each([
     expect(report).toContain("Coverage milestone: reached");
     expect(report).toContain("lines >= 80% and branches >= 80%");
     expect(report).toContain("Coverage stopping policy: " + expectedPolicy);
-    expect(report).toContain("100% objective met: false");
+    expect(report).toContain("All measured metrics at 100%: false");
     expect(report).toContain("not proof of semantic completeness");
     if (!stopAtTarget)
       expect(report).toMatch(/round.*no-progress.*call.*budget.*deadline/);
