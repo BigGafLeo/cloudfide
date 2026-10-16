@@ -17,6 +17,18 @@ it('lists tasks in newest-first order and maps database rows', async () => {
   expect(await repository.list()).toEqual([todo]);
   expect(findMany).toHaveBeenCalledWith({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] });
 });
+it('filters by priority while keeping newest-first order, and adds no filter without a priority', async () => {
+  const { database, repository } = setup();
+  const findMany = vi.spyOn(database.todo, 'findMany').mockResolvedValue([record]);
+  expect(await repository.list({ priority: 'low' })).toEqual([todo]);
+  expect(findMany).toHaveBeenNthCalledWith(1, {
+    where: { priority: 'low' },
+    orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+  });
+  expect(await repository.list({})).toEqual([todo]);
+  expect(findMany.mock.calls[1][0]).not.toHaveProperty('where');
+  expect(findMany.mock.calls[1][0]).toEqual({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] });
+});
 it('gets a task by ID and handles missing tasks', async () => {
   const { database, repository } = setup();
   const findUnique = vi.spyOn(database.todo, 'findUnique').mockResolvedValueOnce(record).mockResolvedValueOnce(null);

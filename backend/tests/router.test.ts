@@ -17,7 +17,42 @@ it('lists tasks from the repository', async () => {
   expect(response.status).toBe(200);
   expect(response.body).toEqual([todo]);
   expect(repository.list).toHaveBeenCalledOnce();
+  expect(repository.list).toHaveBeenCalledWith({});
+  expect(Object.keys(repository.list.mock.calls[0][0])).toEqual([]);
 });
+it('does not forward unrelated query parameters to the repository', async () => {
+  const { app, repository } = setup();
+  const response = await request(app).get('/api/todos?unrelated=1');
+  expect(response.status).toBe(200);
+  expect(repository.list).toHaveBeenCalledOnce();
+  expect(Object.keys(repository.list.mock.calls[0][0])).toEqual([]);
+});
+it('forwards a valid priority query to the repository', async () => {
+  const { app, repository } = setup();
+  const response = await request(app).get('/api/todos?priority=high');
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual([todo]);
+  expect(repository.list).toHaveBeenCalledOnce();
+  expect(repository.list).toHaveBeenCalledWith({ priority: 'high' });
+});
+it('rejects an invalid priority query without calling the repository', async () => {
+  const { app, repository } = setup();
+  const response = await request(app).get('/api/todos?priority=urgent');
+  expect(response.status).toBe(422);
+  expect(Array.isArray(response.body.detail)).toBe(true);
+  expect(response.body.detail.length).toBeGreaterThan(0);
+  expect(repository.list).not.toHaveBeenCalled();
+});
+it.each(['priority=', 'priority=HIGH', 'priority=high&priority=low'])(
+  'rejects the near-miss priority query %s without calling the repository', async (query) => {
+    const { app, repository } = setup();
+    const response = await request(app).get(`/api/todos?${query}`);
+    expect(response.status).toBe(422);
+    expect(Array.isArray(response.body.detail)).toBe(true);
+    expect(response.body.detail.length).toBeGreaterThan(0);
+    expect(repository.list).not.toHaveBeenCalled();
+  },
+);
 it('creates tasks with trimmed input and defaults', async () => {
   const { app, repository } = setup();
   const response = await request(app).post('/api/todos').send({ title: '  Plan the sprint  ', priority: 'high' });

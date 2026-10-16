@@ -34,6 +34,22 @@
     },
     "/api/todos": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "priority",
+            "required": false,
+            "description": "Filter tasks by priority.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -47,6 +63,9 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Invalid input"
           }
         }
       },
