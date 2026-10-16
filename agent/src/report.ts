@@ -83,11 +83,9 @@ export function decide(
       )
     )
       return "inconclusive";
-    if (c.context.task === "coverage-gap") {
-      if (v.coverageComparison.status !== "comparable") return "inconclusive";
-      if (!coverageDoesNotRegress(v.originalCoverage, v.candidateCoverage))
-        return "failed";
-    }
+    if (v.coverageComparison.status !== "comparable") return "inconclusive";
+    if (!coverageDoesNotRegress(v.originalCoverage, v.candidateCoverage))
+      return "failed";
     if (policy.review.enabled && policy.review.gate === "required") {
       if (
         !r ||
@@ -136,7 +134,11 @@ export function renderReport(input: {
   const reached = Boolean(
     v &&
     input.policy &&
-    decide(c, v, r, input.policy) === "accepted" &&
+    // Measured coverage is independent of the required semantic-review decision.
+    decide(c, v, null, {
+      ...input.policy,
+      review: { enabled: false, gate: "advisory" },
+    }) === "accepted" &&
     v.coverageComparison.status === "comparable" &&
     coverageDoesNotRegress(v.originalCoverage, v.candidateCoverage) &&
     coverageGoalMet(v.candidateCoverage, target),

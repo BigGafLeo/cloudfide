@@ -1,3 +1,4 @@
+import { compareCoverage } from "../src/coverage.js";
 import { limits } from "../src/contracts.js";
 import type {
   RunContext,
@@ -79,6 +80,8 @@ export function makeCandidate(): CandidateManifest {
   };
 }
 export function makeVerification(c = makeCandidate()): VerificationManifest {
+  const originalCoverage = makeCoverage(),
+    candidateCoverage = makeCoverage();
   return {
     context: c.context,
     patchSha256: c.patch!.sha256,
@@ -94,14 +97,14 @@ export function makeVerification(c = makeCandidate()): VerificationManifest {
         logPath: "fixture.log",
       })),
     ),
-    originalCoverage: makeCoverage(),
-    candidateCoverage: makeCoverage(),
-    coverageComparison: {
-      status: "not-comparable",
-      reason: "fixture",
-      deltas: null,
-      objectiveMet: false,
-    },
+    originalCoverage,
+    candidateCoverage,
+    coverageComparison: compareCoverage(
+      originalCoverage,
+      candidateCoverage,
+      true,
+      "same head/config/runtime fixture",
+    ),
     facts: [],
   };
 }

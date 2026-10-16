@@ -137,6 +137,12 @@ it("refuses incomparable coverage-gap proposals and every metric regression", ()
   c.context.task = "coverage-gap";
   const v = makeVerification(c),
     p = activePolicy();
+  v.coverageComparison = compareCoverage(
+    v.originalCoverage,
+    v.candidateCoverage,
+    false,
+    "original evidence incomplete",
+  );
   expect(decide(c, v, null, p)).toBe("inconclusive");
   v.coverageComparison = compareCoverage(
     v.originalCoverage,
@@ -327,4 +333,122 @@ it("uses the compatible default stopping policy without claiming unverified cove
   expect(report).toContain(
     "Coverage stopping policy: stop at the coverage milestone",
   );
+});
+
+it.each([false, true])(
+  "reports verified coverage independently from an incomplete required review (manifest: %s)",
+  (hasReview) => {
+    const c = makeCandidate();
+    c.context.task = "coverage-gap";
+    const v = makeVerification(c),
+      p = activePolicy(),
+      r = hasReview ? makeReview(c) : null;
+    p.review = { enabled: true, gate: "required" };
+    if (r) r.result.status = "inconclusive";
+    for (const app of ["backend", "frontend"] as const)
+      for (const metric of [
+        "lines",
+        "branches",
+        "statements",
+        "functions",
+      ] as const) {
+        v.originalCoverage[app][metric] = { covered: 50, total: 100, pct: 50 };
+        v.candidateCoverage[app][metric] = { covered: 85, total: 100, pct: 85 };
+      }
+    v.coverageComparison = compareCoverage(
+      v.originalCoverage,
+      v.candidateCoverage,
+      true,
+      "same runtime",
+    );
+    const decision = decide(c, v, r, p);
+    expect(decision).toBe("inconclusive");
+    const report = renderReport({
+      candidate: c,
+      verification: v,
+      review: r,
+      decision,
+      policy: p,
+      runUrl: "https://github.com/owner/repo/actions/runs/123",
+    });
+    expect(report).toContain("proposal: inconclusive");
+    expect(report).toContain("Coverage milestone: reached");
+    expect(report).toContain("coverage run: reached");
+  },
+);
+
+it.each(
+  (["backend", "frontend"] as const).flatMap((app) =>
+    (["lines", "branches", "statements", "functions"] as const).map(
+      (metric) => ({
+        app,
+        metric,
+      }),
+    ),
+  ),
+)(
+  "rejects automatic pr-change $app/$metric coverage regression despite passed required review",
+  ({ app, metric }) => {
+    const c = makeCandidate();
+    c.context.trigger = {
+      kind: "workflow-run",
+      workflowId: 1,
+      runId: "456",
+      attempt: 1,
+    };
+    const v = makeVerification(c),
+      r = makeReview(c),
+      p = activePolicy(),
+      before = v.originalCoverage[app][metric];
+    p.review = { enabled: true, gate: "required" };
+    v.candidateCoverage[app][metric] = {
+      covered: before.covered - 1,
+      total: before.total,
+      pct: (100 * (before.covered - 1)) / before.total,
+    };
+    v.coverageComparison = compareCoverage(
+      v.originalCoverage,
+      v.candidateCoverage,
+      true,
+      "same head/config/runtime",
+    );
+    expect(decide(c, v, r, p)).toBe("failed");
+  },
+);
+
+it("keeps automatic pr-change proposals inconclusive with incomparable original evidence", () => {
+  const c = makeCandidate();
+  c.context.trigger = {
+    kind: "workflow-run",
+    workflowId: 1,
+    runId: "456",
+    attempt: 1,
+  };
+  const v = makeVerification(c),
+    r = makeReview(c),
+    p = activePolicy();
+  p.review = { enabled: true, gate: "required" };
+  v.coverageComparison = compareCoverage(
+    v.originalCoverage,
+    v.candidateCoverage,
+    false,
+    "original evidence incomplete",
+  );
+  expect(decide(c, v, r, p)).toBe("inconclusive");
+});
+
+it("accepts verified automatic pr-change proposals below the coverage target", () => {
+  const c = makeCandidate();
+  c.context.trigger = {
+    kind: "workflow-run",
+    workflowId: 1,
+    runId: "456",
+    attempt: 1,
+  };
+  const v = makeVerification(c),
+    r = makeReview(c),
+    p = activePolicy();
+  p.review = { enabled: true, gate: "required" };
+  // The fixture's unchanged 50% lines and 25% branches are below the 80% target.
+  expect(decide(c, v, r, p)).toBe("accepted");
 });
