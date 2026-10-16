@@ -1,0 +1,758 @@
+{
+  "applicationIdentity": {
+    "receivedCommit": "22be6e3bcf54fd012104fe233ef6652dd01941ff",
+    "sourceHead": "e14f788d1cba9bf7d065a05720af48dd43f35697",
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "sourceChange": "Priority-filter feature with its accepted native tests already applied; precollection197-test head"
+  },
+  "workflow": {
+    "status": "completed",
+    "conclusion": "success",
+    "createdAt": "2026-10-16T12:24:37Z",
+    "completedAt": "2026-10-16T12:33:23Z",
+    "elapsedSeconds": 526,
+    "jobs": [
+      {
+        "name": "resolve",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T12:24:40Z",
+        "completedAt": "2026-10-16T12:24:57Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819/job/116970605051"
+      },
+      {
+        "name": "precollect",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T12:24:59Z",
+        "completedAt": "2026-10-16T12:27:49Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819/job/116970732352"
+      },
+      {
+        "name": "agent",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T12:27:52Z",
+        "completedAt": "2026-10-16T12:29:13Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819/job/116971867701"
+      },
+      {
+        "name": "verifier",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T12:29:15Z",
+        "completedAt": "2026-10-16T12:32:10Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819/job/116972409243"
+      },
+      {
+        "name": "reviewer",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T12:32:12Z",
+        "completedAt": "2026-10-16T12:32:56Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819/job/116973594045"
+      },
+      {
+        "name": "publisher",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T12:32:58Z",
+        "completedAt": "2026-10-16T12:33:22Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819/job/116973893809"
+      }
+    ]
+  },
+  "reviewStage": null,
+  "materialization": {
+    "runId": "38900299819",
+    "headSha": "e14f788d1cba9bf7d065a05720af48dd43f35697",
+    "controlSha": "590ee046935727ed9bbd7a520caf85c641f2b875",
+    "patchSha256": "4762b71cd0814a57a5220dcd6dac14764842c385045fa7a07c41d3cd5e03b1b2",
+    "patchBytes": 1114,
+    "files": 1,
+    "newFiles": 0,
+    "modifiedFiles": 1,
+    "applicationPatchApplied": false,
+    "method": "Strict candidate schema/digest and host patch admission against exact captured Git blobs in guarded scratch; full proposed test contents retained."
+  },
+  "coverageMilestone": {
+    "target": {
+      "lines": 80,
+      "branches": 80
+    },
+    "firstAcceptedRound": null,
+    "finalMeasuredReached": true,
+    "proposalAccepted": true
+  },
+  "runId": "38900299819",
+  "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38900299819",
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 11,
+    "executionRunId": "38900299819",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "workflow-run",
+      "workflowId": 385500607,
+      "runId": "38900070621",
+      "attempt": 1
+    },
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "headSha": "e14f788d1cba9bf7d065a05720af48dd43f35697",
+    "controlSha": "590ee046935727ed9bbd7a520caf85c641f2b875",
+    "task": "pr-change",
+    "deadline": "2026-10-16T16:24:37.000Z"
+  },
+  "policy": {
+    "coverage": {
+      "stopAtTarget": false,
+      "target": {
+        "lines": 80,
+        "branches": 80
+      },
+      "maxRounds": 8,
+      "noProgressRounds": 3
+    },
+    "review": {
+      "enabled": true,
+      "gate": "required"
+    }
+  },
+  "validation": {
+    "strictSchemas": [
+      "precollect",
+      "agent",
+      "verifier",
+      "reviewer"
+    ],
+    "contextsMatch": true,
+    "patchDigestAndBytesMatch": true
+  },
+  "decision": "accepted",
+  "candidateStatus": "candidate",
+  "candidateReason": "Added one parameterised test to backend/tests/router.test.ts. It covers the near-miss priority queries (empty, wrong case, repeated), which the existing 'urgent' test can't distinguish from a loosened schema. All existing tests are kept unchanged. Nothing was executed.",
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "4762b71cd0814a57a5220dcd6dac14764842c385045fa7a07c41d3cd5e03b1b2",
+    "bytes": 1114
+  },
+  "files": [
+    "backend/tests/router.test.ts"
+  ],
+  "baselineTests": {
+    "backend": {
+      "total": 92,
+      "failed": 0,
+      "failures": []
+    },
+    "frontend": {
+      "total": 105,
+      "failed": 0,
+      "failures": []
+    }
+  },
+  "baselineCoverage": {
+    "frontend": {
+      "lines": {
+        "covered": 149,
+        "total": 151,
+        "pct": 98.67
+      },
+      "branches": {
+        "covered": 132,
+        "total": 137,
+        "pct": 96.35
+      },
+      "statements": {
+        "covered": 164,
+        "total": 168,
+        "pct": 97.61
+      },
+      "functions": {
+        "covered": 75,
+        "total": 77,
+        "pct": 97.4
+      }
+    },
+    "backend": {
+      "lines": {
+        "covered": 110,
+        "total": 113,
+        "pct": 97.34
+      },
+      "branches": {
+        "covered": 52,
+        "total": 53,
+        "pct": 98.11
+      },
+      "statements": {
+        "covered": 129,
+        "total": 133,
+        "pct": 96.99
+      },
+      "functions": {
+        "covered": 31,
+        "total": 32,
+        "pct": 96.87
+      }
+    },
+    "gaps": [
+      "frontend/src/app/AppProviders.tsx:14",
+      "frontend/src/app/AppProviders.tsx:9",
+      "frontend/src/features/todos/TodosPage.tsx:81",
+      "frontend/src/features/todos/TodosPage.tsx:18",
+      "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+      "frontend/src/features/todos/components/TodoEditor.tsx:24",
+      "frontend/src/features/todos/utils/todos.ts:48",
+      "backend/src/factory.ts:20",
+      "backend/src/main.ts:3",
+      "backend/src/main.ts:4",
+      "backend/src/main.ts:5"
+    ]
+  },
+  "candidateTests": {
+    "backend": {
+      "total": 95,
+      "failed": 0,
+      "failures": []
+    },
+    "frontend": {
+      "total": 105,
+      "failed": 0,
+      "failures": []
+    }
+  },
+  "candidateCoverage": {
+    "frontend": {
+      "lines": {
+        "covered": 149,
+        "total": 151,
+        "pct": 98.67
+      },
+      "branches": {
+        "covered": 132,
+        "total": 137,
+        "pct": 96.35
+      },
+      "statements": {
+        "covered": 164,
+        "total": 168,
+        "pct": 97.61
+      },
+      "functions": {
+        "covered": 75,
+        "total": 77,
+        "pct": 97.4
+      }
+    },
+    "backend": {
+      "lines": {
+        "covered": 110,
+        "total": 113,
+        "pct": 97.34
+      },
+      "branches": {
+        "covered": 52,
+        "total": 53,
+        "pct": 98.11
+      },
+      "statements": {
+        "covered": 129,
+        "total": 133,
+        "pct": 96.99
+      },
+      "functions": {
+        "covered": 31,
+        "total": 32,
+        "pct": 96.87
+      }
+    },
+    "gaps": [
+      "frontend/src/app/AppProviders.tsx:14",
+      "frontend/src/app/AppProviders.tsx:9",
+      "frontend/src/features/todos/TodosPage.tsx:81",
+      "frontend/src/features/todos/TodosPage.tsx:18",
+      "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+      "frontend/src/features/todos/components/TodoEditor.tsx:24",
+      "frontend/src/features/todos/utils/todos.ts:48",
+      "backend/src/factory.ts:20",
+      "backend/src/main.ts:3",
+      "backend/src/main.ts:4",
+      "backend/src/main.ts:5"
+    ]
+  },
+  "coverageComparison": {
+    "status": "comparable",
+    "reason": "same head/config/runtime",
+    "deltas": {
+      "frontend": {
+        "lines": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "branches": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "statements": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "functions": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "branches": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "statements": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "functions": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        }
+      }
+    },
+    "objectiveMet": false
+  },
+  "checks": [
+    {
+      "id": "backend:install",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/install.log"
+    },
+    {
+      "id": "backend:generate",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run db:generate",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/generate.log"
+    },
+    {
+      "id": "backend:typecheck",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/typecheck.log"
+    },
+    {
+      "id": "backend:unit",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/unit.log"
+    },
+    {
+      "id": "backend:coverage",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/coverage.log"
+    },
+    {
+      "id": "frontend:install",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/install.log"
+    },
+    {
+      "id": "frontend:typecheck",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/typecheck.log"
+    },
+    {
+      "id": "frontend:unit",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/unit.log"
+    },
+    {
+      "id": "frontend:coverage",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/coverage.log"
+    }
+  ],
+  "facts": [],
+  "plan": {
+    "decision": "write",
+    "reason": "The PR's priority filter is covered for valid, invalid ('urgent') and absent values. Near-miss values are not tested: an empty value, a wrong-case value and a repeated parameter. All three fall outside the documented enum. A looser schema would accept them and send an unintended filter to the repository, and the existing tests would not catch it.",
+    "cases": [
+      {
+        "id": "list-priority-near-miss-422",
+        "sourceLocation": "backend/src/features/todos/router.ts:13",
+        "behavior": "GET /api/todos rejects priority values outside the exact enum low|medium|high (empty, wrong case, repeated parameter) with 422 and never queries the repository.",
+        "requirementSource": "backend/openapi.json in the diff: the priority query parameter has enum [low, medium, high] and the route documents a 422 'Invalid input' response. The validators.ts priority enum is case-sensitive.",
+        "inputs": "GET /api/todos?priority= ; GET /api/todos?priority=HIGH ; GET /api/todos?priority=high&priority=low",
+        "expected": "Status 422 with a non-empty detail array, and repository.list is not called.",
+        "assertion": "it.each over the three query strings. Assert response.status is 422, Array.isArray(response.body.detail) is true with length > 0, and expect(repository.list).not.toHaveBeenCalled().",
+        "mockBoundary": "The repository is a vi.fn mock. Express and supertest are real. The zod schema is unmocked.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "rejects an invalid priority query without calling the repository"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "forwards a valid priority query to the repository"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "does not forward unrelated query parameters to the repository"
+            }
+          ],
+          "regression": "The query schema is loosened to z.string().optional(), or the empty string, a lowercased value or an array is coerced or ignored. The route then returns 200 and lists tasks with a wrong or missing filter. The existing 'urgent' test still passes.",
+          "rationale": "The existing invalid-input test only uses a clearly invalid string. The empty value, case sensitivity and repeated-parameter array are separate mistakes that 'urgent' cannot catch. Cost is one parameterised test using the existing setup."
+        }
+      }
+    ],
+    "paths": [
+      "backend/tests/router.test.ts"
+    ],
+    "remainingGaps": [
+      "backend/openapi.json is not supplied in full, so the OpenAPI document change (priority parameter, 422 response) cannot be asserted. factory.test.ts stubs the spec file.",
+      "Uncovered lines in factory.ts:20, main.ts and the frontend are outside this PR change and were not analysed.",
+      "The frontend has no priority-filter change in this PR."
+    ]
+  },
+  "review": {
+    "status": "passed",
+    "reason": "The added it.each case in backend/tests/router.test.ts runs the real router through Express and supertest. Only the repository is mocked, and the zod listQuerySchema is not. The expected 422 comes from the documented enum low|medium|high, not from copying source output: '' and 'HIGH' are not enum members, and a repeated scalar parameter parses to an array, which z.enum rejects. The router can only return 422 on GET / through the listQuerySchema.safeParse failure branch (router.ts:14-15), so the status reflects the intended branch rather than a setup failure. I checked the planned regressions against concrete mutants. Each would return 200 and call repository.list, so the assertions catch them while the existing 'urgent' test may still pass. The mutants were: loosening to z.string().optional(), lowercasing before the enum check (only 'urgent' still fails), taking the first array element, and treating '' as absent. Together they add distinct protection at the cost of one parameterised test that reuses the existing setup(). I found no material duplication, isolation problem or oracle counterexample.",
+    "findings": []
+  },
+  "confirmations": [],
+  "tokenAccounting": {
+    "source": "Official Claude Code final per-call usage fields retained in the run artifacts; aggregate usage counted once, not again via modelUsage or iterations.",
+    "definitions": {
+      "freshInputTokens": "raw.usage.input_tokens",
+      "cacheWriteInputTokens": "raw.usage.cache_creation_input_tokens",
+      "cacheReadInputTokens": "raw.usage.cache_read_input_tokens",
+      "inputTokensIncludingCache": "fresh + cache write + cache read; normalized usage.inputTokens",
+      "outputTokens": "raw.usage.output_tokens; includes thinking tokens when reported",
+      "inputAndOutputTokens": "input including cache + output; cumulative across calls, not unique context tokens",
+      "thinkingTokensIncludedInOutput": "Subset of output, never added a second time"
+    },
+    "limitations": [
+      "Only this workflow's native calls are counted; the interactive Codex session and independent local review are separate.",
+      "Failed/unknown calls without usage remain explicitly unknown; totals sum reported data only.",
+      "Subscription authentication; token counts and native list-price metadata are not an invoice or remaining subscription quota."
+    ],
+    "calls": [
+      {
+        "sequence": 1,
+        "round": null,
+        "callId": "ef94f6b3-5aa0-4ad6-a207-96c5453be9cf",
+        "role": "analyst",
+        "provider": "claude",
+        "model": "claude-sonnet-5-5",
+        "status": "completed",
+        "elapsedMs": 16246,
+        "usageAvailable": true,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 69593,
+        "cacheReadInputTokens": 2709,
+        "inputTokensIncludingCache": 72304,
+        "outputTokens": 1743,
+        "inputAndOutputTokens": 74047,
+        "thinkingTokensIncludedInOutput": 656
+      },
+      {
+        "sequence": 2,
+        "round": null,
+        "callId": "d3b81c3f-fab4-48e5-a77a-5364fbe039de",
+        "role": "writer",
+        "provider": "claude",
+        "model": "claude-sonnet-5-5",
+        "status": "completed",
+        "elapsedMs": 19417,
+        "usageAvailable": true,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 70549,
+        "cacheReadInputTokens": 2039,
+        "inputTokensIncludingCache": 72590,
+        "outputTokens": 3212,
+        "inputAndOutputTokens": 75802,
+        "thinkingTokensIncludedInOutput": 165
+      },
+      {
+        "sequence": 3,
+        "round": null,
+        "callId": "f7bff77e-bb80-419d-8ce3-27dc63f990d8",
+        "role": "reviewer",
+        "provider": "claude",
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "elapsedMs": 12497,
+        "usageAvailable": true,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 30394,
+        "cacheReadInputTokens": 2205,
+        "inputTokensIncludingCache": 32601,
+        "outputTokens": 993,
+        "inputAndOutputTokens": 33594,
+        "thinkingTokensIncludedInOutput": 546
+      }
+    ],
+    "byRole": {
+      "analyst": {
+        "calls": 1,
+        "callsWithUsage": 1,
+        "callsWithoutUsage": 0,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 69593,
+        "cacheReadInputTokens": 2709,
+        "inputTokensIncludingCache": 72304,
+        "outputTokens": 1743,
+        "inputAndOutputTokens": 74047,
+        "thinkingTokensIncludedInOutput": 656
+      },
+      "writer": {
+        "calls": 1,
+        "callsWithUsage": 1,
+        "callsWithoutUsage": 0,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 70549,
+        "cacheReadInputTokens": 2039,
+        "inputTokensIncludingCache": 72590,
+        "outputTokens": 3212,
+        "inputAndOutputTokens": 75802,
+        "thinkingTokensIncludedInOutput": 165
+      },
+      "reviewer": {
+        "calls": 1,
+        "callsWithUsage": 1,
+        "callsWithoutUsage": 0,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 30394,
+        "cacheReadInputTokens": 2205,
+        "inputTokensIncludingCache": 32601,
+        "outputTokens": 993,
+        "inputAndOutputTokens": 33594,
+        "thinkingTokensIncludedInOutput": 546
+      }
+    },
+    "byRound": {},
+    "afterMilestone": null,
+    "rejectedRounds": {
+      "calls": 0,
+      "callsWithUsage": 0,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "cacheReadInputTokens": 0,
+      "inputTokensIncludingCache": 0,
+      "outputTokens": 0,
+      "inputAndOutputTokens": 0,
+      "thinkingTokensIncludedInOutput": 0
+    },
+    "total": {
+      "calls": 3,
+      "callsWithUsage": 3,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 6,
+      "cacheWriteInputTokens": 170536,
+      "cacheReadInputTokens": 6953,
+      "inputTokensIncludingCache": 177495,
+      "outputTokens": 5948,
+      "inputAndOutputTokens": 183443,
+      "thinkingTokensIncludedInOutput": 1367
+    }
+  },
+  "developerDisposition": {
+    "status": "exact-native-patch-applied",
+    "applied": true,
+    "independentStaticReview": "passed with one minor novelty-rationale inaccuracy",
+    "minorRationaleCorrection": "The existing urgent test already detects z.string().optional(); incremental value is established separately by empty-to-undefined, string lowercasing and first-array-element preprocessing, each preserving all old tests.",
+    "executionProof": {
+      "kind": "three-selected-manual-source-counterexamples",
+      "sourceHead": "e14f788d1cba9bf7d065a05720af48dd43f35697",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/router.test.ts",
+        "--reporter=verbose",
+        "--maxWorkers=1"
+      ],
+      "variantReplacements": {
+        "empty-to-undefined": "  priority: z.preprocess((value) => value === '' ? undefined : value, fields.priority.optional()),",
+        "lowercase-strings": "  priority: z.preprocess((value) => typeof value === 'string' ? value.toLowerCase() : value, fields.priority.optional()),",
+        "first-array-element": "  priority: z.preprocess((value) => Array.isArray(value) ? value[0] : value, fields.priority.optional()),"
+      },
+      "samples": [
+        {
+          "sample": "control-old",
+          "exitCode": 0,
+          "testsPassed": 22,
+          "testsFailed": 0,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "d2afc8830de07f88aaacc6d7b91bfbea4430a57b67fca6c7b1a8108f8cc890da",
+          "routerTestSha256": "d695f121831da9a364e7b40902990c6b20f2dff3b8bdee5a027252c6bd403a7f",
+          "failedTest": null,
+          "failureLocation": null,
+          "failureAssertion": null,
+          "expectedStatus": null,
+          "receivedStatus": null
+        },
+        {
+          "sample": "control-new",
+          "exitCode": 0,
+          "testsPassed": 25,
+          "testsFailed": 0,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "d2afc8830de07f88aaacc6d7b91bfbea4430a57b67fca6c7b1a8108f8cc890da",
+          "routerTestSha256": "2a6cf276f595bffb301d537450a5fe1fefbd9521dd0070a25c60b100fb1a7f9b",
+          "failedTest": null,
+          "failureLocation": null,
+          "failureAssertion": null,
+          "expectedStatus": null,
+          "receivedStatus": null
+        },
+        {
+          "sample": "empty-to-undefined-old",
+          "exitCode": 0,
+          "testsPassed": 22,
+          "testsFailed": 0,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "2aad0b4f1e831484e9cbe267974ea8bd6ab5c77fe249fd2671b9a7ae750f95f0",
+          "routerTestSha256": "d695f121831da9a364e7b40902990c6b20f2dff3b8bdee5a027252c6bd403a7f",
+          "failedTest": null,
+          "failureLocation": null,
+          "failureAssertion": null,
+          "expectedStatus": null,
+          "receivedStatus": null
+        },
+        {
+          "sample": "empty-to-undefined-new",
+          "exitCode": 1,
+          "testsPassed": 24,
+          "testsFailed": 1,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "2aad0b4f1e831484e9cbe267974ea8bd6ab5c77fe249fd2671b9a7ae750f95f0",
+          "routerTestSha256": "2a6cf276f595bffb301d537450a5fe1fefbd9521dd0070a25c60b100fb1a7f9b",
+          "failedTest": "rejects the near-miss priority query priority= without calling the repository",
+          "failureLocation": "tests/router.test.ts:50:29",
+          "failureAssertion": "expect(response.status).toBe(422)",
+          "expectedStatus": 422,
+          "receivedStatus": 200
+        },
+        {
+          "sample": "lowercase-strings-old",
+          "exitCode": 0,
+          "testsPassed": 22,
+          "testsFailed": 0,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "9e9fd8fb55fbcc38d21286499f414384446d534d119e5af21204d44148677480",
+          "routerTestSha256": "d695f121831da9a364e7b40902990c6b20f2dff3b8bdee5a027252c6bd403a7f",
+          "failedTest": null,
+          "failureLocation": null,
+          "failureAssertion": null,
+          "expectedStatus": null,
+          "receivedStatus": null
+        },
+        {
+          "sample": "lowercase-strings-new",
+          "exitCode": 1,
+          "testsPassed": 24,
+          "testsFailed": 1,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "9e9fd8fb55fbcc38d21286499f414384446d534d119e5af21204d44148677480",
+          "routerTestSha256": "2a6cf276f595bffb301d537450a5fe1fefbd9521dd0070a25c60b100fb1a7f9b",
+          "failedTest": "rejects the near-miss priority query priority=HIGH without calling the repository",
+          "failureLocation": "tests/router.test.ts:50:29",
+          "failureAssertion": "expect(response.status).toBe(422)",
+          "expectedStatus": 422,
+          "receivedStatus": 200
+        },
+        {
+          "sample": "first-array-element-old",
+          "exitCode": 0,
+          "testsPassed": 22,
+          "testsFailed": 0,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "99f0a275e0dd5d41856f6f3d4a674b46a98d2e944b320158c72417038970abc8",
+          "routerTestSha256": "d695f121831da9a364e7b40902990c6b20f2dff3b8bdee5a027252c6bd403a7f",
+          "failedTest": null,
+          "failureLocation": null,
+          "failureAssertion": null,
+          "expectedStatus": null,
+          "receivedStatus": null
+        },
+        {
+          "sample": "first-array-element-new",
+          "exitCode": 1,
+          "testsPassed": 24,
+          "testsFailed": 1,
+          "oldUrgentRejectionTestPassed": true,
+          "validatorSha256": "99f0a275e0dd5d41856f6f3d4a674b46a98d2e944b320158c72417038970abc8",
+          "routerTestSha256": "2a6cf276f595bffb301d537450a5fe1fefbd9521dd0070a25c60b100fb1a7f9b",
+          "failedTest": "rejects the near-miss priority query priority=high&priority=low without calling the repository",
+          "failureLocation": "tests/router.test.ts:50:29",
+          "failureAssertion": "expect(response.status).toBe(422)",
+          "expectedStatus": 422,
+          "receivedStatus": 200
+        }
+      ],
+      "restoration": {
+        "trackedBackendFilesVerified": 31,
+        "liveFeatureWorktreeUnchanged": true
+      },
+      "limits": "Three selected manual list-query-schema counterexamples only; no global mutation adequacy metric."
+    },
+    "appliedCommit": "cfba8af149e139f97137bccd695e4b9bfc887b85",
+    "localChecks": {
+      "backendCoverageTests": 95,
+      "backendFailed": 0,
+      "typecheck": "passed",
+      "unrelatedTrackedFilesUnchanged": 295,
+      "gitBlobMatchesNativeOutput": true
+    }
+  }
+}

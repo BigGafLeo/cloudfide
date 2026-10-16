@@ -1,0 +1,82 @@
+{
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 11,
+    "executionRunId": "38900299819",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "workflow-run",
+      "workflowId": 385500607,
+      "runId": "38900070621",
+      "attempt": 1
+    },
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "headSha": "e14f788d1cba9bf7d065a05720af48dd43f35697",
+    "controlSha": "590ee046935727ed9bbd7a520caf85c641f2b875",
+    "task": "pr-change",
+    "deadline": "2026-10-16T16:24:37.000Z"
+  },
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "4762b71cd0814a57a5220dcd6dac14764842c385045fa7a07c41d3cd5e03b1b2",
+    "bytes": 1114
+  },
+  "files": [
+    "backend/tests/router.test.ts"
+  ],
+  "plan": {
+    "decision": "write",
+    "reason": "The PR's priority filter is covered for valid, invalid ('urgent') and absent values. Near-miss values are not tested: an empty value, a wrong-case value and a repeated parameter. All three fall outside the documented enum. A looser schema would accept them and send an unintended filter to the repository, and the existing tests would not catch it.",
+    "cases": [
+      {
+        "id": "list-priority-near-miss-422",
+        "sourceLocation": "backend/src/features/todos/router.ts:13",
+        "behavior": "GET /api/todos rejects priority values outside the exact enum low|medium|high (empty, wrong case, repeated parameter) with 422 and never queries the repository.",
+        "requirementSource": "backend/openapi.json in the diff: the priority query parameter has enum [low, medium, high] and the route documents a 422 'Invalid input' response. The validators.ts priority enum is case-sensitive.",
+        "inputs": "GET /api/todos?priority= ; GET /api/todos?priority=HIGH ; GET /api/todos?priority=high&priority=low",
+        "expected": "Status 422 with a non-empty detail array, and repository.list is not called.",
+        "assertion": "it.each over the three query strings. Assert response.status is 422, Array.isArray(response.body.detail) is true with length > 0, and expect(repository.list).not.toHaveBeenCalled().",
+        "mockBoundary": "The repository is a vi.fn mock. Express and supertest are real. The zod schema is unmocked.",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "rejects an invalid priority query without calling the repository"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "forwards a valid priority query to the repository"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "does not forward unrelated query parameters to the repository"
+            }
+          ],
+          "regression": "The query schema is loosened to z.string().optional(), or the empty string, a lowercased value or an array is coerced or ignored. The route then returns 200 and lists tasks with a wrong or missing filter. The existing 'urgent' test still passes.",
+          "rationale": "The existing invalid-input test only uses a clearly invalid string. The empty value, case sensitivity and repeated-parameter array are separate mistakes that 'urgent' cannot catch. Cost is one parameterised test using the existing setup."
+        }
+      }
+    ],
+    "paths": [
+      "backend/tests/router.test.ts"
+    ],
+    "remainingGaps": [
+      "backend/openapi.json is not supplied in full, so the OpenAPI document change (priority parameter, 422 response) cannot be asserted. factory.test.ts stubs the spec file.",
+      "Uncovered lines in factory.ts:20, main.ts and the frontend are outside this PR change and were not analysed.",
+      "The frontend has no priority-filter change in this PR."
+    ]
+  },
+  "skillsUsed": [
+    "analyze-unit-gaps",
+    "analyze-unit-gaps/references/backend.md",
+    "analyze-unit-gaps/references/frontend.md",
+    "write-unit-tests",
+    "write-unit-tests/references/backend.md",
+    "write-unit-tests/references/frontend.md"
+  ],
+  "patchText": "diff --git a/backend/tests/router.test.ts b/backend/tests/router.test.ts\nindex b62d174..8299a11 100644\n--- a/backend/tests/router.test.ts\n+++ b/backend/tests/router.test.ts\n@@ -43,6 +43,16 @@ it('rejects an invalid priority query without calling the repository', async ()\n   expect(response.body.detail.length).toBeGreaterThan(0);\n   expect(repository.list).not.toHaveBeenCalled();\n });\n+it.each(['priority=', 'priority=HIGH', 'priority=high&priority=low'])(\n+  'rejects the near-miss priority query %s without calling the repository', async (query) => {\n+    const { app, repository } = setup();\n+    const response = await request(app).get(`/api/todos?${query}`);\n+    expect(response.status).toBe(422);\n+    expect(Array.isArray(response.body.detail)).toBe(true);\n+    expect(response.body.detail.length).toBeGreaterThan(0);\n+    expect(repository.list).not.toHaveBeenCalled();\n+  },\n+);\n it('creates tasks with trimmed input and defaults', async () => {\n   const { app, repository } = setup();\n   const response = await request(app).post('/api/todos').send({ title: '  Plan the sprint  ', priority: 'high' });\n"
+}

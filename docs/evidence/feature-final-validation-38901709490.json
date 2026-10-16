@@ -1,0 +1,194 @@
+{
+  "checkedAt": "2026-10-16T12:45:28.778Z",
+  "receivedCommit": "22be6e3bcf54fd012104fe233ef6652dd01941ff",
+  "featureMergeCommit": "f7187bbbfa0367146cbb1e2389f0b4ec486d9ad0",
+  "featurePr": 11,
+  "ci": {
+    "runId": "38901709490",
+    "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38901709490",
+    "headSha": "cfba8af149e139f97137bccd695e4b9bfc887b85",
+    "conclusion": "success",
+    "controller": {
+      "passed": 182,
+      "failed": 0,
+      "skipped": 0
+    },
+    "tests": {
+      "backend": {
+        "total": 95,
+        "failed": 0,
+        "failures": []
+      },
+      "frontend": {
+        "total": 105,
+        "failed": 0,
+        "failures": []
+      }
+    },
+    "coverage": {
+      "frontend": {
+        "lines": {
+          "covered": 149,
+          "total": 151,
+          "pct": 98.67
+        },
+        "branches": {
+          "covered": 132,
+          "total": 137,
+          "pct": 96.35
+        },
+        "statements": {
+          "covered": 164,
+          "total": 168,
+          "pct": 97.61
+        },
+        "functions": {
+          "covered": 75,
+          "total": 77,
+          "pct": 97.4
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 110,
+          "total": 113,
+          "pct": 97.34
+        },
+        "branches": {
+          "covered": 52,
+          "total": 53,
+          "pct": 98.11
+        },
+        "statements": {
+          "covered": 129,
+          "total": 133,
+          "pct": 96.99
+        },
+        "functions": {
+          "covered": 31,
+          "total": 32,
+          "pct": 96.87
+        }
+      },
+      "gaps": [
+        "frontend/src/app/AppProviders.tsx:14",
+        "frontend/src/app/AppProviders.tsx:9",
+        "frontend/src/features/todos/TodosPage.tsx:81",
+        "frontend/src/features/todos/TodosPage.tsx:18",
+        "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+        "frontend/src/features/todos/components/TodoEditor.tsx:24",
+        "frontend/src/features/todos/utils/todos.ts:48",
+        "backend/src/factory.ts:20",
+        "backend/src/main.ts:3",
+        "backend/src/main.ts:4",
+        "backend/src/main.ts:5"
+      ]
+    },
+    "checks": [
+      {
+        "id": "backend:install",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm ci --ignore-scripts --no-audit --no-fund",
+        "exitCode": 0
+      },
+      {
+        "id": "backend:generate",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run db:generate",
+        "exitCode": 0
+      },
+      {
+        "id": "backend:typecheck",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run typecheck",
+        "exitCode": 0
+      },
+      {
+        "id": "backend:unit",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+        "exitCode": 0
+      },
+      {
+        "id": "backend:coverage",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+        "exitCode": 0
+      },
+      {
+        "id": "frontend:install",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm ci --ignore-scripts --no-audit --no-fund",
+        "exitCode": 0
+      },
+      {
+        "id": "frontend:typecheck",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run typecheck",
+        "exitCode": 0
+      },
+      {
+        "id": "frontend:unit",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+        "exitCode": 0
+      },
+      {
+        "id": "frontend:coverage",
+        "gate": "required",
+        "status": "passed",
+        "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+        "exitCode": 0
+      }
+    ]
+  },
+  "lastAutomaticAfterMerge": {
+    "runId": "38901949635",
+    "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38901949635",
+    "workflowConclusion": "success",
+    "context": {
+      "repository": "BigGafLeo/cloudfide",
+      "repositoryId": 1416918089,
+      "pr": 11,
+      "executionRunId": "38901949635",
+      "executionAttempt": 1,
+      "trigger": {
+        "kind": "workflow-run",
+        "workflowId": 385500607,
+        "runId": "38901709490",
+        "attempt": 1
+      },
+      "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+      "headSha": "cfba8af149e139f97137bccd695e4b9bfc887b85",
+      "controlSha": "590ee046935727ed9bbd7a520caf85c641f2b875",
+      "task": "pr-change",
+      "deadline": "2026-10-16T16:38:32.000Z"
+    },
+    "status": "skipped",
+    "rawReason": "same-repository trusted author required",
+    "interpretation": "PR11 merged before agent eligibility recheck; no further model request or patch.",
+    "calls": [],
+    "nativeCalls": 0,
+    "tokens": 0,
+    "patch": null
+  },
+  "nativeTotals": {
+    "calls": 29,
+    "inputAndOutputTokens": 2044238,
+    "featureCalls": 12,
+    "featureTokens": 776395,
+    "scope": "Baseline38886324124 plusfourfeatureworkflows; includesfailedandindependentlyblockedtrials; excludesinteractive development/security"
+  },
+  "limits": [
+    "LinuxCI and selectedcounterexamples do notestablishcomplete/minimaltestcoverage.",
+    "The lastskippedworkflow does notproveglobaltestgapexhaustion."
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "source": "Official Claude Code final per-call usage fields retained in the run artifacts; aggregate usage counted once, not again via modelUsage or iterations.",
+  "definitions": {
+    "freshInputTokens": "raw.usage.input_tokens",
+    "cacheWriteInputTokens": "raw.usage.cache_creation_input_tokens",
+    "cacheReadInputTokens": "raw.usage.cache_read_input_tokens",
+    "inputTokensIncludingCache": "fresh + cache write + cache read; normalized usage.inputTokens",
+    "outputTokens": "raw.usage.output_tokens; includes thinking tokens when reported",
+    "inputAndOutputTokens": "input including cache + output; cumulative across calls, not unique context tokens",
+    "thinkingTokensIncludedInOutput": "Subset of output, never added a second time"
+  },
+  "limitations": [
+    "Only this workflow's native calls are counted; the interactive Codex session and independent local review are separate.",
+    "Failed/unknown calls without usage remain explicitly unknown; totals sum reported data only.",
+    "Subscription authentication; token counts and native list-price metadata are not an invoice or remaining subscription quota."
+  ],
+  "calls": [
+    {
+      "sequence": 1,
+      "round": null,
+      "callId": "ddf5b30f-9734-422a-b773-ad7e612e3ee0",
+      "role": "analyst",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 21136,
+      "usageAvailable": true,
+      "freshInputTokens": 2,
+      "cacheWriteInputTokens": 67371,
+      "cacheReadInputTokens": 2709,
+      "inputTokensIncludingCache": 70082,
+      "outputTokens": 2830,
+      "inputAndOutputTokens": 72912,
+      "thinkingTokensIncludedInOutput": 430
+    },
+    {
+      "sequence": 2,
+      "round": null,
+      "callId": "fe446133-ce75-490f-a7e9-1d98979416cd",
+      "role": "writer",
+      "provider": "claude",
+      "model": "claude-sonnet-5-5",
+      "status": "completed",
+      "elapsedMs": 37176,
+      "usageAvailable": true,
+      "freshInputTokens": 2,
+      "cacheWriteInputTokens": 69656,
+      "cacheReadInputTokens": 2039,
+      "inputTokensIncludingCache": 71697,
+      "outputTokens": 7022,
+      "inputAndOutputTokens": 78719,
+      "thinkingTokensIncludedInOutput": 574
+    },
+    {
+      "sequence": 3,
+      "round": null,
+      "callId": "327ca38d-3f7a-4335-964e-fc31be8b85a5",
+      "role": "reviewer",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "status": "completed",
+      "elapsedMs": 45212,
+      "usageAvailable": true,
+      "freshInputTokens": 2,
+      "cacheWriteInputTokens": 41427,
+      "cacheReadInputTokens": 2205,
+      "inputTokensIncludingCache": 43634,
+      "outputTokens": 4440,
+      "inputAndOutputTokens": 48074,
+      "thinkingTokensIncludedInOutput": 2931
+    }
+  ],
+  "byRole": {
+    "analyst": {
+      "calls": 1,
+      "callsWithUsage": 1,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 2,
+      "cacheWriteInputTokens": 67371,
+      "cacheReadInputTokens": 2709,
+      "inputTokensIncludingCache": 70082,
+      "outputTokens": 2830,
+      "inputAndOutputTokens": 72912,
+      "thinkingTokensIncludedInOutput": 430
+    },
+    "writer": {
+      "calls": 1,
+      "callsWithUsage": 1,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 2,
+      "cacheWriteInputTokens": 69656,
+      "cacheReadInputTokens": 2039,
+      "inputTokensIncludingCache": 71697,
+      "outputTokens": 7022,
+      "inputAndOutputTokens": 78719,
+      "thinkingTokensIncludedInOutput": 574
+    },
+    "reviewer": {
+      "calls": 1,
+      "callsWithUsage": 1,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 2,
+      "cacheWriteInputTokens": 41427,
+      "cacheReadInputTokens": 2205,
+      "inputTokensIncludingCache": 43634,
+      "outputTokens": 4440,
+      "inputAndOutputTokens": 48074,
+      "thinkingTokensIncludedInOutput": 2931
+    }
+  },
+  "byRound": {},
+  "afterMilestone": null,
+  "rejectedRounds": {
+    "calls": 0,
+    "callsWithUsage": 0,
+    "callsWithoutUsage": 0,
+    "freshInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "cacheReadInputTokens": 0,
+    "inputTokensIncludingCache": 0,
+    "outputTokens": 0,
+    "inputAndOutputTokens": 0,
+    "thinkingTokensIncludedInOutput": 0
+  },
+  "total": {
+    "calls": 3,
+    "callsWithUsage": 3,
+    "callsWithoutUsage": 0,
+    "freshInputTokens": 6,
+    "cacheWriteInputTokens": 178454,
+    "cacheReadInputTokens": 6953,
+    "inputTokensIncludingCache": 185413,
+    "outputTokens": 14292,
+    "inputAndOutputTokens": 199705,
+    "thinkingTokensIncludedInOutput": 3935
+  }
+}

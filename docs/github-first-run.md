@@ -1,60 +1,89 @@
-# First GitHub run
+# Run the unit-test agent in GitHub
 
-This guide starts after the trusted controller and workflows have been reviewed. Local native conformance is already recorded in [validation.md](validation.md). A local subscription login does not transfer credentials into Actions.
+Existing tests and evidence can be inspected without model credentials. Use this guide for new model runs in your own fork or repository with your own eligible account. The application setup remains in [README](../README.md); [validation](validation.md) records existing evidence. A local CLI login does not configure Actions authentication.
 
-## 1. Bootstrap the trusted controller
+## 1. Install the trusted controller
 
-Publish the controller, its skills, lockfiles, non-secret conformance records and the two workflows in a bootstrap PR. Include the public architecture, baseline and verification documentation. Keep received recruitment instructions, private planning/review notes, output, dependencies and credentials excluded.
+Merge the reviewed controller, skills, lockfiles, non-secret conformance records and `.github/workflows/ci.yml` / `unit-test-agent.yml` into the default branch after secret-free CI passes. The manual and `workflow_run` entry points use that branch's controller. A bootstrap PR installs the workflow; it is not a model-generation demonstration.
 
-Let the bootstrap PR's secret-free CI pass, review the changes and merge the controller into the default branch. The Unit-test agent workflow must exist there before its manual and workflow_run entry points can be exercised. This first PR installs the workflow; it is not evidence of model-assisted application-test generation.
+Use Linux Node 24.13.1 and Docker. Controller checks need no model credentials:
 
-## 2. Configure the first model run
+```sh
+npm ci --prefix agent --ignore-scripts --no-audit --no-fund
+npm --prefix agent test
+npm --prefix agent run typecheck
+npm --prefix agent run build
+```
 
-The owner profile in agent/config.json permits only BigGafLeo and selects Claude subscription authentication with claude-sonnet-5-5 for analyst and writer. The optional reviewer and mutations are disabled. A recipient must replace trustedAuthors and configure their own account before enabling their copy.
+Install the pinned native CLI packages and explicitly run the official Claude installer from `agent/`:
 
-In the repository, open Settings -> Secrets and variables -> Actions -> New repository secret. Name the secret CLAUDE_CODE_OAUTH_TOKEN and supply the token generated through the official Claude Code setup-token flow. Keep the token in the secret form; it must not enter source files, commands with literal credentials, PR comments or logs. Confirm that the repository lists the secret name afterward.
+```sh
+npm ci --prefix native --ignore-scripts --no-audit --no-fund
+node native/node_modules/@anthropic-ai/claude-code/install.cjs
+```
 
-For this public repository, Codex subscription authentication is blocked at GitHub entry points. Personal local Codex probes remain supported; explicit API authentication is a separately billed choice. See the [authentication policy](../README.md#authentication-and-provider-policy).
+Arbitrary package lifecycle scripts remain disabled. The workflows pull the exact pinned application image; there is no host-execution fallback.
 
-Scoped automatic pr-change runs admit at most two core model calls plus an explicitly enabled reviewer. Manual coverage-gap runs admit at most eight analyst/writer rounds and seventeen calls including that optional reviewer. All rounds share the original budget and four-hour deadline; the configured seventeen subscription reservation units are virtual admission accounting, not a bill or a subscription-quota meter. Account limits still apply. There is no paid API fallback or automatic retry of a failed provider/head check.
+## 2. Configure your own model access
 
-## 3. Open the coverage-gap PR
+Copy `agent/config.example.json` to `agent/config.json` and replace `YOUR_GITHUB_LOGIN` with approved same-repository human authors. The reference roles are Sonnet 5.5 (`claude-sonnet-5-5`) for analyst/writer and required Opus 5.5 (`claude-opus-5-5`) for final review. Mutations are disabled. The distributed author list must be empty at handover; keep it empty until your own authentication and conformance are ready.
 
-Create a new branch from the installed default branch. Add docs/first-coverage-run.md describing the actual baseline and linking testing-baseline.json, then open a same-repository PR authored by an allowlisted operator. This documentation change provides a concrete initial PR without manually writing the missing application tests.
+For the documented Claude subscription CLI route, generate your own token through official `claude setup-token`. In repository Settings -> Secrets and variables -> Actions, add the repository-scoped secret `CLAUDE_CODE_OAUTH_TOKEN`. Keep its value out of source, shell command literals, comments and logs. Confirm only the secret's name afterward.
 
-Before manual dispatch, wait for ordinary CI and its resulting automatic Unit-test agent run to finish for the current PR head. The automatic run for this documentation-only change should report no unit-relevant change. Model jobs share a per-PR concurrency group with cancel-in-progress enabled; dispatching while the automatic run is still pending can cancel the coverage-gap run or replace its report.
+Public CI rejects Codex subscription authentication before model calls; select explicit, separately billed API authentication to use Codex here. Eligible private automation has additional identity and credential-lease requirements. Read [the provider policy and official links](../README.md#authentication-and-provider-policy) before activation. Authentication/quota failure has no paid fallback.
 
-Run Unit-test agent through Actions -> Run workflow, select the default branch and enter that open PR number. Equivalently, substitute your repository and actual PR number below:
+From `agent/`, execute the native probe on the pinned Linux runtime with your dedicated authentication:
+
+```sh
+node dist/scripts/native-conformance.js PROVIDER MODEL
+```
+
+Review its non-secret conformance record. Unknown capabilities or missing credentials are inconclusive, not permission to enable an unverified profile. Never commit authentication material.
+
+## 3. Choose the PR trigger
+
+For automatic scoped analysis, open/update a same-repository PR changing application behavior. Ordinary CI completes first, then `workflow_run` analyzes the exact captured PR/base/head. Fork PRs and unapproved authors cannot use model credentials.
+
+For manual coverage-gap analysis, open a same-repository PR from the installed default branch. A baseline documentation change is enough; you do not need to write the missing application tests manually. Wait for ordinary CI and its automatic no-change agent run to finish before dispatching. Both entries share a per-PR concurrency group with cancellation enabled, so overlapping them can replace/cancel the run.
+
+In Actions -> Unit-test agent -> Run workflow, select the default branch and provide the open PR number, or run:
 
 ```sh
 gh workflow run unit-test-agent.yml --repo OWNER/REPO --ref main -f pr=PR_NUMBER
 ```
 
-The manual entry point selects coverage-gap analysis. It collects the exact base/head snapshots and measures the current frontend and backend, even if the opening PR only changes the baseline note. Keep the PR head unchanged while this captured run executes.
+Keep the captured PR head unchanged until completion. The manual entry point measures the current frontend/backend even for a documentation-only PR.
 
-## 4. Inspect the real outcome
+## 4. Interpret the result
 
-The jobs perform identity resolution and secret-free precollection. Manual coverage-gap then repeats analyst -> plan validation -> writer -> isolated candidate verification with refreshed tests and gaps, preserving the last verified cumulative proposal when a batch fails or a limit stops further work. A separate final verifier rechecks that proposal before PR publication. The report binds the tested commit and run/attempt. Proposal checks can be accepted while the overall coverage run remains partial. Only the final verifier establishes reached: at least 80% lines and 80% branches separately in frontend and backend, with complete passing checks, comparable scope and no regression in any measured metric. The reference coverage.stopAtTarget=false policy continues beyond that milestone for justified cases; true preserves threshold stopping (the compatible default when omitted). Existing eight-round/seventeen-call limits still apply. Inspect the round history, shared call ledger and explicit stop reason, including payload capacity or head-check failure. A failed/inconclusive proposal is a real result to diagnose; do not label it a successful test improvement.
+The jobs resolve identity, collect exact snapshots without model secrets, then run analyst -> validated plan -> writer -> isolated application checks. Coverage mode repeats this with refreshed evidence, preserving the last verified cumulative proposal when a later batch fails. A separate verifier rechecks the final proposal; required fresh review assesses its semantic value before publication.
 
-In the PR and Actions run, inspect:
+Inspect the PR comment and downloadable evidence for:
 
-- The analyst's cases, contract sources, confidence and skills used.
-- The generated test-only files and writer rationale.
-- Both applications' unit/typecheck/coverage results and controller-owned raw logs.
-- Coverage comparison using the same measurement scope, plus any remaining gaps.
+- Tested head, default-branch controller revision, execution run/attempt and artifact identities.
+- Actual plan, compared existing assertions, concrete regression cases, confidence and loaded skills.
+- Exact test-only patch, both applications' unit/typecheck/coverage checks and controller-owned logs.
+- Comparable coverage denominators, batch history, call ledger and explicit stopping reason.
+- Required reviewer outcome and claims, distinguishing unconfirmed model statements from verified checks.
 
-The standard run leaves review and mutation jobs disabled. Verification applies the proposal in a disposable snapshot. It publishes a PR comment and downloadable proposal payload, without committing generated changes.
+The target is 80% lines **and** branches separately in both applications. Proposal acceptance, numeric target attainment and completeness are separate claims. The reference `stopAtTarget=false` continues for justified cases after the milestone; `true` stops there. All rounds share eight-round/seventeen-call limits and the original four-hour deadline. Three no-progress rounds stop further work; useful accepted assertion work after the milestone may count without coverage growth.
 
-## 5. Apply useful tests and retain evidence
+Analysis bundles are capped at 200 KiB, final review at 512 KiB. Each passing batch must fit required review before promotion. Capacity failure preserves the previous reviewable candidate. A failed/inconclusive run remains such even if its candidate tests pass or its numeric target was reached. Missing review cannot be replaced by an offline replay.
 
-Download the run's agent payload artifact. Its payload.json contains patchText; preserve that string exactly as candidate.patch. Inspect it, use git apply --check, and apply only a useful verified proposal. Run both application suites/typechecks/coverage again, then commit the accepted tests to the coverage PR through the normal review process.
+Subscription reservation fields are virtual admission units, not prices, remaining allowance or invoice caps. Account limits still apply. There is no automatic failed-provider retry, model escalation or reviewer-repair loop. Mutations remain disabled in this profile.
 
-Check assertion sensitivity on a disposable copy: remove a behavior the new test claims to protect and require a failure on the intended assertion. Restore that copy afterward. Coverage percentages alone do not establish useful assertions.
+## 5. Review and apply useful tests
 
-Record actual PR/run links, tested SHA, role decisions, skills, test results and same-scope before/after metrics in SOLUTION.md. If a run fails, record its cause and the eventual verified correction rather than a fabricated success.
+Download the run's agent payload artifact. Its `payload.json` contains `patchText`; preserve that string exactly as `candidate.patch`. Inspect it, then check admission before applying:
 
-## 6. Demonstrate the automatic trigger
+```sh
+git apply --check candidate.patch
+```
 
-After the baseline improvement, a separate PR changing a small application behavior can demonstrate the automatic CI -> workflow_run route. Use that PR to show analysis of changed code, generated/updated tests, execution and the PR report. This is also the optional feature-PR demonstration.
+Apply only useful reviewed tests, rerun both application suites/typechecks/coverage, and commit through normal review. The workflow itself never commits or pushes generated code. Selected sensitivity checks should fail on the intended assertion when a claimed behavior is deliberately broken in a disposable copy; restore the copy afterward. Coverage alone does not prove assertion value.
 
-When preparing the recruitment handover, disable model calls and remove the author's personal Actions model secrets. Reviewers can run existing tests without model access; a fresh model run uses their own credentials and allowance. See the [handover guidance](../README.md#recruitment-handover-without-access-to-the-authors-allowance).
+Retain real PR/run links, exact revisions, decisions, loaded skills and before/after results in the evidence reports linked from [SOLUTION](../SOLUTION.md). The [priority-filter demo](priority-filter-demo.md) now has 200 tests (95 backend, 105 frontend) after two exact native patches on PR #11: the first successful 197-test proposal passed both reviews/nine checks and post-application CI; its automatic follow-up passed both reviews/nine checks and added three useful boundary rows. Tested head `cfba8af` passed final CI 38901709490 (182 Linux controller cases, 200 app tests and all nine application checks), then PR #11 merged as `f7187bb`. Earlier rejected/false-accepted proposals and independent counterexample checks remain visible. Existing baseline 193, initial successful 197 and current 200 counts refer to separate revisions; [validation](validation.md) records them and the 29-call/2,044,238-token baseline-plus-feature total.
+
+## 6. Close model access for handover
+
+The distributed configuration has `trustedAuthors: []`. After all demonstration workflows drained, the author's repository Actions model secret was removed and the repository secret list verified empty. For your own handover, drain active workflows, empty the allowlist and remove personal model secrets after recording demonstrations. Recipients inspect source/evidence and run existing tests without model access; a fresh model session uses their own account in their own repository. Removing the secret does not revoke its underlying provider credential. Follow [handover guidance](../README.md#recruitment-handover-without-access-to-the-authors-allowance), including the privileged `workflow_run` boundary.

@@ -1,0 +1,756 @@
+{
+  "applicationIdentity": {
+    "receivedCommit": "22be6e3bcf54fd012104fe233ef6652dd01941ff",
+    "sourceHead": "d2c986c147c6093fe01924c9ac9c6c3e3ac01043",
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "sourceChange": "Priority-filter API feature over corrected193-test baseline"
+  },
+  "workflow": {
+    "status": "completed",
+    "conclusion": "success",
+    "createdAt": "2026-10-16T11:50:40Z",
+    "completedAt": "2026-10-16T11:59:29Z",
+    "elapsedSeconds": 529,
+    "jobs": [
+      {
+        "name": "resolve",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T11:50:42Z",
+        "completedAt": "2026-10-16T11:50:55Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843/job/116958005638"
+      },
+      {
+        "name": "precollect",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T11:50:57Z",
+        "completedAt": "2026-10-16T11:53:37Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843/job/116958090825"
+      },
+      {
+        "name": "agent",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T11:53:39Z",
+        "completedAt": "2026-10-16T11:55:28Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843/job/116959079423"
+      },
+      {
+        "name": "verifier",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T11:55:30Z",
+        "completedAt": "2026-10-16T11:57:43Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843/job/116959747531"
+      },
+      {
+        "name": "reviewer",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T11:57:45Z",
+        "completedAt": "2026-10-16T11:59:00Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843/job/116960562358"
+      },
+      {
+        "name": "publisher",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-16T11:59:03Z",
+        "completedAt": "2026-10-16T11:59:28Z",
+        "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843/job/116961029399"
+      }
+    ]
+  },
+  "reviewStage": null,
+  "materialization": {
+    "runId": "38896463843",
+    "headSha": "d2c986c147c6093fe01924c9ac9c6c3e3ac01043",
+    "controlSha": "a7dc2a8f0b5f7adbedef430021341f3a6cabc3ac",
+    "patchSha256": "4f8fc31b0a539cf89c7725b571f6483d5937db76f58eb5a6cb4b3454403072e0",
+    "patchBytes": 4464,
+    "files": 3,
+    "newFiles": 0,
+    "modifiedFiles": 3,
+    "applicationPatchApplied": false,
+    "method": "Strict candidate schema/digest and host patch admission against exact captured Git blobs in guarded scratch; full proposed test contents retained."
+  },
+  "coverageMilestone": {
+    "target": {
+      "lines": 80,
+      "branches": 80
+    },
+    "firstAcceptedRound": null,
+    "finalMeasuredReached": true,
+    "proposalAccepted": true
+  },
+  "runId": "38896463843",
+  "url": "https://github.com/BigGafLeo/cloudfide/actions/runs/38896463843",
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 11,
+    "executionRunId": "38896463843",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "workflow-run",
+      "workflowId": 385500607,
+      "runId": "38893471385",
+      "attempt": 2
+    },
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "headSha": "d2c986c147c6093fe01924c9ac9c6c3e3ac01043",
+    "controlSha": "a7dc2a8f0b5f7adbedef430021341f3a6cabc3ac",
+    "task": "pr-change",
+    "deadline": "2026-10-16T15:50:40.000Z"
+  },
+  "policy": {
+    "coverage": {
+      "stopAtTarget": false,
+      "target": {
+        "lines": 80,
+        "branches": 80
+      },
+      "maxRounds": 8,
+      "noProgressRounds": 3
+    },
+    "review": {
+      "enabled": true,
+      "gate": "required"
+    }
+  },
+  "validation": {
+    "strictSchemas": [
+      "precollect",
+      "agent",
+      "verifier",
+      "reviewer"
+    ],
+    "contextsMatch": true,
+    "patchDigestAndBytesMatch": true
+  },
+  "decision": "accepted",
+  "candidateStatus": "candidate",
+  "candidateReason": "Implemented all four planned cases: the repository priority filter, router forwarding with strengthened assertions, router 422 rejection, and the listQuerySchema contract. Existing assertions are preserved. Nothing was executed.",
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "4f8fc31b0a539cf89c7725b571f6483d5937db76f58eb5a6cb4b3454403072e0",
+    "bytes": 4464
+  },
+  "files": [
+    "backend/tests/repository.test.ts",
+    "backend/tests/router.test.ts",
+    "backend/tests/validators.test.ts"
+  ],
+  "baselineTests": {
+    "backend": {
+      "total": 88,
+      "failed": 0,
+      "failures": []
+    },
+    "frontend": {
+      "total": 105,
+      "failed": 0,
+      "failures": []
+    }
+  },
+  "baselineCoverage": {
+    "frontend": {
+      "lines": {
+        "covered": 149,
+        "total": 151,
+        "pct": 98.67
+      },
+      "branches": {
+        "covered": 132,
+        "total": 137,
+        "pct": 96.35
+      },
+      "statements": {
+        "covered": 164,
+        "total": 168,
+        "pct": 97.61
+      },
+      "functions": {
+        "covered": 75,
+        "total": 77,
+        "pct": 97.4
+      }
+    },
+    "backend": {
+      "lines": {
+        "covered": 110,
+        "total": 113,
+        "pct": 97.34
+      },
+      "branches": {
+        "covered": 50,
+        "total": 53,
+        "pct": 94.33
+      },
+      "statements": {
+        "covered": 128,
+        "total": 133,
+        "pct": 96.24
+      },
+      "functions": {
+        "covered": 31,
+        "total": 32,
+        "pct": 96.87
+      }
+    },
+    "gaps": [
+      "frontend/src/app/AppProviders.tsx:14",
+      "frontend/src/app/AppProviders.tsx:9",
+      "frontend/src/features/todos/TodosPage.tsx:81",
+      "frontend/src/features/todos/TodosPage.tsx:18",
+      "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+      "frontend/src/features/todos/components/TodoEditor.tsx:24",
+      "frontend/src/features/todos/utils/todos.ts:48",
+      "backend/src/factory.ts:20",
+      "backend/src/main.ts:3",
+      "backend/src/main.ts:4",
+      "backend/src/main.ts:5",
+      "backend/src/features/todos/repository.ts:9",
+      "backend/src/features/todos/router.ts:15"
+    ]
+  },
+  "candidateTests": {
+    "backend": {
+      "total": 102,
+      "failed": 0,
+      "failures": []
+    },
+    "frontend": {
+      "total": 105,
+      "failed": 0,
+      "failures": []
+    }
+  },
+  "candidateCoverage": {
+    "frontend": {
+      "lines": {
+        "covered": 149,
+        "total": 151,
+        "pct": 98.67
+      },
+      "branches": {
+        "covered": 132,
+        "total": 137,
+        "pct": 96.35
+      },
+      "statements": {
+        "covered": 164,
+        "total": 168,
+        "pct": 97.61
+      },
+      "functions": {
+        "covered": 75,
+        "total": 77,
+        "pct": 97.4
+      }
+    },
+    "backend": {
+      "lines": {
+        "covered": 110,
+        "total": 113,
+        "pct": 97.34
+      },
+      "branches": {
+        "covered": 52,
+        "total": 53,
+        "pct": 98.11
+      },
+      "statements": {
+        "covered": 129,
+        "total": 133,
+        "pct": 96.99
+      },
+      "functions": {
+        "covered": 31,
+        "total": 32,
+        "pct": 96.87
+      }
+    },
+    "gaps": [
+      "frontend/src/app/AppProviders.tsx:14",
+      "frontend/src/app/AppProviders.tsx:9",
+      "frontend/src/features/todos/TodosPage.tsx:81",
+      "frontend/src/features/todos/TodosPage.tsx:18",
+      "frontend/src/features/todos/components/DeleteTodoDialog.tsx:19",
+      "frontend/src/features/todos/components/TodoEditor.tsx:24",
+      "frontend/src/features/todos/utils/todos.ts:48",
+      "backend/src/factory.ts:20",
+      "backend/src/main.ts:3",
+      "backend/src/main.ts:4",
+      "backend/src/main.ts:5"
+    ]
+  },
+  "coverageComparison": {
+    "status": "comparable",
+    "reason": "same head/config/runtime",
+    "deltas": {
+      "frontend": {
+        "lines": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "branches": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "statements": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "functions": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        }
+      },
+      "backend": {
+        "lines": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        },
+        "branches": {
+          "covered": 2,
+          "total": 0,
+          "pctPoints": 3.78
+        },
+        "statements": {
+          "covered": 1,
+          "total": 0,
+          "pctPoints": 0.75
+        },
+        "functions": {
+          "covered": 0,
+          "total": 0,
+          "pctPoints": 0
+        }
+      }
+    },
+    "objectiveMet": false
+  },
+  "checks": [
+    {
+      "id": "backend:install",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/install.log"
+    },
+    {
+      "id": "backend:generate",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run db:generate",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/generate.log"
+    },
+    {
+      "id": "backend:typecheck",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/typecheck.log"
+    },
+    {
+      "id": "backend:unit",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/unit.log"
+    },
+    {
+      "id": "backend:coverage",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/backend/coverage.log"
+    },
+    {
+      "id": "frontend:install",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/install.log"
+    },
+    {
+      "id": "frontend:typecheck",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/typecheck.log"
+    },
+    {
+      "id": "frontend:unit",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test -- --reporter=json --outputFile=.agent-tests.json",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/unit.log"
+    },
+    {
+      "id": "frontend:coverage",
+      "gate": "required",
+      "status": "passed",
+      "reason": "",
+      "command": "npm run test:coverage -- --reporter=json --outputFile=.agent-coverage-tests.json --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportOnFailure=true",
+      "exitCode": 0,
+      "logPath": ".agent-evidence/frontend/coverage.log"
+    }
+  ],
+  "facts": [],
+  "plan": {
+    "decision": "write",
+    "reason": "The PR adds an optional priority filter to GET /api/todos. Coverage gaps are the repository `where` branch (repository.ts:9) and the router 422 branch (router.ts:15). Existing tests assert only the unfiltered path, so none would catch a dropped or mis-forwarded filter.",
+    "cases": [
+      {
+        "id": "repo-list-priority-where",
+        "sourceLocation": "backend/src/features/todos/repository.ts:9",
+        "behavior": "list({priority}) restricts the Prisma query to that priority and keeps newest-first ordering.",
+        "requirementSource": "openapi.json GET /api/todos query parameter 'priority' (\"Filter tasks by priority.\"); TodoListQuery type",
+        "inputs": "repository.list({ priority: 'high' }) with findMany mocked to resolve [record]",
+        "expected": "findMany called with { where: { priority: 'high' }, orderBy: [{ created_at: 'desc' }, { id: 'desc' }] }; result equals [todo]",
+        "assertion": "toHaveBeenCalledWith exact object including where and orderBy; mapped result toEqual [todo]",
+        "mockBoundary": "vi.spyOn(database.todo, 'findMany') on the real Prisma delegate; no database",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/repository.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/repository.test.ts",
+              "name": "lists tasks in newest-first order and maps database rows"
+            }
+          ],
+          "regression": "The filter is ignored (no where clause), the where uses the wrong field, or ordering is dropped when filtering, so all priorities are returned.",
+          "rationale": "The existing test only covers the no-query call and its exact-object assertion implies no where key, but nothing exercises the new branch (repository.ts:9 uncovered). One cheap case justifies the setup."
+        }
+      },
+      {
+        "id": "router-list-forwards-priority",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "GET /api/todos?priority=high passes the parsed query to repository.list; without a query it passes an empty filter.",
+        "requirementSource": "openapi.json GET /api/todos 'priority' parameter enum low|medium|high",
+        "inputs": "GET /api/todos?priority=high, then GET /api/todos",
+        "expected": "First call list({ priority: 'high' }) with status 200 and body [todo]; second call list({}) with no priority key",
+        "assertion": "toHaveBeenCalledWith({ priority: 'high' }) and toHaveBeenLastCalledWith({}); the existing calledOnce check is strengthened",
+        "mockBoundary": "vi.fn() repository stub via the existing setup(); supertest on an express app",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "strengthen",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "The router drops req.query or forwards the raw/unvalidated query, so the repository never receives the priority filter.",
+          "rationale": "The existing test asserts only calledOnce, so it cannot tell whether the query reaches the repository. Strengthening the same test costs almost nothing."
+        }
+      },
+      {
+        "id": "router-list-rejects-invalid-priority",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "An invalid priority query returns 422 with validation issues and does not call the repository.",
+        "requirementSource": "openapi.json GET /api/todos response '422' (Invalid input) and priority enum",
+        "inputs": "GET /api/todos with priority values 'urgent', '' and 'HIGH'",
+        "expected": "Status 422, body.detail is a non-empty array, repository.list not called",
+        "assertion": "status toBe 422; Array.isArray(detail) and length > 0; list not.toHaveBeenCalled",
+        "mockBoundary": "vi.fn() repository stub; supertest",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "rejects invalid create input without calling the repository: %j"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "The 422 branch is removed or the enum is loosened, so an invalid priority reaches the repository, returning 200 or an unfiltered list.",
+          "rationale": "The new 422 branch (router.ts:15) is uncovered, and the OpenAPI document promises it. An it.each over the three invalid values follows the existing create-validation test."
+        }
+      },
+      {
+        "id": "validators-list-query-schema",
+        "sourceLocation": "backend/src/features/todos/validators.ts:11",
+        "behavior": "listQuerySchema accepts an omitted priority and each enum value, and rejects values outside the enum.",
+        "requirementSource": "openapi.json priority enum low|medium|high, required false",
+        "inputs": "{} ; { priority: 'low' | 'medium' | 'high' } ; { priority: 'urgent' } ; { priority: '' }",
+        "expected": "{} parses to {}; each valid value parses to itself; 'urgent' and '' fail",
+        "assertion": "parse toEqual for valid inputs; safeParse(...).success toBe(false) for invalid ones",
+        "mockBoundary": "none (pure schema)",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/validators.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/validators.test.ts",
+              "name": "accepts every input field and boundary lengths"
+            },
+            {
+              "path": "backend/tests/validators.test.ts",
+              "name": "rejects invalid create input: %j"
+            }
+          ],
+          "regression": "The priority is made required, the enum is widened to any string, or a valid value is rejected.",
+          "rationale": "validators.ts has a 100% per-file coverage threshold, and the existing validator tests never import listQuerySchema. Direct schema tests are cheap and pin the contract independently of Express."
+        }
+      }
+    ],
+    "paths": [
+      "backend/tests/repository.test.ts",
+      "backend/tests/router.test.ts",
+      "backend/tests/validators.test.ts"
+    ],
+    "remainingGaps": [
+      "backend/openapi.json content (parameter enum and 422 response) is not asserted; the factory test stubs the spec, so a document-content test would need a supplied contract.",
+      "Unknown query keys being stripped (e.g. ?foo=bar) is unconfirmed characterization of z.object; not planned.",
+      "Repeated priority query params (array values) behaviour is unspecified; left out.",
+      "Frontend has no use of the new priority filter in this PR; frontend coverage gaps are unrelated to the diff.",
+      "backend/src/factory.ts:20 and backend/src/main.ts are pre-existing gaps outside this change."
+    ]
+  },
+  "review": {
+    "status": "passed",
+    "reason": "Each planned regression was tried as a concrete code change, and the tests catch every one.\n\n- **`repo-list-priority-where`:** the check is an exact match on the full `findMany` call. It fails if the filter is dropped, if the `where` uses the wrong field, or if `orderBy` is removed.\n- **`router-list-forwards-priority`:** if the router drops the query, `list({priority:'high'})` fails. Calling `list()` with no argument makes `Object.keys(undefined)` throw. Hard-coding the filter fails on the unfiltered second request.\n- **`router-list-rejects-invalid-priority`:** if the 422 branch is removed or the allowed values are widened, the response is 200 and the repository is called, so the test fails. The test also requires a non-empty `detail`, so an empty error list does not pass.\n- **`validators-list-query-schema`:** the tests fail if priority becomes required, gains a default (for example 'medium'), or accepts any string.\n\nThe router uses the real Express and supertest stack with a stub repository. The repository test uses the real Prisma client with only its database calls mocked, so the behaviour each test claims is visible. Every new mock is either restored by `afterEach` or created fresh in `setup()`. The expected results come from the OpenAPI priority enum and from the parameter being optional, not from copying what the code currently returns.\n\nOnly minor issues remain: some repeated assertions and one test that checks implementation detail rather than behaviour.",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "minor",
+        "location": "backend/tests/router.test.ts 'forwards the parsed priority filter to the repository'",
+        "claim": "The test does not tell forwarding the parsed `result.data` apart from forwarding `req.query` after validation. The plan names \"forwards the raw/unvalidated query\" as one of the regressions.",
+        "evidence": "Mutant: keep the `safeParse` and 422 check, then call `repository.list(req.query as TodoListQuery)`. For `?priority=high`, `req.query` deep-equals `{ priority: 'high' }`, and a request with no query gives `{}`. Invalid values still get 422. Every new assertion passes. Only an extra key such as `?priority=high&foo=bar` would show the difference, and the plan leaves that out as unconfirmed behaviour of Zod's unknown-key stripping. The failure the plan actually states, that the repository never receives the filter, is still caught. So this is a gap in what the rationale claims, not a wrong expected result.",
+        "kind": "other",
+        "factId": null
+      },
+      {
+        "id": "F2",
+        "severity": "minor",
+        "location": "backend/tests/repository.test.ts 'does not add a where clause for an empty list query'",
+        "claim": "This test checks the shape of the Prisma call rather than the result. It rejects calls that behave the same, and it does not check ordering for `list({})`.",
+        "evidence": "`not.toHaveProperty('where')` fails for `findMany({ where: {}, orderBy })` and for `{ where: { priority: undefined }, orderBy }`. Prisma treats both as unfiltered, so a valid refactor would break this test. The test also never checks `orderBy`, so a mutant that drops ordering only when given an empty query object passes it. Only the existing `list()` test, called with no argument, checks ordering. No planned case claims anything about this path, so this is minor.",
+        "kind": "other",
+        "factId": null
+      },
+      {
+        "id": "F3",
+        "severity": "minor",
+        "location": "backend/tests/router.test.ts 'lists tasks from the repository' vs 'forwards the parsed priority filter to the repository'",
+        "claim": "The request with no query is checked twice in almost the same way.",
+        "evidence": "The strengthened existing test already checks that `Object.keys(repository.list.mock.calls[0][0])` equals `[]` for `GET /api/todos`. The second half of the new test sends the same request and repeats the check, adding `toHaveBeenLastCalledWith({})` on top. Neither copy catches any mutant the other misses. The cost is small: a few lines and no new setup.",
+        "kind": "other",
+        "factId": null
+      }
+    ]
+  },
+  "confirmations": [],
+  "tokenAccounting": {
+    "source": "Official Claude Code final per-call usage fields retained in the run artifacts; aggregate usage counted once, not again via modelUsage or iterations.",
+    "definitions": {
+      "freshInputTokens": "raw.usage.input_tokens",
+      "cacheWriteInputTokens": "raw.usage.cache_creation_input_tokens",
+      "cacheReadInputTokens": "raw.usage.cache_read_input_tokens",
+      "inputTokensIncludingCache": "fresh + cache write + cache read; normalized usage.inputTokens",
+      "outputTokens": "raw.usage.output_tokens; includes thinking tokens when reported",
+      "inputAndOutputTokens": "input including cache + output; cumulative across calls, not unique context tokens",
+      "thinkingTokensIncludedInOutput": "Subset of output, never added a second time"
+    },
+    "limitations": [
+      "Only this workflow's native calls are counted; the interactive Codex session and independent local review are separate.",
+      "Failed/unknown calls without usage remain explicitly unknown; totals sum reported data only.",
+      "Subscription authentication; token counts and native list-price metadata are not an invoice or remaining subscription quota."
+    ],
+    "calls": [
+      {
+        "sequence": 1,
+        "round": null,
+        "callId": "ddf5b30f-9734-422a-b773-ad7e612e3ee0",
+        "role": "analyst",
+        "provider": "claude",
+        "model": "claude-sonnet-5-5",
+        "status": "completed",
+        "elapsedMs": 21136,
+        "usageAvailable": true,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 67371,
+        "cacheReadInputTokens": 2709,
+        "inputTokensIncludingCache": 70082,
+        "outputTokens": 2830,
+        "inputAndOutputTokens": 72912,
+        "thinkingTokensIncludedInOutput": 430
+      },
+      {
+        "sequence": 2,
+        "round": null,
+        "callId": "fe446133-ce75-490f-a7e9-1d98979416cd",
+        "role": "writer",
+        "provider": "claude",
+        "model": "claude-sonnet-5-5",
+        "status": "completed",
+        "elapsedMs": 37176,
+        "usageAvailable": true,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 69656,
+        "cacheReadInputTokens": 2039,
+        "inputTokensIncludingCache": 71697,
+        "outputTokens": 7022,
+        "inputAndOutputTokens": 78719,
+        "thinkingTokensIncludedInOutput": 574
+      },
+      {
+        "sequence": 3,
+        "round": null,
+        "callId": "327ca38d-3f7a-4335-964e-fc31be8b85a5",
+        "role": "reviewer",
+        "provider": "claude",
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "elapsedMs": 45212,
+        "usageAvailable": true,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 41427,
+        "cacheReadInputTokens": 2205,
+        "inputTokensIncludingCache": 43634,
+        "outputTokens": 4440,
+        "inputAndOutputTokens": 48074,
+        "thinkingTokensIncludedInOutput": 2931
+      }
+    ],
+    "byRole": {
+      "analyst": {
+        "calls": 1,
+        "callsWithUsage": 1,
+        "callsWithoutUsage": 0,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 67371,
+        "cacheReadInputTokens": 2709,
+        "inputTokensIncludingCache": 70082,
+        "outputTokens": 2830,
+        "inputAndOutputTokens": 72912,
+        "thinkingTokensIncludedInOutput": 430
+      },
+      "writer": {
+        "calls": 1,
+        "callsWithUsage": 1,
+        "callsWithoutUsage": 0,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 69656,
+        "cacheReadInputTokens": 2039,
+        "inputTokensIncludingCache": 71697,
+        "outputTokens": 7022,
+        "inputAndOutputTokens": 78719,
+        "thinkingTokensIncludedInOutput": 574
+      },
+      "reviewer": {
+        "calls": 1,
+        "callsWithUsage": 1,
+        "callsWithoutUsage": 0,
+        "freshInputTokens": 2,
+        "cacheWriteInputTokens": 41427,
+        "cacheReadInputTokens": 2205,
+        "inputTokensIncludingCache": 43634,
+        "outputTokens": 4440,
+        "inputAndOutputTokens": 48074,
+        "thinkingTokensIncludedInOutput": 2931
+      }
+    },
+    "byRound": {},
+    "afterMilestone": null,
+    "rejectedRounds": {
+      "calls": 0,
+      "callsWithUsage": 0,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "cacheReadInputTokens": 0,
+      "inputTokensIncludingCache": 0,
+      "outputTokens": 0,
+      "inputAndOutputTokens": 0,
+      "thinkingTokensIncludedInOutput": 0
+    },
+    "total": {
+      "calls": 3,
+      "callsWithUsage": 3,
+      "callsWithoutUsage": 0,
+      "freshInputTokens": 6,
+      "cacheWriteInputTokens": 178454,
+      "cacheReadInputTokens": 6953,
+      "inputTokensIncludingCache": 185413,
+      "outputTokens": 14292,
+      "inputAndOutputTokens": 199705,
+      "thinkingTokensIncludedInOutput": 3935
+    }
+  },
+  "developerDisposition": {
+    "applied": false,
+    "status": "blocked-by-independent-development-review",
+    "reason": "Native reviewer described the explicitly promised surviving raw-query counterexample as kind other/minor, so the host accepted; independent review treats this promised counterexample as material. Raw proposal retained without alteration; guidance correction and final same-source trial pending.",
+    "executionProof": {
+      "kind": "selected-manual-source-counterexample",
+      "scope": "Only backend/tests/router.test.ts in exact D2c backend snapshot with unchanged native candidate test overlays",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/router.test.ts",
+        "--reporter=verbose",
+        "--maxWorkers=1"
+      ],
+      "sourceChange": {
+        "from": "repository.list(result.data)",
+        "to": "repository.list(req.query as typeof result.data)",
+        "validationAnd422Preserved": true
+      },
+      "control": {
+        "exitCode": 0,
+        "testsPassed": 23,
+        "testFilesPassed": 1
+      },
+      "counterexample": {
+        "exitCode": 0,
+        "testsPassed": 23,
+        "testFilesPassed": 1,
+        "outcome": "survived"
+      },
+      "sourceSha256": {
+        "originalAndRestored": "2aa7764b2a9368351a0239887f2ef60e66e075bc8d1eeeeaf6ab9f90e4d463ea",
+        "counterexample": "1c6a99d73b3801e1b3c863090e8e9bf2257f3e50ccc2142979d8476e3d23e218"
+      },
+      "restoration": {
+        "scratchSourceByteIdentical": true,
+        "all31TrackedBackendFilesOrExactTestOverlaysVerified": true,
+        "liveFeatureWorktreeUnchanged": true
+      },
+      "limits": "One selected counterexample, not a Stryker run or global mutation score; no typecheck or complete backend suite claimed."
+    }
+  }
+}

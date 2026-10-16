@@ -1,0 +1,157 @@
+{
+  "context": {
+    "repository": "BigGafLeo/cloudfide",
+    "repositoryId": 1416918089,
+    "pr": 11,
+    "executionRunId": "38896463843",
+    "executionAttempt": 1,
+    "trigger": {
+      "kind": "workflow-run",
+      "workflowId": 385500607,
+      "runId": "38893471385",
+      "attempt": 2
+    },
+    "baseSha": "436113dd94a5593cf5a9a6e0e4869e29c26f907e",
+    "headSha": "d2c986c147c6093fe01924c9ac9c6c3e3ac01043",
+    "controlSha": "a7dc2a8f0b5f7adbedef430021341f3a6cabc3ac",
+    "task": "pr-change",
+    "deadline": "2026-10-16T15:50:40.000Z"
+  },
+  "patch": {
+    "name": "candidate.patch",
+    "sha256": "4f8fc31b0a539cf89c7725b571f6483d5937db76f58eb5a6cb4b3454403072e0",
+    "bytes": 4464
+  },
+  "files": [
+    "backend/tests/repository.test.ts",
+    "backend/tests/router.test.ts",
+    "backend/tests/validators.test.ts"
+  ],
+  "plan": {
+    "decision": "write",
+    "reason": "The PR adds an optional priority filter to GET /api/todos. Coverage gaps are the repository `where` branch (repository.ts:9) and the router 422 branch (router.ts:15). Existing tests assert only the unfiltered path, so none would catch a dropped or mis-forwarded filter.",
+    "cases": [
+      {
+        "id": "repo-list-priority-where",
+        "sourceLocation": "backend/src/features/todos/repository.ts:9",
+        "behavior": "list({priority}) restricts the Prisma query to that priority and keeps newest-first ordering.",
+        "requirementSource": "openapi.json GET /api/todos query parameter 'priority' (\"Filter tasks by priority.\"); TodoListQuery type",
+        "inputs": "repository.list({ priority: 'high' }) with findMany mocked to resolve [record]",
+        "expected": "findMany called with { where: { priority: 'high' }, orderBy: [{ created_at: 'desc' }, { id: 'desc' }] }; result equals [todo]",
+        "assertion": "toHaveBeenCalledWith exact object including where and orderBy; mapped result toEqual [todo]",
+        "mockBoundary": "vi.spyOn(database.todo, 'findMany') on the real Prisma delegate; no database",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/repository.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/repository.test.ts",
+              "name": "lists tasks in newest-first order and maps database rows"
+            }
+          ],
+          "regression": "The filter is ignored (no where clause), the where uses the wrong field, or ordering is dropped when filtering, so all priorities are returned.",
+          "rationale": "The existing test only covers the no-query call and its exact-object assertion implies no where key, but nothing exercises the new branch (repository.ts:9 uncovered). One cheap case justifies the setup."
+        }
+      },
+      {
+        "id": "router-list-forwards-priority",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "GET /api/todos?priority=high passes the parsed query to repository.list; without a query it passes an empty filter.",
+        "requirementSource": "openapi.json GET /api/todos 'priority' parameter enum low|medium|high",
+        "inputs": "GET /api/todos?priority=high, then GET /api/todos",
+        "expected": "First call list({ priority: 'high' }) with status 200 and body [todo]; second call list({}) with no priority key",
+        "assertion": "toHaveBeenCalledWith({ priority: 'high' }) and toHaveBeenLastCalledWith({}); the existing calledOnce check is strengthened",
+        "mockBoundary": "vi.fn() repository stub via the existing setup(); supertest on an express app",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "strengthen",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "The router drops req.query or forwards the raw/unvalidated query, so the repository never receives the priority filter.",
+          "rationale": "The existing test asserts only calledOnce, so it cannot tell whether the query reaches the repository. Strengthening the same test costs almost nothing."
+        }
+      },
+      {
+        "id": "router-list-rejects-invalid-priority",
+        "sourceLocation": "backend/src/features/todos/router.ts:15",
+        "behavior": "An invalid priority query returns 422 with validation issues and does not call the repository.",
+        "requirementSource": "openapi.json GET /api/todos response '422' (Invalid input) and priority enum",
+        "inputs": "GET /api/todos with priority values 'urgent', '' and 'HIGH'",
+        "expected": "Status 422, body.detail is a non-empty array, repository.list not called",
+        "assertion": "status toBe 422; Array.isArray(detail) and length > 0; list not.toHaveBeenCalled",
+        "mockBoundary": "vi.fn() repository stub; supertest",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/router.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "rejects invalid create input without calling the repository: %j"
+            },
+            {
+              "path": "backend/tests/router.test.ts",
+              "name": "lists tasks from the repository"
+            }
+          ],
+          "regression": "The 422 branch is removed or the enum is loosened, so an invalid priority reaches the repository, returning 200 or an unfiltered list.",
+          "rationale": "The new 422 branch (router.ts:15) is uncovered, and the OpenAPI document promises it. An it.each over the three invalid values follows the existing create-validation test."
+        }
+      },
+      {
+        "id": "validators-list-query-schema",
+        "sourceLocation": "backend/src/features/todos/validators.ts:11",
+        "behavior": "listQuerySchema accepts an omitted priority and each enum value, and rejects values outside the enum.",
+        "requirementSource": "openapi.json priority enum low|medium|high, required false",
+        "inputs": "{} ; { priority: 'low' | 'medium' | 'high' } ; { priority: 'urgent' } ; { priority: '' }",
+        "expected": "{} parses to {}; each valid value parses to itself; 'urgent' and '' fail",
+        "assertion": "parse toEqual for valid inputs; safeParse(...).success toBe(false) for invalid ones",
+        "mockBoundary": "none (pure schema)",
+        "confidence": "contract-backed",
+        "value": {
+          "action": "add",
+          "testPath": "backend/tests/validators.test.ts",
+          "existingTests": [
+            {
+              "path": "backend/tests/validators.test.ts",
+              "name": "accepts every input field and boundary lengths"
+            },
+            {
+              "path": "backend/tests/validators.test.ts",
+              "name": "rejects invalid create input: %j"
+            }
+          ],
+          "regression": "The priority is made required, the enum is widened to any string, or a valid value is rejected.",
+          "rationale": "validators.ts has a 100% per-file coverage threshold, and the existing validator tests never import listQuerySchema. Direct schema tests are cheap and pin the contract independently of Express."
+        }
+      }
+    ],
+    "paths": [
+      "backend/tests/repository.test.ts",
+      "backend/tests/router.test.ts",
+      "backend/tests/validators.test.ts"
+    ],
+    "remainingGaps": [
+      "backend/openapi.json content (parameter enum and 422 response) is not asserted; the factory test stubs the spec, so a document-content test would need a supplied contract.",
+      "Unknown query keys being stripped (e.g. ?foo=bar) is unconfirmed characterization of z.object; not planned.",
+      "Repeated priority query params (array values) behaviour is unspecified; left out.",
+      "Frontend has no use of the new priority filter in this PR; frontend coverage gaps are unrelated to the diff.",
+      "backend/src/factory.ts:20 and backend/src/main.ts are pre-existing gaps outside this change."
+    ]
+  },
+  "skillsUsed": [
+    "analyze-unit-gaps",
+    "analyze-unit-gaps/references/backend.md",
+    "analyze-unit-gaps/references/frontend.md",
+    "write-unit-tests",
+    "write-unit-tests/references/backend.md",
+    "write-unit-tests/references/frontend.md"
+  ],
+  "patchText": "diff --git a/backend/tests/repository.test.ts b/backend/tests/repository.test.ts\nindex 362f57f..970ceb2 100644\n--- a/backend/tests/repository.test.ts\n+++ b/backend/tests/repository.test.ts\n@@ -17,6 +17,22 @@ it('lists tasks in newest-first order and maps database rows', async () => {\n   expect(await repository.list()).toEqual([todo]);\n   expect(findMany).toHaveBeenCalledWith({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] });\n });\n+it.each(['low', 'high'] as const)('restricts the list to priority %s and keeps newest-first order', async (priority) => {\n+  const { database, repository } = setup();\n+  const findMany = vi.spyOn(database.todo, 'findMany').mockResolvedValue([record]);\n+  expect(await repository.list({ priority })).toEqual([todo]);\n+  expect(findMany).toHaveBeenCalledTimes(1);\n+  expect(findMany).toHaveBeenCalledWith({\n+    where: { priority },\n+    orderBy: [{ created_at: 'desc' }, { id: 'desc' }],\n+  });\n+});\n+it('does not add a where clause for an empty list query', async () => {\n+  const { database, repository } = setup();\n+  const findMany = vi.spyOn(database.todo, 'findMany').mockResolvedValue([]);\n+  expect(await repository.list({})).toEqual([]);\n+  expect(findMany.mock.calls[0][0]).not.toHaveProperty('where');\n+});\n it('gets a task by ID and handles missing tasks', async () => {\n   const { database, repository } = setup();\n   const findUnique = vi.spyOn(database.todo, 'findUnique').mockResolvedValueOnce(record).mockResolvedValueOnce(null);\ndiff --git a/backend/tests/router.test.ts b/backend/tests/router.test.ts\nindex 4f3ada2..14618b7 100644\n--- a/backend/tests/router.test.ts\n+++ b/backend/tests/router.test.ts\n@@ -17,6 +17,28 @@ it('lists tasks from the repository', async () => {\n   expect(response.status).toBe(200);\n   expect(response.body).toEqual([todo]);\n   expect(repository.list).toHaveBeenCalledOnce();\n+  expect(Object.keys(repository.list.mock.calls[0][0])).toEqual([]);\n+});\n+it('forwards the parsed priority filter to the repository', async () => {\n+  const { app, repository } = setup();\n+  const filtered = await request(app).get('/api/todos?priority=high');\n+  expect(filtered.status).toBe(200);\n+  expect(filtered.body).toEqual([todo]);\n+  expect(repository.list).toHaveBeenCalledTimes(1);\n+  expect(repository.list).toHaveBeenLastCalledWith({ priority: 'high' });\n+  const unfiltered = await request(app).get('/api/todos');\n+  expect(unfiltered.status).toBe(200);\n+  expect(repository.list).toHaveBeenCalledTimes(2);\n+  expect(repository.list).toHaveBeenLastCalledWith({});\n+  expect(Object.keys(repository.list.mock.calls[1][0])).toEqual([]);\n+});\n+it.each(['urgent', '', 'HIGH'])('rejects invalid priority %j without calling the repository', async (priority) => {\n+  const { app, repository } = setup();\n+  const response = await request(app).get('/api/todos').query({ priority });\n+  expect(response.status).toBe(422);\n+  expect(Array.isArray(response.body.detail)).toBe(true);\n+  expect(response.body.detail.length).toBeGreaterThan(0);\n+  expect(repository.list).not.toHaveBeenCalled();\n });\n it('creates tasks with trimmed input and defaults', async () => {\n   const { app, repository } = setup();\ndiff --git a/backend/tests/validators.test.ts b/backend/tests/validators.test.ts\nindex cd1fdb5..22c1e45 100644\n--- a/backend/tests/validators.test.ts\n+++ b/backend/tests/validators.test.ts\n@@ -1,5 +1,5 @@\n import { describe, it, expect } from 'vitest';\n-import { createSchema, updateSchema, idSchema, todoSchema } from '../src/features/todos/validators.ts';\n+import { createSchema, updateSchema, idSchema, todoSchema, listQuerySchema } from '../src/features/todos/validators.ts';\n import { todo } from './fixture.ts';\n \n describe('todo validation', () => {\n@@ -38,3 +38,17 @@ describe('todo validation', () => {\n     expect(todoSchema.safeParse({ ...todo, created_at: 'yesterday' }).success).toBe(false);\n   });\n });\n+\n+describe('list query validation', () => {\n+  it('treats the priority filter as optional', () => {\n+    const parsed = listQuerySchema.parse({});\n+    expect(parsed).toEqual({});\n+    expect(Object.keys(parsed)).toEqual([]);\n+  });\n+  it.each(['low', 'medium', 'high'])('accepts priority %s unchanged', (priority) => {\n+    expect(listQuerySchema.parse({ priority })).toEqual({ priority });\n+  });\n+  it.each(['urgent', '', 'HIGH'])('rejects priority %j outside the enum', (priority) => {\n+    expect(listQuerySchema.safeParse({ priority }).success).toBe(false);\n+  });\n+});\n"
+}
